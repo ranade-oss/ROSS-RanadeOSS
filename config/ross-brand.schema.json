@@ -3,7 +3,7 @@
   "$id": "https://ross.example.invalid/schemas/ross-brand.schema.json",
   "title": "ROSS brand and product configuration",
   "type": "object",
-  "required": ["schemaVersion", "product", "urls", "identity", "policy", "attribution"],
+  "required": ["schemaVersion", "product", "urls", "identity", "policy", "attribution", "socialLinks"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "product": {
@@ -24,13 +24,14 @@
     },
     "urls": {
       "type": "object",
-      "required": ["website", "app", "api", "status", "support", "source", "upstreamSource", "upstreamWebsite"],
+      "required": ["website", "app", "api", "status", "support", "security", "source", "upstreamSource", "upstreamWebsite"],
       "properties": {
         "website": { "type": "string", "format": "uri" },
         "app": { "type": "string", "format": "uri" },
         "api": { "type": "string", "format": "uri" },
         "status": { "type": "string", "format": "uri" },
         "support": { "type": "string", "format": "uri" },
+        "security": { "type": "string", "format": "uri" },
         "source": { "type": "string", "format": "uri" },
         "upstreamSource": { "type": "string", "format": "uri" },
         "upstreamWebsite": { "type": "string", "format": "uri" }
@@ -56,11 +57,12 @@
     },
     "policy": {
       "type": "object",
-      "required": ["defaultJurisdiction", "productionDataResidencyTarget", "previewData", "courtListenerPreserved", "canliiScrapingAllowed", "governmentAffiliation", "trademarkReview"],
+      "required": ["defaultJurisdiction", "productionDataResidencyTarget", "previewData", "coverageStatus", "courtListenerPreserved", "canliiScrapingAllowed", "governmentAffiliation", "trademarkReview"],
       "properties": {
         "defaultJurisdiction": { "const": "CA-ON" },
         "productionDataResidencyTarget": { "const": "Canada" },
         "previewData": { "const": "synthetic-only" },
+        "coverageStatus": { "enum": ["foundation-only", "partial", "production-reviewed"] },
         "courtListenerPreserved": { "const": true },
         "canliiScrapingAllowed": { "const": false },
         "governmentAffiliation": { "const": false },
@@ -76,6 +78,10 @@
         "noticePath": { "const": "NOTICE.md" }
       },
       "additionalProperties": false
+    },
+    "socialLinks": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri" }
     }
   },
   "$defs": {

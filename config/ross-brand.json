@@ -18,6 +18,7 @@
     "api": "https://api.ross.example.invalid",
     "status": "https://status.ross.example.invalid",
     "support": "mailto:support@example.invalid",
+    "security": "https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new",
     "source": "https://github.com/ranade-oss/ROSS-RanadeOSS",
     "upstreamSource": "https://github.com/Open-Legal-Products/mike",
     "upstreamWebsite": "https://mikeoss.com"
@@ -38,6 +39,7 @@
     "defaultJurisdiction": "CA-ON",
     "productionDataResidencyTarget": "Canada",
     "previewData": "synthetic-only",
+    "coverageStatus": "foundation-only",
     "courtListenerPreserved": true,
     "canliiScrapingAllowed": false,
     "governmentAffiliation": false,
@@ -46,5 +48,6 @@
   "attribution": {
     "short": "ROSS is a modified fork of Mike and is licensed under AGPL-3.0.",
     "noticePath": "NOTICE.md"
-  }
+  },
+  "socialLinks": []
 }
