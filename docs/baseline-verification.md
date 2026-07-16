@@ -20,7 +20,7 @@ The inherited Mike application is now surrounded by an additive preservation con
 | Frontend strict lint | Existing debt | 25 errors and 42 warnings at the pinned Mike baseline |
 | Frontend regression lint gate | Pass | New error groups or increased error/warning counts fail the gate; reductions are allowed |
 | Deployed health smoke tests | Not run | Requires `ROSS_E2E_API_URL` and `ROSS_E2E_APP_URL` |
-| GitHub Actions run | Pending | Workflow will run after these changes are pushed to GitHub |
+| GitHub Actions run | Pass | ROSS pull request #1 passed baseline verification and merged to `main` on 2026-07-15 |
 
 ## Commands
 
