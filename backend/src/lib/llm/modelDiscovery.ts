@@ -1,4 +1,6 @@
 import { MODEL_CAPABILITIES, type ModelCapability } from "./models";
+import { approvedModelProviders } from "./runtimeModels";
+import { loadRuntimeConfig } from "../../config/runtime";
 import type { UserApiKeys } from "./types";
 
 const OPENAI_MODELS_URL = "https://api.openai.com/v1/models";
@@ -10,6 +12,8 @@ export type DiscoveredModel = ModelCapability & {
 
 export type ModelDiscoveryResult = {
   models: DiscoveredModel[];
+  approvedProviders: Array<"claude" | "gemini" | "openai">;
+  selfHosted: boolean;
   refreshedAt: string;
   warning?: string;
 };
@@ -37,6 +41,7 @@ async function discoverOpenAIIds(apiKey: string): Promise<Set<string>> {
 export async function discoverCompatibleModels(
   apiKeys: UserApiKeys,
 ): Promise<ModelDiscoveryResult> {
+  const approvedProviders = approvedModelProviders();
   let openAIIds: Set<string> | null = null;
   let warning: string | undefined;
 
@@ -50,7 +55,9 @@ export async function discoverCompatibleModels(
   }
 
   const models = MODEL_CAPABILITIES.filter(
-    (capability) => capability.tier === "main",
+    (capability) =>
+      capability.tier === "main" &&
+      approvedProviders.includes(capability.provider),
   ).map((capability): DiscoveredModel => {
     const configured = Boolean(apiKeys[capability.provider]?.trim());
     if (!configured) {
@@ -83,6 +90,8 @@ export async function discoverCompatibleModels(
 
   return {
     models,
+    approvedProviders,
+    selfHosted: loadRuntimeConfig().hostedMode === "self-hosted",
     refreshedAt: new Date().toISOString(),
     ...(warning ? { warning } : {}),
   };

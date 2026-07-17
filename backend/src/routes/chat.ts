@@ -19,8 +19,8 @@ import {
 } from "../lib/chat";
 import {
   completeText,
-  DEFAULT_MAIN_MODEL,
-  resolveModel,
+  isModelApprovedForRuntime,
+  resolveRuntimeModel,
   supportsReasoningEffort,
   type ReasoningEffort,
 } from "../lib/llm";
@@ -524,7 +524,12 @@ chatRouter.post("/", requireAuth, async (req, res) => {
   if (!parsedReasoningEffort.ok) {
     return void res.status(400).json({ detail: parsedReasoningEffort.detail });
   }
-  const effectiveModel = resolveModel(parsedModel.model, DEFAULT_MAIN_MODEL);
+  if (parsedModel.model && !isModelApprovedForRuntime(parsedModel.model)) {
+    return void res.status(400).json({
+      detail: `Model ${parsedModel.model} is not approved for this hosted deployment.`,
+    });
+  }
+  const effectiveModel = resolveRuntimeModel(parsedModel.model, "main");
   if (
     parsedReasoningEffort.effort &&
     !supportsReasoningEffort(effectiveModel, parsedReasoningEffort.effort)
@@ -546,7 +551,7 @@ chatRouter.post("/", requireAuth, async (req, res) => {
   const messages = parsedMessages.messages;
   const chat_id = parsedChatId.chatId;
   const project_id = parsedProjectId.projectId;
-  const model = parsedModel.model;
+  const model = effectiveModel;
 
   devLog("[chat/stream] incoming request", {
     userId,

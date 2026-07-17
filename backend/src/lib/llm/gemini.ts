@@ -181,8 +181,11 @@ export async function streamGemini(
   });
 
   try {
-    for (let iter = 0; iter < maxIter; iter++) {
+    // Permit up to maxIter tool-use rounds, then force one final synthesis
+    // turn with tools disabled so the response cannot end on a tool call.
+    for (let iter = 0; iter <= maxIter; iter++) {
       throwIfAborted(params.abortSignal);
+      const toolsEnabled = iter < maxIter;
       let stream: AsyncIterable<unknown>;
       try {
         stream = await ai.models.generateContentStream({
@@ -190,7 +193,7 @@ export async function streamGemini(
           contents: contents as never,
           config: {
             systemInstruction: systemPrompt,
-            tools: functionDeclarations.length
+            tools: toolsEnabled && functionDeclarations.length
               ? [{ functionDeclarations } as never]
               : undefined,
             // When enabled, ask Gemini to surface thought summaries.

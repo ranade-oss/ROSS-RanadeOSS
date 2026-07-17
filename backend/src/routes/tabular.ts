@@ -414,7 +414,7 @@ tabularRouter.patch("/:reviewId", requireAuth, async (req, res) => {
         );
         if (missingSharedUsers.length > 0) {
             return void res.status(400).json({
-                detail: `${missingSharedUsers[0]} does not belong to a Mike user.`,
+                detail: `${missingSharedUsers[0]} does not belong to a ROSS user.`,
             });
         }
         updates.shared_with = sharedWithUpdate;
@@ -1093,7 +1093,7 @@ function buildTabularMessages(
         .map((c, i) => `- COL:${i} "${c.name}"`)
         .join("\n");
 
-    const systemContent = `You are Mike, an AI legal assistant. You are helping with the tabular review titled "${reviewTitle}".
+    const systemContent = `You are ROSS, an AI legal assistant. You are helping with the tabular review titled "${reviewTitle}".
 
 The review extracts specific fields from multiple legal documents into a structured table.
 You do NOT have the cell content yet — call read_table_cells to fetch the cells you need before answering.

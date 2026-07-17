@@ -1267,6 +1267,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
                                 hideAddDocButton
                                 projectName={project?.name}
                                 projectCmNumber={project?.cm_number}
+                                defaultJurisdictions={project?.jurisdictions}
                             />
                         </div>
                     </div>

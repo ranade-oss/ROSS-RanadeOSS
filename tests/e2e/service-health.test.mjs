@@ -7,7 +7,9 @@ const appUrl = process.env.ROSS_E2E_APP_URL;
 test("deployed API health endpoint responds", { skip: !apiUrl }, async () => {
   const response = await fetch(new URL("/health", apiUrl));
   assert.equal(response.ok, true);
-  assert.deepEqual(await response.json(), { ok: true });
+  const body = await response.json();
+  assert.equal(body.ok, true);
+  assert.equal(body.service, "ross-api");
 });
 
 test("deployed web application responds", { skip: !appUrl }, async () => {

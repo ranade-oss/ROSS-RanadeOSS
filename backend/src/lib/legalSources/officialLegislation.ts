@@ -21,6 +21,14 @@ type LegislationEntry = {
     frenchPath?: string;
 };
 
+type OntarioDocumentApiResponse = {
+    content?: unknown;
+    alias?: unknown;
+    state?: unknown;
+    title?: unknown;
+    dateFrom?: unknown;
+};
+
 const ONTARIO_ENTRIES: LegislationEntry[] = [
     entry(
         "ontario-statute-90c43",
@@ -179,22 +187,44 @@ export class OntarioELawsProvider implements LegalSourceProvider {
             language === "fr" && item.alternateLanguageUrl
                 ? item.alternateLanguageUrl
                 : item.canonicalUrl;
-        const html = await safeOfficialFetch(this.fetchImpl, url, [
-            "www.ontario.ca",
+        const apiUrl = ontarioDocumentApiUrl(item, language);
+        const currencyUrl = `https://www.ontario.ca/laws/api/v2/legislation/${language}/currency-date`;
+        const [rawDocument, rawCurrencyDate] = await Promise.all([
+            safeOfficialFetch(this.fetchImpl, apiUrl, ["www.ontario.ca"]),
+            safeOfficialFetch(this.fetchImpl, currencyUrl, ["www.ontario.ca"]),
         ]);
-        const fullText = htmlToText(html);
+        let payload: OntarioDocumentApiResponse;
+        try {
+            payload = JSON.parse(rawDocument) as OntarioDocumentApiResponse;
+        } catch {
+            throw new Error(
+                "Ontario e-Laws document API returned invalid JSON.",
+            );
+        }
+        if (typeof payload.content !== "string" || !payload.content.trim()) {
+            throw new Error(
+                "Ontario e-Laws document API returned no legislation content.",
+            );
+        }
+        const fullText = htmlToText(payload.content);
         const allSections = parseOntarioSections(fullText, url);
         const sections = input.section
             ? filterSection(allSections, input.section)
             : allSections;
         const summary = legislationSummary(item, this.descriptor.id, language, {
-            currentToDate: extractCurrencyDate(fullText),
-            lastAmendedDate: extractLabeledDate(fullText, "last amended"),
+            currentToDate: normalizedDate(rawCurrencyDate.trim()),
+            lastAmendedDate: null,
             verification: "verified",
         });
-        return document(summary, html, fullText, sections, {
-            source: "Ontario e-Laws live HTML",
+        return document(summary, rawDocument, fullText, sections, {
+            source: "Ontario e-Laws official document API",
+            apiUrl,
             officialDisplayUrl: url,
+            state: typeof payload.state === "string" ? payload.state : null,
+            consolidationStart:
+                typeof payload.dateFrom === "string"
+                    ? normalizedDate(payload.dateFrom)
+                    : null,
         });
     }
 }
@@ -374,7 +404,9 @@ async function safeOfficialFetch(
     if (parsed.protocol !== "https:" || !allowedHosts.includes(parsed.hostname))
         throw new Error("Official-source URL is not allowlisted.");
     const response = await fetchImpl(url, {
-        headers: { Accept: "text/html, application/xml, text/xml" },
+        headers: {
+            Accept: "application/json, text/plain, text/html, application/xml, text/xml",
+        },
         signal: AbortSignal.timeout(20_000),
     });
     if (!response.ok)
@@ -392,6 +424,26 @@ async function safeOfficialFetch(
             "Official legislation response exceeds the 15 MB safety limit.",
         );
     return body;
+}
+
+function ontarioDocumentApiUrl(
+    item: LegislationEntry,
+    language: LegalSourceLanguage,
+) {
+    const displayUrl =
+        language === "fr" && item.alternateLanguageUrl
+            ? item.alternateLanguageUrl
+            : item.canonicalUrl;
+    const parts = new URL(displayUrl).pathname.split("/").filter(Boolean);
+    const rootIndex = parts.findIndex(
+        (part) => part === "laws" || part === "lois",
+    );
+    const type = parts[rootIndex + 1];
+    const code = parts[rootIndex + 2];
+    if (rootIndex < 0 || !type || !code) {
+        throw new Error("Ontario e-Laws document path is invalid.");
+    }
+    return `https://www.ontario.ca/laws/api/v2/legislation/${language}/doc-search/${encodeURIComponent(type)}/${encodeURIComponent(code)}`;
 }
 
 function searchEntries(
@@ -591,22 +643,6 @@ function decodeHtml(value: string) {
             return String.fromCodePoint(Number.parseInt(entity.slice(1), 10));
         return entities[entity.toLowerCase()] ?? `&${entity};`;
     });
-}
-
-function extractCurrencyDate(value: string) {
-    return normalizedDate(
-        value
-            .match(/(?:current|up-to-date)\s+(?:as of|to)\s+([^\n.;]+)/i)?.[1]
-            ?.trim() ?? null,
-    );
-}
-
-function extractLabeledDate(value: string, label: string) {
-    return normalizedDate(
-        value
-            .match(new RegExp(`${label}\\s*:?\\s*([^\\n.;]+)`, "i"))?.[1]
-            ?.trim() ?? null,
-    );
 }
 
 function normalizedDate(value: string | null) {

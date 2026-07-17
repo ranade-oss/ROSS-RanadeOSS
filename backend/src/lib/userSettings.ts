@@ -1,11 +1,5 @@
 import { createServerSupabase } from "./supabase";
-import {
-    resolveModel,
-    DEFAULT_TITLE_MODEL,
-    DEFAULT_TABULAR_MODEL,
-    OPENAI_LOW_MODELS,
-    type UserApiKeys,
-} from "./llm";
+import { resolveRuntimeModel, type UserApiKeys } from "./llm";
 import { getUserApiKeys as getStoredUserApiKeys } from "./userApiKeys";
 
 export type UserModelSettings = {
@@ -37,17 +31,6 @@ export const DEFAULT_LEGAL_RESEARCH_SETTINGS: LegalResearchSettings = {
         "courtlistener-us",
     ],
 };
-
-// Title generation is a lightweight task — always routed to the cheapest model
-// of whichever provider the user has keys for: Gemini Flash Lite if Gemini is
-// available, otherwise OpenAI lite, otherwise Claude Haiku. With no user keys
-// set, defaults to Gemini (the dev-mode env fallback).
-function resolveTitleModel(apiKeys: UserApiKeys): string {
-    if (apiKeys.gemini?.trim()) return DEFAULT_TITLE_MODEL;
-    if (apiKeys.openai?.trim()) return OPENAI_LOW_MODELS[0];
-    if (apiKeys.claude?.trim()) return "claude-haiku-4-5";
-    return DEFAULT_TITLE_MODEL;
-}
 
 export async function getUserModelSettings(
     userId: string,
@@ -87,13 +70,13 @@ export async function getUserModelSettings(
             : null;
 
     return {
-        title_model: resolveModel(
+        title_model: resolveRuntimeModel(
             typeof data?.title_model === "string" ? data.title_model : null,
-            resolveTitleModel(api_keys),
+            "low",
         ),
-        tabular_model: resolveModel(
+        tabular_model: resolveRuntimeModel(
             typeof data?.tabular_model === "string" ? data.tabular_model : null,
-            DEFAULT_TABULAR_MODEL,
+            "mid",
         ),
         legal_research: {
             enabled: data?.legal_research_enabled !== false,

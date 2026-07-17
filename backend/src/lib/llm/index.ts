@@ -18,6 +18,7 @@ function enforceHostedProvider(provider: "claude" | "gemini" | "openai") {
 
 export * from "./types";
 export * from "./models";
+export * from "./runtimeModels";
 
 export async function streamChatWithTools(
     params: StreamChatParams,

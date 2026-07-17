@@ -125,13 +125,16 @@ export async function streamClaude(
   });
 
   try {
-    for (let iter = 0; iter < maxIter; iter++) {
+    // Permit up to maxIter tool-use rounds, then force one final synthesis
+    // turn with tools disabled so the response cannot end on a tool call.
+    for (let iter = 0; iter <= maxIter; iter++) {
       throwIfAborted(params.abortSignal);
+      const toolsEnabled = iter < maxIter;
       const stream = anthropic.messages.stream({
         model,
         system: systemPrompt,
         messages: messages as Anthropic.MessageParam[],
-        tools: claudeTools.length
+        tools: toolsEnabled && claudeTools.length
           ? (claudeTools as unknown as Tool[])
           : undefined,
         max_tokens: MAX_TOKENS,

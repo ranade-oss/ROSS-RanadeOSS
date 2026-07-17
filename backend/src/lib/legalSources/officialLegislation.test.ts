@@ -22,6 +22,12 @@ const syntheticOntarioHtml = `<!doctype html><html><body>
 <div>2 This is a SYNTHETIC test provision.</div>
 </body></html>`;
 
+const syntheticOntarioDocument = JSON.stringify({
+    content: syntheticOntarioHtml,
+    state: "current",
+    dateFrom: "2026-07-01T04:00:00.000Z",
+});
+
 test("Justice Laws provider parses official XML metadata and a requested section", async () => {
     const urls: string[] = [];
     const provider = new JusticeLawsProvider(async (input) => {
@@ -52,11 +58,21 @@ test("Justice Laws provider parses official XML metadata and a requested section
 test("Ontario e-Laws provider uses allowlisted official pages and extracts currency", async () => {
     const urls: string[] = [];
     const provider = new OntarioELawsProvider(async (input) => {
-        urls.push(String(input));
-        return new Response(syntheticOntarioHtml, {
-            status: 200,
-            headers: { "content-type": "text/html" },
-        });
+        const url = String(input);
+        urls.push(url);
+        return new Response(
+            url.endsWith("/currency-date")
+                ? "July 10, 2026"
+                : syntheticOntarioDocument,
+            {
+                status: 200,
+                headers: {
+                    "content-type": url.endsWith("/currency-date")
+                        ? "text/plain"
+                        : "application/json",
+                },
+            },
+        );
     });
     const results = await provider.searchLegislation({
         query: "small claims rules",
@@ -66,7 +82,16 @@ test("Ontario e-Laws provider uses allowlisted official pages and extracts curre
         "ontario-regulation-980258",
         { section: "1(1)" },
     );
-    assert.equal(urls[0], "https://www.ontario.ca/laws/regulation/980258");
+    assert.ok(
+        urls.includes(
+            "https://www.ontario.ca/laws/api/v2/legislation/en/doc-search/regulation/980258",
+        ),
+    );
+    assert.ok(
+        urls.includes(
+            "https://www.ontario.ca/laws/api/v2/legislation/en/currency-date",
+        ),
+    );
     assert.equal(document.currentToDate, "2026-07-10");
     assert.equal(document.sections.length, 1);
     assert.equal(document.sections[0].label, "1(1)");

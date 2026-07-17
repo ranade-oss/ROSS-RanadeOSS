@@ -57,6 +57,18 @@ test("public deployment keeps Ontario source verification strict", () => {
   assert.doesNotMatch(sourceStep, /continue-on-error/);
 });
 
+test("deployment workflows run the live API and web smoke contract", () => {
+  for (const path of [
+    ".github/workflows/deploy-private-ross.yml",
+    ".github/workflows/deploy-public-beta-ross.yml",
+  ]) {
+    const workflow = read(path);
+    assert.match(workflow, /ROSS_E2E_API_URL/);
+    assert.match(workflow, /ROSS_E2E_APP_URL/);
+    assert.match(workflow, /npm run test:e2e/);
+  }
+});
+
 test("private deployment credentials are supplied only through GitHub secrets", () => {
   const workflow = read(".github/workflows/deploy-private-ross.yml");
   for (const name of [

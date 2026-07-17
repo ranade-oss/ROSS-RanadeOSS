@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/app/lib/supabase";
+import { dataBoundaryHeaders } from "@/app/lib/dataBoundary";
 import { PillButton } from "@/app/components/ui/pill-button";
 import { applyOptimisticResolution } from "./EditCard";
 import type { EditAnnotation } from "../shared/types";
@@ -156,9 +157,12 @@ function EditResolveButtons({
                     `${apiBase}/single-documents/${edit.document_id}/edits/${edit.edit_id}/${verb}`,
                     {
                         method: "POST",
-                        headers: token
-                            ? { Authorization: `Bearer ${token}` }
-                            : undefined,
+                        headers: {
+                            ...(token
+                                ? { Authorization: `Bearer ${token}` }
+                                : {}),
+                            ...dataBoundaryHeaders(),
+                        },
                     },
                 );
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);

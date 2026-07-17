@@ -23,6 +23,7 @@ export type ProjectAccess =
               id: string;
               user_id: string;
               shared_with: string[] | null;
+              jurisdictions?: Array<"CA-ON" | "CA" | "US"> | null;
           };
       }
     | { ok: false };
@@ -35,7 +36,7 @@ export async function checkProjectAccess(
 ): Promise<ProjectAccess> {
     const { data: project } = await db
         .from("projects")
-        .select("id, user_id, shared_with")
+        .select("id, user_id, shared_with, jurisdictions")
         .eq("id", projectId)
         .single();
     if (!project) return { ok: false };
@@ -43,6 +44,7 @@ export async function checkProjectAccess(
         id: string;
         user_id: string;
         shared_with: string[] | null;
+        jurisdictions?: Array<"CA-ON" | "CA" | "US"> | null;
     };
     if (proj.user_id === userId) {
         return { ok: true, isOwner: true, project: proj };

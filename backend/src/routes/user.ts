@@ -3,10 +3,9 @@ import { Router } from "express";
 import { requireAuth, requireMfaIfEnrolled } from "../middleware/auth";
 import { createServerSupabase } from "../lib/supabase";
 import {
-  DEFAULT_TABULAR_MODEL,
-  DEFAULT_TITLE_MODEL,
-  CLAUDE_LOW_MODELS,
-  OPENAI_LOW_MODELS,
+  approvedModelProviders,
+  isModelApprovedForRuntime,
+  resolveRuntimeModel,
   resolveModel,
 } from "../lib/llm";
 import {
@@ -141,7 +140,7 @@ function mcpOAuthPopupHtml(
   <body>
     <main>
       <h1>${payload.success ? "Authorization complete" : "Authorization failed"}</h1>
-      <p>${payload.success ? "You can return to Mike." : "Return to Mike and try connecting again."}</p>
+      <p>${payload.success ? "You can return to ROSS." : "Return to ROSS and try connecting again."}</p>
     </main>
     <script nonce="${nonce}">
       const message = ${message};
@@ -298,13 +297,6 @@ async function selectProfileLegacy(
 
 function serializeProfile(row: UserProfileRow, apiKeyStatus?: ApiKeyStatus) {
   const creditsUsed = row.message_credits_used ?? 0;
-  const titleFallback = apiKeyStatus?.gemini
-    ? DEFAULT_TITLE_MODEL
-    : apiKeyStatus?.openai
-      ? OPENAI_LOW_MODELS[0]
-      : apiKeyStatus?.claude
-        ? CLAUDE_LOW_MODELS[0]
-        : DEFAULT_TITLE_MODEL;
   const legacyUs = row.legal_research_us !== false;
   const enabledJurisdictions = normalizeEnabledJurisdictions(
     row.enabled_jurisdictions,
@@ -321,8 +313,8 @@ function serializeProfile(row: UserProfileRow, apiKeyStatus?: ApiKeyStatus) {
     creditsResetDate: row.credits_reset_date,
     creditsRemaining: Math.max(MONTHLY_CREDIT_LIMIT - creditsUsed, 0),
     tier: row.tier || "Free",
-    titleModel: resolveModel(row.title_model, titleFallback),
-    tabularModel: resolveModel(row.tabular_model, DEFAULT_TABULAR_MODEL),
+    titleModel: resolveRuntimeModel(row.title_model, "low"),
+    tabularModel: resolveRuntimeModel(row.tabular_model, "mid"),
     mfaOnLogin: row.mfa_on_login === true,
     legalResearch: {
       enabled: row.legal_research_enabled !== false,
@@ -451,6 +443,12 @@ function validateProfilePayload(body: unknown):
     if (!resolved) {
       return { ok: false, detail: "Unsupported tabularModel" };
     }
+    if (!isModelApprovedForRuntime(resolved)) {
+      return {
+        ok: false,
+        detail: `Model ${resolved} is not approved for this hosted deployment.`,
+      };
+    }
     update.tabular_model = resolved;
   }
 
@@ -461,6 +459,12 @@ function validateProfilePayload(body: unknown):
     const resolved = resolveModel(raw.titleModel, "");
     if (!resolved) {
       return { ok: false, detail: "Unsupported titleModel" };
+    }
+    if (!isModelApprovedForRuntime(resolved)) {
+      return {
+        ok: false,
+        detail: `Model ${resolved} is not approved for this hosted deployment.`,
+      };
     }
     update.title_model = resolved;
   }
@@ -883,6 +887,16 @@ userRouter.put(
         return void res.status(409).json({
           detail:
             "This provider is configured by the server environment and cannot be changed from the browser.",
+        });
+      }
+      if (
+        apiKey?.trim() &&
+        provider !== "courtlistener" &&
+        (provider === "openrouter" ||
+          !approvedModelProviders().includes(provider))
+      ) {
+        return void res.status(400).json({
+          detail: `Provider ${provider} is not approved for this hosted deployment.`,
         });
       }
       await saveUserApiKey(userId, provider, apiKey, db);

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/app/components/ui/input";
 import { useUserProfile } from "@/app/contexts/UserProfileContext";
+import { useModelCatalog } from "@/app/hooks/useModelCatalog";
 import {
     MfaVerificationPopup,
     needsMfaVerification,
@@ -50,6 +51,12 @@ const OTHER_API_KEY_FIELDS = [
 
 export default function ApiKeysPage() {
     const { profile, updateApiKey } = useUserProfile();
+    const { approvedProviders, selfHosted } = useModelCatalog();
+    const modelApiKeyFields = MODEL_API_KEY_FIELDS.filter((field) =>
+        field.provider === "openrouter"
+            ? selfHosted
+            : approvedProviders.includes(field.provider),
+    );
 
     return (
         <div>
@@ -62,7 +69,7 @@ export default function ApiKeysPage() {
                 instance of ROSS. All API keys are encrypted in storage.
             </p>
             <AccountSection>
-                {MODEL_API_KEY_FIELDS.map((field, index) => (
+                {modelApiKeyFields.map((field, index) => (
                     <div key={field.provider}>
                         <ApiKeyField
                             label={field.label}
@@ -82,7 +89,7 @@ export default function ApiKeysPage() {
                             }
                             onRemove={() => updateApiKey(field.provider, null)}
                         />
-                        {index < MODEL_API_KEY_FIELDS.length - 1 && (
+                        {index < modelApiKeyFields.length - 1 && (
                             <div className="mx-4 h-px bg-gray-200" />
                         )}
                     </div>
@@ -255,13 +262,7 @@ function ApiKeyField({
                             }
                             className="text-xs font-medium text-gray-700 transition-colors hover:text-gray-950 disabled:cursor-not-allowed disabled:text-gray-400"
                         >
-                            {isSaving ? (
-                                "Saving..."
-                            ) : saved ? (
-                                "Saved"
-                            ) : (
-                                "Save"
-                            )}
+                            {isSaving ? "Saving..." : saved ? "Saved" : "Save"}
                         </button>
                         {hasSavedKey && !isServerConfigured && (
                             <button

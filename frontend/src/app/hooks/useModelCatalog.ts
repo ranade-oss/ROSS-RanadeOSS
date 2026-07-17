@@ -6,11 +6,18 @@ import {
   type ModelOption,
 } from "@/app/components/assistant/ModelToggle";
 import { getModelCatalog } from "@/app/lib/mikeApi";
+import type { ModelProvider } from "@/app/lib/modelAvailability";
 
 export function useModelCatalog() {
   const [models, setModels] = useState<ModelOption[]>(MODELS);
   const [loading, setLoading] = useState(false);
   const [warning, setWarning] = useState<string | null>(null);
+  const [approvedProviders, setApprovedProviders] = useState<ModelProvider[]>([
+    "claude",
+    "gemini",
+    "openai",
+  ]);
+  const [selfHosted, setSelfHosted] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -30,6 +37,8 @@ export function useModelCatalog() {
         defaultReasoningEffort: model.defaultReasoningEffort,
       }));
       if (mapped.length) setModels(mapped);
+      setApprovedProviders(result.approvedProviders);
+      setSelfHosted(result.selfHosted);
       setWarning(result.warning ?? null);
     } catch {
       setWarning(
@@ -44,5 +53,12 @@ export function useModelCatalog() {
     void refresh();
   }, [refresh]);
 
-  return { models, loading, warning, refresh };
+  return {
+    models,
+    approvedProviders,
+    selfHosted,
+    loading,
+    warning,
+    refresh,
+  };
 }

@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { PillButton } from "@/app/components/ui/pill-button";
 import { supabase } from "@/app/lib/supabase";
+import { dataBoundaryHeaders } from "@/app/lib/dataBoundary";
 import type { EditAnnotation } from "../../shared/types";
 import { applyOptimisticResolution } from "../EditCard";
 
@@ -92,9 +93,12 @@ function BulkEditActions({
                         `${apiBase}/single-documents/${annotation.document_id}/edits/${annotation.edit_id}/${verb}`,
                         {
                             method: "POST",
-                            headers: token
-                                ? { Authorization: `Bearer ${token}` }
-                                : undefined,
+                            headers: {
+                                ...(token
+                                    ? { Authorization: `Bearer ${token}` }
+                                    : {}),
+                                ...dataBoundaryHeaders(),
+                            },
                         },
                     );
                     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);

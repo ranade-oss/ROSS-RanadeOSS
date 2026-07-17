@@ -238,8 +238,12 @@ export async function streamOpenAI(
   });
 
   try {
-    for (let iter = 0; iter < maxIter; iter++) {
+    // Permit up to maxIter tool-use rounds, then make one final synthesis
+    // request with tools disabled. Without this final pass, a model that
+    // uses a tool in the last permitted round ends the stream with no answer.
+    for (let iter = 0; iter <= maxIter; iter++) {
       throwIfAborted(params.abortSignal);
+      const toolsEnabled = iter < maxIter;
       const response = await createResponse({
         model,
         instructions: responseInstructions(
@@ -247,7 +251,7 @@ export async function streamOpenAI(
           needsCourtlistenerCitationReminder,
         ),
         input,
-        tools: responseTools,
+        tools: toolsEnabled ? responseTools : [],
         stream: true,
         previousResponseId,
         reasoningSummary: !!enableThinking,

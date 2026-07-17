@@ -11,6 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { useUserProfile } from "@/app/contexts/UserProfileContext";
+import { useModelCatalog } from "@/app/hooks/useModelCatalog";
 import type { ApiKeyState } from "@/app/lib/mikeApi";
 import {
     MODELS,
@@ -22,15 +23,14 @@ import {
     modelGroupToProvider,
     providerLabel,
 } from "@/app/lib/modelAvailability";
-import {
-    accountGlassInputClassName,
-} from "../accountStyles";
+import { accountGlassInputClassName } from "../accountStyles";
 import { AccountSection } from "../AccountSection";
 
 type ModelPreferenceField = "titleModel" | "tabularModel";
 
 export default function ModelPreferencesPage() {
     const { profile, updateModelPreference } = useUserProfile();
+    const { approvedProviders } = useModelCatalog();
     const [savingField, setSavingField] = useState<ModelPreferenceField | null>(
         null,
     );
@@ -41,6 +41,12 @@ export default function ModelPreferencesPage() {
         Partial<Record<ModelPreferenceField, string>>
     >({});
     const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const approvedSettingsModels = SETTINGS_MODELS.filter((model) =>
+        approvedProviders.includes(modelGroupToProvider(model.group)),
+    );
+    const approvedTabularModels = MODELS.filter((model) =>
+        approvedProviders.includes(modelGroupToProvider(model.group)),
+    );
 
     useEffect(() => {
         return () => {
@@ -61,7 +67,9 @@ export default function ModelPreferencesPage() {
             setSavedField(field);
             if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
             savedTimerRef.current = setTimeout(() => {
-                setSavedField((current) => (current === field ? null : current));
+                setSavedField((current) =>
+                    current === field ? null : current,
+                );
             }, 1600);
         } else {
             setOptimisticValues((current) => {
@@ -93,7 +101,7 @@ export default function ModelPreferencesPage() {
                             profile?.titleModel ??
                             "gemini-3.1-flash-lite-preview"
                         }
-                        options={SETTINGS_MODELS}
+                        options={approvedSettingsModels}
                         apiKeys={profile?.apiKeys}
                         isSaving={savingField === "titleModel"}
                         isSaved={savedField === "titleModel"}
@@ -115,7 +123,7 @@ export default function ModelPreferencesPage() {
                             profile?.tabularModel ??
                             "gemini-3-flash-preview"
                         }
-                        options={MODELS}
+                        options={approvedTabularModels}
                         apiKeys={profile?.apiKeys}
                         isSaving={savingField === "tabularModel"}
                         isSaved={savedField === "tabularModel"}
@@ -201,6 +209,7 @@ function ModelPreferenceDropdown({
                                     <DropdownMenuItem
                                         key={m.id}
                                         className="cursor-pointer"
+                                        disabled={!available}
                                         onSelect={() => onChange(m.id)}
                                         title={
                                             !available

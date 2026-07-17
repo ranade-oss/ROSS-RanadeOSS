@@ -420,6 +420,8 @@ export interface ModelCatalogEntry {
 
 export interface ModelCatalog {
   models: ModelCatalogEntry[];
+  approvedProviders: Array<"claude" | "gemini" | "openai">;
+  selfHosted: boolean;
   refreshedAt: string;
   warning?: string;
 }
@@ -1011,7 +1013,6 @@ export async function streamChat(payload: {
       Accept: "text/event-stream",
       ...authHeaders,
       ...dataBoundaryHeaders(),
-      ...dataBoundaryHeaders(),
     },
     body: JSON.stringify(body),
     signal,
@@ -1062,6 +1063,7 @@ export async function streamProjectChat(payload: {
       "Content-Type": "application/json",
       Accept: "text/event-stream",
       ...authHeaders,
+      ...dataBoundaryHeaders(),
     },
     body: JSON.stringify(body),
     signal,

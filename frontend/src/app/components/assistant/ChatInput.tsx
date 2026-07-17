@@ -47,6 +47,7 @@ interface Props {
   onProjectsClick?: () => void;
   projectName?: string;
   projectCmNumber?: string | null;
+  defaultJurisdictions?: Array<"CA-ON" | "CA" | "US">;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
@@ -59,6 +60,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
     onProjectsClick,
     projectName,
     projectCmNumber,
+    defaultJurisdictions,
   }: Props,
   ref,
 ) {
@@ -87,9 +89,19 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
   const [jurisdictionOverride, setJurisdictionOverride] = useState<
     "CA-ON" | "CA" | "US" | null
   >(null);
+  const profileJurisdictions = profile?.legalResearch.enabledJurisdictions;
+  const baseJurisdictions = defaultJurisdictions?.length
+    ? defaultJurisdictions
+    : profileJurisdictions?.length
+      ? profileJurisdictions
+      : (["CA-ON", "CA"] as Array<"CA-ON" | "CA" | "US">);
   const jurisdiction =
     jurisdictionOverride ??
-    (profile?.legalResearch.defaultCountry === "US" ? "US" : "CA-ON");
+    (baseJurisdictions.includes("CA-ON")
+      ? "CA-ON"
+      : baseJurisdictions.includes("CA")
+        ? "CA"
+        : "US");
   const apiKeys = profile?.apiKeys;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
@@ -98,6 +110,22 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
   const [workflowModalOpen, setWorkflowModalOpen] = useState(false);
   const [apiKeyModalProvider, setApiKeyModalProvider] =
     useState<ModelProvider | null>(null);
+
+  useEffect(() => {
+    if (modelCatalog.loading || !apiKeys || modelCatalog.models.length === 0) {
+      return;
+    }
+    const selected = modelCatalog.models.find((item) => item.id === model);
+    const selectedAvailable =
+      selected?.available !== false && isModelAvailable(model, apiKeys);
+    if (selected && selectedAvailable) return;
+    const replacement =
+      modelCatalog.models.find(
+        (item) =>
+          item.available !== false && isModelAvailable(item.id, apiKeys),
+      ) ?? modelCatalog.models[0];
+    if (replacement && replacement.id !== model) setModel(replacement.id);
+  }, [apiKeys, model, modelCatalog.loading, modelCatalog.models, setModel]);
 
   const changeReasoningEffort = (effort: ReasoningEffort) => {
     setReasoningByModel((current) => ({ ...current, [model]: effort }));
@@ -163,8 +191,11 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
       workflow: wf ?? undefined,
       model,
       reasoningEffort,
-      jurisdictions:
-        jurisdiction === "CA-ON" ? ["CA-ON", "CA"] : [jurisdiction],
+      jurisdictions: jurisdictionOverride
+        ? jurisdiction === "CA-ON"
+          ? ["CA-ON", "CA"]
+          : [jurisdiction]
+        : baseJurisdictions,
     });
   };
 

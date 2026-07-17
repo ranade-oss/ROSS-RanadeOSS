@@ -22,8 +22,8 @@ import { getUserModelSettings } from "../lib/userSettings";
 import { checkProjectAccess } from "../lib/access";
 import { safeErrorLog, safeErrorMessage } from "../lib/safeError";
 import {
-  DEFAULT_MAIN_MODEL,
-  resolveModel,
+  isModelApprovedForRuntime,
+  resolveRuntimeModel,
   supportsReasoningEffort,
   type ReasoningEffort,
 } from "../lib/llm";
@@ -98,7 +98,12 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
     legal_as_of_date?: string;
     reasoning_effort?: ReasoningEffort;
   };
-  const effectiveModel = resolveModel(model, DEFAULT_MAIN_MODEL);
+  if (model && !isModelApprovedForRuntime(model)) {
+    return void res.status(400).json({
+      detail: `Model ${model} is not approved for this hosted deployment.`,
+    });
+  }
+  const effectiveModel = resolveRuntimeModel(model, "main");
   if (
     reasoning_effort !== undefined &&
     !supportsReasoningEffort(effectiveModel, reasoning_effort)
@@ -107,12 +112,6 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
       detail: `reasoning_effort is not supported by ${effectiveModel}`,
     });
   }
-  const parsedScope = parseProjectLegalScope(
-    jurisdictions ?? ["CA-ON", "CA"],
-    legal_as_of_date,
-  );
-  if (!parsedScope.ok)
-    return void res.status(400).json({ detail: parsedScope.detail });
   const askInputsResponse = parseAskInputsResponsePayload(ask_inputs_response);
 
   const db = createServerSupabase();
@@ -126,6 +125,13 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
   );
   if (!projectAccess.ok)
     return void res.status(404).json({ detail: "Project not found" });
+
+  const parsedScope = parseProjectLegalScope(
+    jurisdictions ?? projectAccess.project.jurisdictions ?? ["CA-ON", "CA"],
+    legal_as_of_date,
+  );
+  if (!parsedScope.ok)
+    return void res.status(400).json({ detail: parsedScope.detail });
 
   let chatId = chat_id ?? null;
   let chatTitle: string | null = null;
@@ -293,7 +299,7 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
       extraTools: PROJECT_EXTRA_TOOLS,
       workflowStore,
       includeResearchTools: legalResearch.enabled,
-      model,
+      model: effectiveModel,
       reasoningEffort: reasoning_effort,
       apiKeys,
       signal: streamAbort.signal,

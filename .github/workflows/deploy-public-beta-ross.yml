@@ -232,6 +232,12 @@ jobs:
           node scripts/observe-legal-sources.mjs
           --output artifacts/legal-source-health-live.json
 
+      - name: Run deployed application smoke tests
+        env:
+          ROSS_E2E_API_URL: https://${{ env.API_APP }}.fly.dev
+          ROSS_E2E_APP_URL: https://${{ env.WEB_APP }}.fly.dev
+        run: npm run test:e2e
+
       - name: Upload sanitized legal-source observation
         if: always()
         uses: actions/upload-artifact@v4

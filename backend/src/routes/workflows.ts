@@ -838,7 +838,7 @@ workflowsRouter.post(
     );
     if (missingSharedUsers.length > 0) {
       return void res.status(400).json({
-        detail: `${missingSharedUsers[0]} does not belong to a Mike user.`,
+        detail: `${missingSharedUsers[0]} does not belong to a ROSS user.`,
       });
     }
 
