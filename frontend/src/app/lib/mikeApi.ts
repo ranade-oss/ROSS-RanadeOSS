@@ -308,15 +308,25 @@ export async function getUserProfile(): Promise<UserProfile> {
 }
 
 export async function getLegalSourceDashboard(): Promise<LegalSourceDashboard> {
-  const [status, coverage] = await Promise.all([
+  const [status, coverageResponse] = await Promise.all([
     apiRequest<{ providers: LegalSourceProviderStatus[] }>(
       "/legal-sources/status",
     ),
-    apiRequest<Omit<LegalSourceDashboard, "providers">>(
-      "/legal-sources/coverage",
-    ),
+    apiRequest<
+      Omit<LegalSourceDashboard, "providers" | "coverage"> & {
+        coverage?: LegalSourceDashboard["coverage"];
+        // Compatibility with the original deployed response shape. Remove
+        // after every supported backend returns the `coverage` property.
+        providers?: LegalSourceDashboard["coverage"];
+      }
+    >("/legal-sources/coverage"),
   ]);
-  return { ...coverage, providers: status.providers };
+  return {
+    coverage: coverageResponse.coverage ?? coverageResponse.providers ?? [],
+    knownOntarioGaps: coverageResponse.knownOntarioGaps,
+    warning: coverageResponse.warning,
+    providers: status.providers,
+  };
 }
 
 export async function runOntarioResearchReadiness(): Promise<{

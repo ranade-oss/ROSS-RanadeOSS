@@ -130,21 +130,21 @@ legalSourcesRouter.get("/status", async (_req, res) => {
 });
 
 legalSourcesRouter.get("/coverage", async (_req, res) => {
-    const providers = await Promise.all(
+    const coverage = await Promise.all(
         registry.list().map(async (provider) => ({
             provider: provider.descriptor,
             coverage: provider.coverage ? await provider.coverage() : [],
         })),
     );
     const a2ajDatasets = new Set(
-        providers.flatMap((entry) =>
+        coverage.flatMap((entry) =>
             entry.provider.id === "a2aj-canada"
                 ? entry.coverage.map((row) => row.dataset)
                 : [],
         ),
     );
     res.json({
-        providers,
+        coverage,
         knownOntarioGaps: [
             { dataset: "ONSC", label: "Ontario Superior Court of Justice" },
             { dataset: "ONCJ", label: "Ontario Court of Justice" },

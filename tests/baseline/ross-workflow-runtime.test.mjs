@@ -25,3 +25,25 @@ test("workflow auto-launch carries the user's selected model", () => {
   assert.match(modal, /workflow:\s*\{ id: wf\.id, title: wf\.metadata\.title \}/);
   assert.match(modal, /workflow:[\s\S]{0,500}\bmodel,/);
 });
+
+test("workflow intake responses preserve the selected model", () => {
+  const chatView = read(
+    "frontend/src/app/components/assistant/ChatView.tsx",
+  );
+
+  assert.match(chatView, /useSelectedModel/);
+  assert.match(chatView, /continuationModel/);
+  assert.match(
+    chatView,
+    /model:\s*continuationModel[\s\S]{0,300}askInputsResponse:\s*response/,
+  );
+});
+
+test("legal-source coverage uses the dashboard contract without crashing Features", () => {
+  const route = read("backend/src/routes/legalSources.ts");
+  const api = read("frontend/src/app/lib/mikeApi.ts");
+
+  assert.match(route, /legalSourcesRouter\.get\("\/coverage"[\s\S]*res\.json\(\{[\s\S]*\bcoverage,/);
+  assert.match(api, /coverageResponse\.coverage\s*\?\?/);
+  assert.match(api, /coverageResponse\.providers\s*\?\?/);
+});

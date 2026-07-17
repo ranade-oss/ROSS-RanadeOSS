@@ -21,6 +21,7 @@ import type {
 } from "../shared/types";
 import { useSidebar } from "@/app/contexts/SidebarContext";
 import { invalidateDocxBytes } from "@/app/hooks/useFetchDocxBytes";
+import { useSelectedModel } from "@/app/hooks/useSelectedModel";
 
 interface Props {
     chatId?: string | null;
@@ -79,6 +80,13 @@ export function ChatView({
     const [reloadingEditIds, setReloadingEditIds] = useState<Set<string>>(
         () => new Set(),
     );
+    const [selectedModel] = useSelectedModel();
+    const continuationModel =
+        [...messages]
+            .reverse()
+            .find(
+                (message) => message.role === "user" && !!message.model,
+            )?.model ?? selectedModel;
     const { setSidebarOpen } = useSidebar();
     const panelCloseTimerRef = useRef<number | null>(null);
 
@@ -821,7 +829,12 @@ export function ChatView({
                                             return next;
                                         });
                                         void handleChat(
-                                            { role: "user", content, files },
+                                            {
+                                                role: "user",
+                                                content,
+                                                files,
+                                                model: continuationModel,
+                                            },
                                             {
                                                 askInputsResponse: response,
                                             },
