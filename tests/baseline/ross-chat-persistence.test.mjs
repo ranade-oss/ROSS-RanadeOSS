@@ -61,3 +61,14 @@ test("chat streams finish with a canonical post-persistence snapshot", () => {
   assert.match(hook, /eventsRef\.current = finalEvents/);
   assert.match(hook, /events: finalEvents/);
 });
+
+test("the smoothed live renderer reveals the complete answer when streaming ends", () => {
+  const reveal = read(
+    "frontend/src/app/components/assistant/message/useSmoothedReveal.ts",
+  );
+
+  assert.match(
+    reveal,
+    /if \(!active\) return text;/,
+  );
+});

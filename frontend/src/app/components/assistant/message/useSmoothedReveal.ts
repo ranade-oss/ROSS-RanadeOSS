@@ -55,6 +55,6 @@ export function useSmoothedReveal(text: string, active: boolean): string {
         };
     }, [text.length, active]);
 
+    if (!active) return text;
     return text.slice(0, Math.min(revealedInt, text.length));
 }
-
