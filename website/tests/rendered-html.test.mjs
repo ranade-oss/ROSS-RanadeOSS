@@ -102,7 +102,7 @@ test("coverage is generated from implemented provider boundaries without claimin
   const { response, html } = await render("/coverage");
   assert.equal(response.status, 200);
   assert.match(html, /Sanitized public legal-source registry/);
-  assert.match(html, /A2AJ Canadian decisions/);
+  assert.match(html, /A2AJ Canadian legal data/);
   assert.match(html, /Ontario e-Laws/);
   assert.match(html, /Justice Laws Canada/);
   assert.match(html, /CourtListener/);
