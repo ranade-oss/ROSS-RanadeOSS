@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-draft",
+  "version": "1.1.0-draft",
   "status": "blocked-awaiting-professional-validation",
   "scope": {
     "status": "recommended-default-awaiting-validation",
@@ -57,8 +57,20 @@
     "reviewDate": null,
     "evidence": null,
     "independentAdjudicator": null,
+    "adjudicatorDisclosureMode": null,
+    "adjudicatorProfessionalStatus": null,
+    "adjudicatorIndependenceAttested": false,
     "adjudicationDate": null,
-    "adjudicationEvidence": null
+    "adjudicationDateBasis": null,
+    "adjudicationDecision": null,
+    "adjudicationEvidence": null,
+    "adjudicatorVerification": {
+      "status": "pending",
+      "method": null,
+      "verifiedBy": null,
+      "verificationDate": null,
+      "evidence": null
+    }
   },
   "workflowReviews": [
     {

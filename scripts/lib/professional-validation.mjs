@@ -1,4 +1,12 @@
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const DISCLOSURE_MODES = new Set(["named", "anonymous"]);
+const DATE_BASES = new Set(["review-date", "approval-recorded-date"]);
+const VERIFICATION_METHODS = new Set([
+  "signed-anonymous-reviewer-attestation",
+  "confidential-identity-check",
+  "trusted-intermediary-attestation",
+  "accountable-owner-attestation",
+]);
 
 const text = (value) => typeof value === "string" && value.trim().length > 0;
 const dated = (value) => text(value) && DATE.test(value);
@@ -9,6 +17,37 @@ function requireReview(record, label, blockers) {
   for (const field of ["reviewer", "professionalStatus", "evidence"])
     if (!text(record?.[field])) blockers.push(`${label} ${field} is missing.`);
   if (!dated(record?.reviewDate)) blockers.push(`${label} reviewDate is missing or invalid.`);
+}
+
+function requireIndependentAdjudication(review, blockers) {
+  const label = "Ontario benchmark independent adjudication";
+  if (!DISCLOSURE_MODES.has(review?.adjudicatorDisclosureMode))
+    blockers.push(`${label} disclosure mode is missing or invalid.`);
+  for (const field of [
+    "independentAdjudicator",
+    "adjudicatorProfessionalStatus",
+    "adjudicationEvidence",
+  ])
+    if (!text(review?.[field])) blockers.push(`${label} ${field} is missing.`);
+  if (review?.adjudicatorIndependenceAttested !== true)
+    blockers.push(`${label} independence is not attested.`);
+  if (!dated(review?.adjudicationDate))
+    blockers.push(`${label} date is missing or invalid.`);
+  if (!DATE_BASES.has(review?.adjudicationDateBasis))
+    blockers.push(`${label} date basis is missing or invalid.`);
+  if (review?.adjudicationDecision !== "approved")
+    blockers.push(`${label} decision is not approved.`);
+
+  const verification = review?.adjudicatorVerification;
+  if (verification?.status !== "verified")
+    blockers.push(`${label} verification is not complete.`);
+  if (!VERIFICATION_METHODS.has(verification?.method))
+    blockers.push(`${label} verification method is missing or invalid.`);
+  for (const field of ["verifiedBy", "evidence"])
+    if (!text(verification?.[field]))
+      blockers.push(`${label} verification ${field} is missing.`);
+  if (!dated(verification?.verificationDate))
+    blockers.push(`${label} verification date is missing or invalid.`);
 }
 
 export function evaluateProfessionalValidation(
@@ -82,11 +121,7 @@ export function evaluateProfessionalValidation(
       blockers.push(`Legal-source coverage is not verified for ${court}.`);
 
   requireReview(record.benchmarkReview, "Ontario benchmark review", blockers);
-  for (const field of ["independentAdjudicator", "adjudicationEvidence"])
-    if (!text(record.benchmarkReview?.[field]))
-      blockers.push(`Ontario benchmark ${field} is missing.`);
-  if (!dated(record.benchmarkReview?.adjudicationDate))
-    blockers.push("Ontario benchmark adjudicationDate is missing or invalid.");
+  requireIndependentAdjudication(record.benchmarkReview, blockers);
   if (benchmark.status !== "ontario-lawyer-reviewed-approved" || benchmark.releaseApproved !== true)
     blockers.push("Versioned Ontario benchmark is not lawyer-reviewed and release-approved.");
   if (benchmark.reviewer !== record.benchmarkReview?.reviewer)
