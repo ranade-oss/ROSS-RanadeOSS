@@ -31,6 +31,18 @@ test("private deployment rebuilds both application images from current source", 
   }
 });
 
+test("private deployment observes required Ontario sources without storing source text", () => {
+  const workflow = read(".github/workflows/deploy-private-ross.yml");
+  const observer = read("scripts/lib/live-source-observer.mjs");
+
+  assert.match(workflow, /observe-legal-sources\.mjs/);
+  assert.match(workflow, /deployed-legal-source-health/);
+  assert.match(observer, /a2aj-canada/);
+  assert.match(observer, /ontario-elaws/);
+  assert.match(observer, /justice-laws-canada/);
+  assert.doesNotMatch(observer, /writeFile/);
+});
+
 test("private deployment credentials are supplied only through GitHub secrets", () => {
   const workflow = read(".github/workflows/deploy-private-ross.yml");
   for (const name of [

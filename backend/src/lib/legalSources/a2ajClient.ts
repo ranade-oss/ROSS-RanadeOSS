@@ -106,6 +106,7 @@ export class A2ajClient {
 
     async search(input: {
         query: string;
+        docType?: "cases" | "laws";
         dataset?: string;
         language?: "en" | "fr";
         from?: string;
@@ -115,7 +116,7 @@ export class A2ajClient {
     }) {
         const params = new URLSearchParams({
             query: input.query,
-            doc_type: "cases",
+            doc_type: input.docType ?? "cases",
             size: String(Math.min(100, Math.max(1, input.size ?? 10))),
         });
         if (input.dataset) params.set("dataset", input.dataset);
@@ -128,8 +129,11 @@ export class A2ajClient {
         );
     }
 
-    async fetchByCitation(citation: string) {
-        const params = new URLSearchParams({ citation, doc_type: "cases" });
+    async fetchByCitation(
+        citation: string,
+        docType: "cases" | "laws" = "cases",
+    ) {
+        const params = new URLSearchParams({ citation, doc_type: docType });
         const raw = await this.request(`/fetch?${params}`);
         const direct = a2ajDocumentSchema.safeParse(raw);
         if (direct.success) return direct.data;

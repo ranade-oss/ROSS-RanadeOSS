@@ -249,6 +249,57 @@ export interface LegalResearchSettings {
     enabledSourceProviders: string[];
 }
 
+export interface LegalSourceProviderStatus {
+    id: string;
+    name: string;
+    jurisdictions: string[];
+    kinds: string[];
+    official: boolean;
+    fullTextStatus: "official" | "licensed" | "unofficial" | "metadata-only";
+    enabledByDefault: boolean;
+    enabledForUser: boolean;
+    health: { ok: boolean; detail?: string };
+}
+
+export interface LegalSourceCoverageRow {
+    providerId: string;
+    dataset: string;
+    jurisdiction: string;
+    label: string;
+    documentCount: number | null;
+    firstDocumentDate: string | null;
+    lastDocumentDate: string | null;
+    checkedAt: string;
+}
+
+export interface LegalSourceDashboard {
+    providers: LegalSourceProviderStatus[];
+    coverage: Array<{
+        provider: Omit<
+            LegalSourceProviderStatus,
+            "enabledForUser" | "health"
+        >;
+        coverage: LegalSourceCoverageRow[];
+    }>;
+    knownOntarioGaps: Array<{ dataset: string; label: string }>;
+    warning: string;
+}
+
+export interface OntarioResearchReadiness {
+    status: "healthy" | "degraded";
+    checkedAt: string;
+    checks: Array<{
+        providerId: string;
+        status: "healthy" | "degraded";
+        stages: string[];
+        resultCount: number | null;
+        coverageCount: number | null;
+        latencyClass: "fast" | "standard" | "slow";
+        reasonCode: string;
+    }>;
+    limitations: string[];
+}
+
 export interface UserLookupResult {
     exists: boolean;
     email: string;
@@ -257,6 +308,25 @@ export interface UserLookupResult {
 
 export async function getUserProfile(): Promise<UserProfile> {
     return apiRequest<UserProfile>("/user/profile");
+}
+
+export async function getLegalSourceDashboard(): Promise<LegalSourceDashboard> {
+    const [status, coverage] = await Promise.all([
+        apiRequest<{ providers: LegalSourceProviderStatus[] }>(
+            "/legal-sources/status",
+        ),
+        apiRequest<Omit<LegalSourceDashboard, "providers">>(
+            "/legal-sources/coverage",
+        ),
+    ]);
+    return { ...coverage, providers: status.providers };
+}
+
+export async function runOntarioResearchReadiness(): Promise<{
+    readiness: OntarioResearchReadiness;
+    warning: string;
+}> {
+    return apiRequest("/legal-sources/readiness", { method: "POST" });
 }
 
 export async function recordDataBoundaryAcknowledgement(payload: {

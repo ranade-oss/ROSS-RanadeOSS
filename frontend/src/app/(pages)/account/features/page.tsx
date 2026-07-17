@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { useUserProfile } from "@/app/contexts/UserProfileContext";
 import type { LegalResearchSettings } from "@/app/lib/mikeApi";
 import { AccountSection } from "../AccountSection";
+import { LegalSourceReadiness } from "./LegalSourceReadiness";
 
 const JURISDICTIONS = [
     {
@@ -223,6 +224,7 @@ export default function FeaturesPage() {
                     </div>
                 </AccountSection>
             </section>
+            <LegalSourceReadiness />
         </div>
     );
 }

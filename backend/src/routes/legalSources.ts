@@ -5,6 +5,7 @@ import {
     ONTARIO_COURT_FORMS,
     ONTARIO_PROCEDURE_SOURCES,
     calculateOntarioDeadline,
+    checkOntarioResearchReadiness,
     createLegalSourceRegistry,
     parseCanadianCitations,
     renderCanadianCitation,
@@ -102,15 +103,28 @@ legalSourcesRouter.get("/status", async (_req, res) => {
     const userId = String(res.locals.userId ?? "");
     const settings = await getUserModelSettings(userId);
     const providers = await Promise.all(
-        registry.list().map(async (provider) => ({
-            ...provider.descriptor,
-            health: await provider.health({
+        registry.list().map(async (provider) => {
+            const health = await provider.health({
                 apiToken:
                     provider.descriptor.id === "courtlistener-us"
                         ? settings.api_keys.courtlistener
                         : null,
-            }),
-        })),
+            });
+            return {
+                ...provider.descriptor,
+                enabledForUser:
+                    settings.legal_research.enabled &&
+                    settings.legal_research.enabledSourceProviders.includes(
+                        provider.descriptor.id,
+                    ),
+                health: {
+                    ok: health.ok,
+                    detail: health.ok
+                        ? health.detail
+                        : "The provider is currently unavailable or not configured.",
+                },
+            };
+        }),
     );
     res.json({ providers });
 });
@@ -139,6 +153,15 @@ legalSourcesRouter.get("/coverage", async (_req, res) => {
         ].filter(({ dataset }) => !a2ajDatasets.has(dataset)),
         warning:
             "Coverage is provider-reported and may change. Unlisted courts and tribunals are not represented as covered.",
+    });
+});
+
+legalSourcesRouter.post("/readiness", async (_req, res) => {
+    const readiness = await checkOntarioResearchReadiness(registry);
+    return res.json({
+        readiness,
+        warning:
+            "This fixed operational check proves current reachability only. It does not establish comprehensive coverage, legal accuracy, good-law status, or confidential-data approval.",
     });
 });
 

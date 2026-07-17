@@ -17,6 +17,11 @@ export {
 export * from "./types";
 export { A2ajClient, A2ajApiError } from "./a2ajClient";
 export { A2ajProvider, findA2ajPassages } from "./a2ajProvider";
+export {
+    checkOntarioResearchReadiness,
+    type OntarioResearchReadiness,
+    type OntarioResearchReadinessCheck,
+} from "./readiness";
 export { CourtListenerProvider } from "./courtlistenerProvider";
 export {
     JusticeLawsProvider,

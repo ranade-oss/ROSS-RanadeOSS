@@ -32,8 +32,8 @@
     },
     {
       "path": "config/public-source-coverage.json",
-      "sha256": "9b59797073dd36364a4ebf71b416dde1715ece7bef98b96678beb6c1fb198919",
-      "sizeBytes": 3632
+      "sha256": "603e8bcc82a085aa8a3f259176ebd5726f4db7125401a5ee48c47b50e7cb5763",
+      "sizeBytes": 3749
     },
     {
       "path": "config/release-approvals.v1.json",

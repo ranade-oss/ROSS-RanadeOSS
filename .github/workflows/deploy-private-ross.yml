@@ -176,3 +176,17 @@ jobs:
             echo "- Region: Toronto (yyz)"
             echo "- New sign-ups: disabled"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify required Ontario legal sources
+        run: >-
+          node scripts/observe-legal-sources.mjs
+          --output artifacts/legal-source-health-live.json
+
+      - name: Upload sanitized legal-source observation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployed-legal-source-health-${{ github.run_id }}
+          path: artifacts/legal-source-health-live.json
+          if-no-files-found: warn
+          retention-days: 14

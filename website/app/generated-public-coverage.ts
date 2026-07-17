@@ -2,26 +2,27 @@
 
 export const PUBLIC_SOURCE_COVERAGE = {
   "version": "1.0.0",
-  "asOfDate": "2026-07-16",
+  "asOfDate": "2026-07-17",
   "status": "engineering-integration-status-not-live-availability",
   "disclaimer": "This registry describes implemented software boundaries. It does not establish live provider health, complete court or date coverage, official reproduction, current law, or comprehensive judicial treatment.",
   "providers": [
     {
       "id": "a2aj-canada",
-      "name": "A2AJ Canadian decisions",
+      "name": "A2AJ Canadian legal data",
       "jurisdictions": [
         "Canada",
         "Ontario"
       ],
       "materials": [
         "Decisions",
+        "Ontario and federal legislation discovery",
         "Metadata",
         "Unofficial text where supplied"
       ],
       "authority": "Third-party aggregation; not an official reproduction",
       "integrationStatus": "Implemented; runtime health required",
       "enabledByDefault": true,
-      "knownLimits": "Coverage is the dataset list reported by A2AJ at runtime. Court, date, language, text, and treatment coverage may be incomplete. No comprehensive noting-up claim.",
+      "knownLimits": "Coverage is the dataset list reported by A2AJ at runtime. All reproductions are unofficial and require official-source checking. Court, date, language, text, and treatment coverage may be incomplete. No comprehensive noting-up claim.",
       "implementationSource": "backend/src/lib/legalSources/a2ajProvider.ts"
     },
     {

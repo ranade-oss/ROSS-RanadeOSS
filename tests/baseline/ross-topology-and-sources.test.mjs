@@ -263,7 +263,7 @@ test("public coverage is generated from sanitized implemented-provider records",
   const generatedBrand = read("website/app/generated-brand-config.ts");
   const page = read("website/app/[...slug]/page.tsx");
   assert.equal(source.providers.length, 5);
-  assert.equal(source.asOfDate, "2026-07-16");
+  assert.equal(source.asOfDate, "2026-07-17");
   assert.ok(source.providers.every((provider) => provider.knownLimits));
   assert.ok(
     source.providers.every((provider) => provider.implementationSource),

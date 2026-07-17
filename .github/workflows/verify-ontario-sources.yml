@@ -1,0 +1,37 @@
+name: Verify Ontario legal sources
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 11 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-ontario-legal-sources
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Observe required public legal sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+
+      - name: Run sanitized live observations
+        run: node scripts/observe-legal-sources.mjs --output artifacts/legal-source-health-live.json
+
+      - name: Upload sanitized observation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legal-source-health-${{ github.run_id }}
+          path: artifacts/legal-source-health-live.json
+          if-no-files-found: error
+          retention-days: 14
