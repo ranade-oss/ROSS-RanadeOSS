@@ -7,13 +7,13 @@
   "artifacts": [
     {
       "path": "backend/schema.sql",
-      "sha256": "a802879090542e04152ef55a0faf47b78d2726d15859eb438b5537c1132d8026",
-      "sizeBytes": 27712
+      "sha256": "75dc087ae4081b23e6e6f75778678fbc6d41d69a02bac8cfb569fd9d7c43690c",
+      "sizeBytes": 31393
     },
     {
       "path": "backend/src/config/runtime.ts",
-      "sha256": "b24c1d7c6848e6c7237c71487b061d3ca4aec843db3a14f65676f2d5fa5208f6",
-      "sizeBytes": 5963
+      "sha256": "827e3b4b3fce29c7fb8061cd262cf185a6b461271ed22932a5200f9cc9c997a6",
+      "sizeBytes": 5988
     },
     {
       "path": "config/legal-source-operations.v1.json",

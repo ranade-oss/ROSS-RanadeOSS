@@ -128,6 +128,7 @@ export function loadRuntimeConfig(): RuntimeConfig {
             "SUPABASE_SECRET_KEY",
             "DOWNLOAD_SIGNING_SECRET",
             "R2_ENDPOINT_URL",
+            "R2_REGION",
             "R2_ACCESS_KEY_ID",
             "R2_SECRET_ACCESS_KEY",
             "R2_BUCKET_NAME",

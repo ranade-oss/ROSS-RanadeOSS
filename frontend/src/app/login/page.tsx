@@ -21,6 +21,8 @@ const authToggleInactiveClassName =
     "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900";
 
 export default function LoginPage() {
+    const signupsEnabled =
+        process.env.NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED !== "false";
     const router = useRouter();
     const { isAuthenticated, authLoading } = useAuth();
     const [email, setEmail] = useState("");
@@ -75,12 +77,14 @@ export default function LoginPage() {
                             <span className={authToggleActiveClassName}>
                                 Log in
                             </span>
-                            <Link
-                                href="/signup"
-                                className={authToggleInactiveClassName}
-                            >
-                                Sign up
-                            </Link>
+                            {signupsEnabled && (
+                                <Link
+                                    href="/signup"
+                                    className={authToggleInactiveClassName}
+                                >
+                                    Sign up
+                                </Link>
+                            )}
                         </div>
                     </div>
                     <form onSubmit={handleLogin} className="space-y-4">

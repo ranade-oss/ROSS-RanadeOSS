@@ -24,6 +24,8 @@ const authToggleInactiveClassName =
     "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900";
 
 export default function SignupPage() {
+    const signupsEnabled =
+        process.env.NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED !== "false";
     const router = useRouter();
     const { isAuthenticated, authLoading } = useAuth();
     const [email, setEmail] = useState("");
@@ -99,6 +101,33 @@ export default function SignupPage() {
             setLoading(false);
         }
     };
+
+    if (!signupsEnabled) {
+        return (
+            <div className="min-h-dvh bg-gray-50/80 flex items-start justify-center px-6 pt-32 md:pt-40 pb-10 relative">
+                <div className="absolute top-4 md:top-8 left-1/2 -translate-x-1/2">
+                    <SiteLogo size="lg" asLink />
+                </div>
+                <div className="w-full max-w-md">
+                    <div className={`${authGlassCardClassName} text-center`}>
+                        <h2 className="text-2xl font-medium font-serif text-gray-950 mb-3">
+                            Private ROSS
+                        </h2>
+                        <p className="text-sm text-gray-600 mb-6">
+                            This deployment does not accept new account
+                            registrations. Sign in with the owner account.
+                        </p>
+                        <Button
+                            asChild
+                            className="w-full bg-black hover:bg-gray-900 text-white"
+                        >
+                            <Link href="/login">Go to login</Link>
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Success View
     if (success) {
