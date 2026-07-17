@@ -3,7 +3,7 @@
   "releaseId": "unassigned",
   "generatedAt": "2026-07-16T00:00:00.000Z",
   "algorithm": "sha256",
-  "artifactCount": 15,
+  "artifactCount": 18,
   "artifacts": [
     {
       "path": "backend/schema.sql",
@@ -19,6 +19,11 @@
       "path": "config/legal-source-operations.v1.json",
       "sha256": "ae74d9bc6cb411cf8aec077d70354605efb3444be24c98d49506da28e5efffb1",
       "sizeBytes": 1003
+    },
+    {
+      "path": "config/final-completion.v1.json",
+      "sha256": "bccc943c643f0d67d5b0ea5a299cd901da843e0ed5abd524bb69cf6f87cd44a5",
+      "sizeBytes": 2835
     },
     {
       "path": "config/launch-readiness.v1.json",
@@ -56,6 +61,11 @@
       "sizeBytes": 1025
     },
     {
+      "path": "reports/final-completion-dossier.md",
+      "sha256": "96932ced08e8054e1adc349dc35244f4cc502db0d71ac487d59affa4369cfae6",
+      "sizeBytes": 2202
+    },
+    {
       "path": "reports/ontario-evaluation-v1.json",
       "sha256": "67dc3e089dfb30a0d7565713cc6c2104f1908a5fc2fd4c634ca37e174e5f6800",
       "sizeBytes": 5396
@@ -69,6 +79,11 @@
       "path": "scripts/lib/professional-validation.mjs",
       "sha256": "cfc2664fff71d67f2866946977b8fff2a85b9534bb4cd9cf535093179fe4b546",
       "sizeBytes": 6602
+    },
+    {
+      "path": "scripts/lib/final-completion.mjs",
+      "sha256": "4d16c33037f1ecfdaafd2197e747dc9ca5370910404f3faaa7e888e68f769e7c",
+      "sizeBytes": 2984
     },
     {
       "path": "website/app/site-config.ts",

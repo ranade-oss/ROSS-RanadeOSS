@@ -1,22 +1,21 @@
-name: Release candidate evidence
+name: Final controlled-beta evidence
 
 on:
   workflow_dispatch:
     inputs:
-      candidate_id:
-        description: Non-secret release candidate identifier
+      release_id:
+        description: Approved non-secret release identifier
         required: true
-        default: rc-unassigned
 
 permissions:
   contents: read
 
 jobs:
-  verify-candidate:
+  verify-final-candidate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
-      - name: Check out candidate
+      - name: Check out approved candidate
         uses: actions/checkout@v4
 
       - name: Use Node.js 22
@@ -32,28 +31,32 @@ jobs:
       - name: Install locked dependencies
         run: npm run install:all
 
-      - name: Run the complete engineering gate
+      - name: Verify immutable release identifier
+        env:
+          INPUT_RELEASE_ID: ${{ inputs.release_id }}
+        run: node scripts/verify-final-release-id.mjs
+
+      - name: Run complete engineering gate
         run: npm run check
 
-      - name: Confirm governed artifacts are current
-        run: npm run test:release-manifest
+      - name: Run fail-closed final completion gate
+        run: npm run final:check
 
-      - name: Archive non-secret candidate evidence
+      - name: Archive non-secret final evidence
         uses: actions/upload-artifact@v4
         with:
-          name: ross-${{ inputs.candidate_id }}-evidence
-          retention-days: 30
+          name: ross-${{ inputs.release_id }}-final-evidence
+          retention-days: 90
           if-no-files-found: error
           path: |
+            reports/final-completion-dossier.md
             reports/ontario-evaluation-v1.json
             reports/legal-source-health-v1.json
             reports/release-manifest-v1.json
-            reports/final-completion-dossier.md
             config/final-completion.v1.json
             config/professional-validation.v1.json
             config/release-approvals.v1.json
             config/operations-readiness.v1.json
             config/launch-readiness.v1.json
 
-# Deliberately no deploy job. Production promotion is a separate, human-approved
-# action after every fail-closed record and external review is complete.
+# Evidence only. Deployment remains a separate, human-approved action.

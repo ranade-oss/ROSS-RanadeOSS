@@ -1,0 +1,81 @@
+{
+  "version": "1.0.0-draft",
+  "asOfDate": "2026-07-17",
+  "releaseId": "unassigned",
+  "status": "blocked-awaiting-external-completion",
+  "target": {
+    "release": "invitation-only Ontario controlled beta",
+    "practiceAreas": [
+      "Ontario civil litigation and appeals",
+      "Ontario Small Claims Court"
+    ],
+    "requiredDecisionCoverage": [
+      "Ontario Court of Appeal",
+      "Ontario Superior Court of Justice",
+      "Ontario Small Claims Court"
+    ],
+    "dataBoundary": "synthetic-or-non-confidential-only",
+    "confidentialUseApproved": false,
+    "publicIndexingApproved": false
+  },
+  "providerStrategy": {
+    "status": "pending-authorization-for-coverage-gaps",
+    "implementedOpenProvider": "a2aj-canada",
+    "implementedReportedOntarioCourtCoverage": ["Ontario Court of Appeal"],
+    "knownGaps": [
+      "Ontario Superior Court of Justice",
+      "Ontario Small Claims Court"
+    ],
+    "recommendedGapRoute": "Obtain an authorized commercial API or original-source channel with express permission for the required operations.",
+    "canliiWebsiteAutomationAllowed": false,
+    "sourceEvidence": [
+      "https://a2aj.ca/data/",
+      "https://www.canlii.org/info/terms.html",
+      "https://www.ontariocourts.ca/scj/about-the-court-2/decisions-of-the-court/"
+    ]
+  },
+  "workstreams": [
+    {
+      "id": "authorized-ontario-case-law",
+      "ownerRole": "product owner and legal-source counsel",
+      "status": "pending",
+      "sourceOfTruth": "config/professional-validation.v1.json#legalSourceDecision"
+    },
+    {
+      "id": "lawyer-authored-benchmark",
+      "ownerRole": "Ontario lawyer and independent adjudicator",
+      "status": "pending",
+      "sourceOfTruth": "config/professional-validation.v1.json#benchmarkReview"
+    },
+    {
+      "id": "five-workflow-reviews",
+      "ownerRole": "Ontario lawyer with suitable subject-matter experience",
+      "status": "pending",
+      "sourceOfTruth": "config/professional-validation.v1.json#workflowReviews"
+    },
+    {
+      "id": "privacy-security-accessibility",
+      "ownerRole": "independent privacy, security, and accessibility reviewers",
+      "status": "pending",
+      "sourceOfTruth": "config/release-approvals.v1.json#approvals"
+    },
+    {
+      "id": "operational-exercises",
+      "ownerRole": "release and operations owners",
+      "status": "pending",
+      "sourceOfTruth": "config/operations-readiness.v1.json#evidence"
+    },
+    {
+      "id": "accountable-launch-decisions",
+      "ownerRole": "legal operator and product owner",
+      "status": "pending",
+      "sourceOfTruth": "config/launch-readiness.v1.json#decisions"
+    },
+    {
+      "id": "immutable-release-candidate",
+      "ownerRole": "release owner",
+      "status": "pending",
+      "sourceOfTruth": "reports/release-manifest-v1.json"
+    }
+  ]
+}
