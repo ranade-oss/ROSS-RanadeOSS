@@ -195,7 +195,10 @@ test("Ontario workflow drafts are additive, generated, public, and review-gated"
   );
   assert.ok(
     source.every(
-      (entry) => entry.reviewer === null && entry.reviewDate === null,
+      (entry) =>
+        entry.reviewer === null &&
+        entry.reviewDate === null &&
+        entry.reviewEvidence === null,
     ),
   );
   assert.ok(

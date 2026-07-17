@@ -1,0 +1,120 @@
+{
+  "version": "1.0.0-draft",
+  "status": "blocked-awaiting-professional-validation",
+  "scope": {
+    "status": "recommended-default-awaiting-validation",
+    "practiceAreas": [
+      {
+        "id": "ontario-civil-litigation",
+        "name": "Ontario civil litigation and appeals",
+        "status": "candidate-awaiting-ontario-lawyer-validation",
+        "workflowSlugs": [
+          "civil-claim-defence-issue-extraction",
+          "documentary-discovery-review",
+          "affidavit-fact-check",
+          "factum-authority-record-cross-check"
+        ]
+      },
+      {
+        "id": "ontario-small-claims",
+        "name": "Ontario Small Claims Court",
+        "status": "candidate-awaiting-ontario-lawyer-validation",
+        "workflowSlugs": ["small-claims-intake"]
+      }
+    ],
+    "explicitlyUnsupported": [
+      "Ontario criminal matters and Ontario Court of Justice coverage",
+      "Ontario family matters",
+      "Ontario administrative tribunals",
+      "Ontario real-estate transactions",
+      "Any practice area not represented in the approved benchmark"
+    ]
+  },
+  "legalSourceDecision": {
+    "status": "pending-authorized-provider-selection",
+    "purpose": "Ontario appellate, Superior Court, and Small Claims case-law retrieval",
+    "selectedProvider": null,
+    "authorizationBasis": null,
+    "agreementOrAuthorizationId": null,
+    "decisionOwner": null,
+    "decisionDate": null,
+    "evidence": null,
+    "allowedOperations": [],
+    "verifiedCoverage": [],
+    "requiredCoverage": [
+      "Ontario Court of Appeal",
+      "Ontario Superior Court of Justice",
+      "Ontario Small Claims Court"
+    ],
+    "licensedProviderEnabled": false,
+    "canliiScrapingAllowed": false
+  },
+  "benchmarkReview": {
+    "status": "pending-ontario-lawyer-authorship-and-review",
+    "benchmarkId": "ross-ontario-benchmark-v1",
+    "reviewer": null,
+    "professionalStatus": null,
+    "reviewDate": null,
+    "evidence": null,
+    "independentAdjudicator": null,
+    "adjudicationDate": null,
+    "adjudicationEvidence": null
+  },
+  "workflowReviews": [
+    {
+      "slug": "civil-claim-defence-issue-extraction",
+      "catalogueVersion": "0.1.0-draft",
+      "status": "pending-ontario-lawyer-review",
+      "reviewer": null,
+      "professionalStatus": null,
+      "reviewDate": null,
+      "sourceAsOfDate": null,
+      "evidence": null
+    },
+    {
+      "slug": "documentary-discovery-review",
+      "catalogueVersion": "0.1.0-draft",
+      "status": "pending-ontario-lawyer-review",
+      "reviewer": null,
+      "professionalStatus": null,
+      "reviewDate": null,
+      "sourceAsOfDate": null,
+      "evidence": null
+    },
+    {
+      "slug": "affidavit-fact-check",
+      "catalogueVersion": "0.1.0-draft",
+      "status": "pending-ontario-lawyer-review",
+      "reviewer": null,
+      "professionalStatus": null,
+      "reviewDate": null,
+      "sourceAsOfDate": null,
+      "evidence": null
+    },
+    {
+      "slug": "factum-authority-record-cross-check",
+      "catalogueVersion": "0.1.0-draft",
+      "status": "pending-ontario-lawyer-review",
+      "reviewer": null,
+      "professionalStatus": null,
+      "reviewDate": null,
+      "sourceAsOfDate": null,
+      "evidence": null
+    },
+    {
+      "slug": "small-claims-intake",
+      "catalogueVersion": "0.1.0-draft",
+      "status": "pending-ontario-lawyer-review",
+      "reviewer": null,
+      "professionalStatus": null,
+      "reviewDate": null,
+      "sourceAsOfDate": null,
+      "evidence": null
+    }
+  ],
+  "confidentialDataBoundary": {
+    "status": "synthetic-or-non-confidential-only",
+    "confidentialUseApproved": false,
+    "approvalEvidence": null
+  }
+}

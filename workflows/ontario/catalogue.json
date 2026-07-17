@@ -45,6 +45,7 @@
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-civil-pleadings-synthetic.md",
     "skillFile": "civil-claim-defence-issue-extraction.md"
   },
@@ -95,6 +96,7 @@
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-discovery-synthetic.md",
     "skillFile": "documentary-discovery-review.md"
   },
@@ -148,6 +150,7 @@
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-affidavit-synthetic.md",
     "skillFile": "affidavit-fact-check.md"
   },
@@ -201,6 +204,7 @@
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-factum-synthetic.md",
     "skillFile": "factum-authority-record-cross-check.md"
   },
@@ -255,6 +259,7 @@
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-small-claims-synthetic.md",
     "skillFile": "small-claims-intake.md"
   }

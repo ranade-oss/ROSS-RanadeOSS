@@ -8,7 +8,7 @@ export type OntarioWorkflowCatalogueEntry = {
   practice: string;
   jurisdictions: string[];
   version: string;
-  status: "draft-awaiting-lawyer-review";
+  status: "draft-awaiting-lawyer-review" | "lawyer-reviewed-approved";
   intendedUsers: string[];
   excludedUses: string[];
   requiredInputs: string[];
@@ -16,8 +16,9 @@ export type OntarioWorkflowCatalogueEntry = {
   sourceCurrency: string;
   output: string;
   reviewChecklist: string[];
-  reviewer: null;
-  reviewDate: null;
+  reviewer: string | null;
+  reviewDate: string | null;
+  reviewEvidence: string | null;
   syntheticFixture: string;
   appPath: string;
 };
@@ -71,6 +72,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-civil-pleadings-synthetic.md",
     "id": "builtin-ross-ontario-civil-claim-defence-issue-extraction",
     "appPath": "/workflows/assistant/builtin-ross-ontario-civil-claim-defence-issue-extraction"
@@ -124,6 +126,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-discovery-synthetic.md",
     "id": "builtin-ross-ontario-documentary-discovery-review",
     "appPath": "/workflows/assistant/builtin-ross-ontario-documentary-discovery-review"
@@ -180,6 +183,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-affidavit-synthetic.md",
     "id": "builtin-ross-ontario-affidavit-fact-check",
     "appPath": "/workflows/assistant/builtin-ross-ontario-affidavit-fact-check"
@@ -237,6 +241,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-factum-synthetic.md",
     "id": "builtin-ross-ontario-factum-authority-record-cross-check",
     "appPath": "/workflows/assistant/builtin-ross-ontario-factum-authority-record-cross-check"
@@ -294,6 +299,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     ],
     "reviewer": null,
     "reviewDate": null,
+    "reviewEvidence": null,
     "syntheticFixture": "tests/fixtures/workflows/ontario-small-claims-synthetic.md",
     "id": "builtin-ross-ontario-small-claims-intake",
     "appPath": "/workflows/assistant/builtin-ross-ontario-small-claims-intake"

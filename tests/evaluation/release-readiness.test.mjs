@@ -31,6 +31,7 @@ test("production release fails closed while independent approvals are pending", 
       sourceReport,
       new Date("2026-07-16T01:00:00Z"),
     ),
+    professionalValidation: { ready: false },
   });
   assert.equal(result.ready, false);
   for (const name of result.requiredApprovals) {
@@ -43,6 +44,7 @@ test("production release fails closed while independent approvals are pending", 
   assert.ok(result.blockers.some((blocker) => /Operational readiness/.test(blocker)));
   assert.ok(result.blockers.some((blocker) => /Launch readiness/.test(blocker)));
   assert.ok(result.blockers.some((blocker) => /legal-source health/.test(blocker)));
+  assert.ok(result.blockers.some((blocker) => /professional validation/.test(blocker)));
 });
 
 test("production release requires evidence-bearing approvals and lawyer-reviewed benchmark", () => {
@@ -77,6 +79,7 @@ test("production release requires evidence-bearing approvals and lawyer-reviewed
     operations: approvedOperations,
     launch: approvedLaunch,
     sourceOperations,
+    professionalValidation: { ready: true },
   };
   assert.equal(
     evaluateReleaseReadiness(reviewedReport, approved, true, evidence).ready,
