@@ -27,13 +27,13 @@
     },
     {
       "path": "config/launch-readiness.v1.json",
-      "sha256": "e9063f0ccd8eb9b8a9dba5b2ec634c06b17e810cf8ea779d1280877c09fe9ddc",
-      "sizeBytes": 939
+      "sha256": "b1be324e2e5193d05914be0d8193f997ebcab685078025b7cc67e8b6e6b8f98e",
+      "sizeBytes": 938
     },
     {
       "path": "config/operations-readiness.v1.json",
-      "sha256": "1c679b7aa43271e1d33acdda61186940a1b24240564257a93c69494f2264ca17",
-      "sizeBytes": 998
+      "sha256": "311f92bee6fcb63f88f0d4023406518eb9a71adff2a87cc51fa3319ae357bb68",
+      "sizeBytes": 997
     },
     {
       "path": "config/professional-validation.v1.json",
@@ -47,8 +47,8 @@
     },
     {
       "path": "config/release-approvals.v1.json",
-      "sha256": "277a399781263f026db46f0b35a680a6622f56495ffc45213cd41545a5b87dae",
-      "sizeBytes": 740
+      "sha256": "3e6df14ffc9ed377befde53f25f00b5a46010527e622de967969199c7926a5f1",
+      "sizeBytes": 739
     },
     {
       "path": "config/ross-brand.json",
@@ -57,8 +57,8 @@
     },
     {
       "path": "reports/legal-source-health-v1.json",
-      "sha256": "dce8fab3de6d56b20685b90c6fd0c772fce514ee9df9118c4af4da32faca35f3",
-      "sizeBytes": 1026
+      "sha256": "b347e4ddb627fcbc4f67392a1e71cd84d01b52c01b97c8d6abeb7d011e63ab80",
+      "sizeBytes": 1025
     },
     {
       "path": "reports/final-completion-dossier.md",
