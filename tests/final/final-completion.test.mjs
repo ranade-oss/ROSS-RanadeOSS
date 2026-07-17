@@ -30,11 +30,21 @@ test("development integrity rejects expanded data or CanLII automation", () => {
   assert.ok(result.blockers.some((item) => /CanLII/.test(item)));
 });
 
-test("production final gate fails closed while external work is pending", () => {
+test("production final gate accepts the reserved ID but fails closed while external work is pending", () => {
   const result = evaluateFinalCompletion(plan, { ready: false }, { ready: false }, { ready: false }, {}, true);
   assert.equal(result.ready, false);
-  assert.ok(result.blockers.some((item) => /release ID/i.test(item)));
+  assert.notEqual(plan.releaseId, "unassigned");
+  assert.equal(
+    result.blockers.some((item) => /release ID/i.test(item)),
+    false,
+  );
+  assert.ok(
+    result.blockers.some((item) => /authorized-ontario-case-law/i.test(item)),
+  );
   assert.ok(result.blockers.some((item) => /professional validation/i.test(item)));
+  assert.ok(
+    result.blockers.some((item) => /operational-exercises/i.test(item)),
+  );
 });
 
 test("a coherent evidence-complete controlled-beta record can pass", () => {
