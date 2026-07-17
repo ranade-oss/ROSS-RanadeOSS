@@ -8,7 +8,7 @@
   },
   "scripts": {
     "install:all": "npm ci --prefix backend && npm ci --prefix frontend && npm ci --prefix website",
-    "test": "npm run test:workflow-sources && npm run test:public-content && npm run test:release-manifest && npm run test:operations && npm run test:evaluation && npm run test:baseline && npm run test:legal-sources --prefix backend && npm run test:security --prefix backend",
+    "test": "npm run test:workflow-sources && npm run test:public-content && npm run test:release-manifest && npm run test:operations && npm run test:evaluation && npm run test:baseline && npm run test:chat --prefix backend && npm run test:legal-sources --prefix backend && npm run test:security --prefix backend",
     "test:evaluation": "node --test tests/evaluation/*.test.mjs && node scripts/evaluate-ontario.mjs --check && node scripts/check-release-readiness.mjs",
     "evaluate:ontario": "node scripts/evaluate-ontario.mjs",
     "release:check": "node scripts/check-release-readiness.mjs --production",

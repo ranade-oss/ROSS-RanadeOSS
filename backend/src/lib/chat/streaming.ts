@@ -33,6 +33,7 @@ import {
   parsePartialCitationObjects,
   createCitation,
   CITATIONS_OPEN_TAG,
+  citationMarkerPrefixLengthAtEnd,
 } from "./citations";
 import {
   runToolCalls,
@@ -276,9 +277,9 @@ export async function runLLMStream(params: {
       return;
     }
 
-    const keep = Math.min(CITATIONS_OPEN_TAG.length - 1, combined.length);
+    const keep = citationMarkerPrefixLengthAtEnd(combined);
     const visible = combined.slice(0, combined.length - keep);
-    visibleTailBuffer = combined.slice(combined.length - keep);
+    visibleTailBuffer = keep > 0 ? combined.slice(combined.length - keep) : "";
     if (visible) {
       iterVisibleText += visible;
       write(
