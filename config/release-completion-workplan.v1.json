@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "asOfDate": "2026-07-17",
+  "status": "in-progress",
+  "immutableReleaseId": "ross-public-beta-20260717-rc1",
+  "sequence": [
+    "code-and-upstream-freeze",
+    "authorized-ontario-case-law",
+    "independent-privacy-security-accessibility",
+    "operational-exercises",
+    "accountable-launch-decisions",
+    "immutable-release-candidate",
+    "public-beta-deployment"
+  ],
+  "rules": {
+    "externalEvidenceMayBeFabricated": false,
+    "canliiWebsiteScrapingAllowed": false,
+    "mikeFunctionalityPreservedByDefault": true,
+    "ontarioChangesAreAdditive": true,
+    "releaseIdReservedBeforeFinalCodeFreeze": true,
+    "releaseIdReservationIsApproval": false,
+    "immutableMappingCreatedByTagAfterGates": true,
+    "existingReleaseTagMayMove": false,
+    "postTagSourceChangeRequiresNewReleaseId": true,
+    "additionalDevelopmentDeliverablesRequired": false
+  },
+  "deliveryBoundary": {
+    "finalDevelopmentDeliverable": "H",
+    "afterH": [
+      "complete and merge actual external evidence records",
+      "run final governed checks",
+      "create immutable candidate tag",
+      "deploy and smoke-test the public beta"
+    ]
+  },
+  "upstreamMike": {
+    "reviewedCommit": "0ed5050b21dade66feddc807d9fc5894bb147072",
+    "mergeBase": "e32daad5a4c64a5561e04c53ee12411e3c5e7238",
+    "behindBy": 6,
+    "decisionRecord": "docs/upstream/mike-sync-review-2026-07-17.md"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-draft",
-  "releaseId": "unassigned",
+  "releaseId": "ross-public-beta-20260717-rc1",
   "status": "blocked-awaiting-launch-decisions",
   "decisions": {
     "legalOperator": { "status": "pending", "approver": null, "date": null, "evidence": null },

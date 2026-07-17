@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       candidate_id:
-        description: Non-secret release candidate identifier
+        description: Reserved non-secret release candidate identifier
         required: true
-        default: rc-unassigned
+        default: ross-public-beta-20260717-rc1
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify-candidate:
@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Check out candidate
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js 22
         uses: actions/setup-node@v4
@@ -35,8 +37,16 @@ jobs:
       - name: Run the complete engineering gate
         run: npm run check
 
+      - name: Run the production final-completion gate
+        run: npm run final:check
+
       - name: Confirm governed artifacts are current
         run: npm run test:release-manifest
+
+      - name: Confirm the reserved release identifier
+        env:
+          INPUT_RELEASE_ID: ${{ inputs.candidate_id }}
+        run: node scripts/verify-final-release-id.mjs
 
       - name: Archive non-secret candidate evidence
         uses: actions/upload-artifact@v4
@@ -55,5 +65,25 @@ jobs:
             config/operations-readiness.v1.json
             config/launch-readiness.v1.json
 
+      - name: Create or confirm the immutable release tag
+        shell: bash
+        env:
+          INPUT_RELEASE_ID: ${{ inputs.candidate_id }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          if git rev-parse --verify --quiet "refs/tags/${INPUT_RELEASE_ID}" >/dev/null; then
+            TAG_COMMIT="$(git rev-list -n 1 "refs/tags/${INPUT_RELEASE_ID}")"
+            if [ "${TAG_COMMIT}" != "${GITHUB_SHA}" ]; then
+              echo "Release tag already exists on a different commit and will not be moved." >&2
+              exit 1
+            fi
+            echo "Release tag already points to the verified commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "${INPUT_RELEASE_ID}" -m "ROSS verified public-beta candidate ${INPUT_RELEASE_ID}"
+            git push origin "refs/tags/${INPUT_RELEASE_ID}"
+          fi
 # Deliberately no deploy job. Production promotion is a separate, human-approved
 # action after every fail-closed record and external review is complete.

@@ -2,8 +2,10 @@ import {
   streamChatWithTools,
   resolveModel,
   DEFAULT_MAIN_MODEL,
+  resolveReasoningEffort,
   type LlmMessage,
   type OpenAIToolSchema,
+  type ReasoningEffort,
 } from "../llm";
 import { safeErrorMessage } from "../safeError";
 import { createServerSupabase } from "../supabase";
@@ -154,6 +156,7 @@ export async function runLLMStream(params: {
   buildCitations?: (fullText: string) => unknown[];
   model?: string;
   apiKeys?: import("../llm").UserApiKeys;
+  reasoningEffort?: ReasoningEffort;
   signal?: AbortSignal;
   /**
    * If set, generate_docx will attach created docs to this project so
@@ -180,6 +183,7 @@ export async function runLLMStream(params: {
     buildCitations,
     model,
     apiKeys,
+    reasoningEffort,
     signal,
     projectId,
   } = params;
@@ -338,6 +342,7 @@ export async function runLLMStream(params: {
       maxIterations: 10,
       apiKeys,
       enableThinking: true,
+      reasoningEffort: resolveReasoningEffort(selectedModel, reasoningEffort),
       abortSignal: signal,
       callbacks: {
         onContentDelta: (delta) => {

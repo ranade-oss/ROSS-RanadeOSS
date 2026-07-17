@@ -2,11 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  getChat,
-  streamChat,
-  streamProjectChat,
-} from "@/app/lib/mikeApi";
+import { getChat, streamChat, streamProjectChat } from "@/app/lib/mikeApi";
 import { useChatHistoryContext } from "@/app/contexts/ChatHistoryContext";
 import { useGenerateChatTitle } from "./useGenerateChatTitle";
 import type {
@@ -35,20 +31,15 @@ function parseCourtlistenerEventCases(value: unknown) {
       }
       const row = item as Record<string, unknown>;
       return {
-        cluster_id:
-          typeof row.cluster_id === "number" ? row.cluster_id : 0,
-        case_name:
-          typeof row.case_name === "string" ? row.case_name : null,
-        citation:
-          typeof row.citation === "string" ? row.citation : null,
-        dateFiled:
-          typeof row.dateFiled === "string" ? row.dateFiled : null,
+        cluster_id: typeof row.cluster_id === "number" ? row.cluster_id : 0,
+        case_name: typeof row.case_name === "string" ? row.case_name : null,
+        citation: typeof row.citation === "string" ? row.citation : null,
+        dateFiled: typeof row.dateFiled === "string" ? row.dateFiled : null,
         url: typeof row.url === "string" ? row.url : null,
       };
     })
     .filter(
-      (item): item is NonNullable<typeof item> =>
-        !!item && item.cluster_id > 0,
+      (item): item is NonNullable<typeof item> => !!item && item.cluster_id > 0,
     );
 }
 
@@ -61,15 +52,12 @@ function parseCourtlistenerCaseSearches(value: unknown) {
       }
       const row = item as Record<string, unknown>;
       return {
-        cluster_id:
-          typeof row.cluster_id === "number" ? row.cluster_id : null,
+        cluster_id: typeof row.cluster_id === "number" ? row.cluster_id : null,
         query: typeof row.query === "string" ? row.query : "",
         total_matches:
           typeof row.total_matches === "number" ? row.total_matches : 0,
-        case_name:
-          typeof row.case_name === "string" ? row.case_name : null,
-        citation:
-          typeof row.citation === "string" ? row.citation : null,
+        case_name: typeof row.case_name === "string" ? row.case_name : null,
+        citation: typeof row.citation === "string" ? row.citation : null,
         error: typeof row.error === "string" ? row.error : undefined,
       };
     })
@@ -200,7 +188,10 @@ export function useAssistantChat({
     if (after.length === before.length) return;
     eventsRef.current = after;
     const snapshot = [...after];
-    updateLatestAssistantMessage((message) => ({ ...message, events: snapshot }));
+    updateLatestAssistantMessage((message) => ({
+      ...message,
+      events: snapshot,
+    }));
   };
 
   const pushThinkingPlaceholder = () => {
@@ -213,7 +204,10 @@ export function useAssistantChat({
       { type: "thinking" as const, isStreaming: true },
     ];
     const snapshot = [...eventsRef.current];
-    updateLatestAssistantMessage((message) => ({ ...message, events: snapshot }));
+    updateLatestAssistantMessage((message) => ({
+      ...message,
+      events: snapshot,
+    }));
   };
 
   const pushEvent = (event: AssistantEvent) => {
@@ -224,7 +218,10 @@ export function useAssistantChat({
     const next = eventsRef.current.filter((e) => !isStreamingPlaceholder(e));
     eventsRef.current = [...next, event];
     const snapshot = [...eventsRef.current];
-    updateLatestAssistantMessage((message) => ({ ...message, events: snapshot }));
+    updateLatestAssistantMessage((message) => ({
+      ...message,
+      events: snapshot,
+    }));
   };
 
   const updateMatchingEvent = (
@@ -241,7 +238,10 @@ export function useAssistantChat({
     newEvents[idx] = updater(events[idx]);
     eventsRef.current = newEvents;
     const snapshot = [...newEvents];
-    updateLatestAssistantMessage((message) => ({ ...message, events: snapshot }));
+    updateLatestAssistantMessage((message) => ({
+      ...message,
+      events: snapshot,
+    }));
     return true;
   };
 
@@ -349,6 +349,7 @@ export function useAssistantChat({
             messages: apiMessages,
             chat_id: chatId,
             model,
+            reasoning_effort: message.reasoningEffort,
             displayed_doc: displayedDoc
               ? {
                   filename: displayedDoc.filename,
@@ -366,6 +367,7 @@ export function useAssistantChat({
             messages: apiMessages,
             chat_id: chatId,
             model,
+            reasoning_effort: message.reasoningEffort,
             ask_inputs_response: opts?.askInputsResponse,
             jurisdictions: message.jurisdictions,
             legal_as_of_date: message.legalAsOfDate,
@@ -428,10 +430,8 @@ export function useAssistantChat({
                   .filter(
                     (
                       event,
-                    ): event is Extract<
-                      AssistantEvent,
-                      { type: "content" }
-                    > => event.type === "content",
+                    ): event is Extract<AssistantEvent, { type: "content" }> =>
+                      event.type === "content",
                   )
                   .map((event) => event.text)
                   .join(""),
@@ -609,7 +609,9 @@ export function useAssistantChat({
                     : null,
                 url: data.url as string,
                 pdfUrl:
-                  typeof data.pdfUrl === "string" ? (data.pdfUrl as string) : null,
+                  typeof data.pdfUrl === "string"
+                    ? (data.pdfUrl as string)
+                    : null,
                 dateFiled:
                   typeof data.dateFiled === "string"
                     ? (data.dateFiled as string)
@@ -651,8 +653,7 @@ export function useAssistantChat({
                   typeof data.coverage_warning === "string"
                     ? data.coverage_warning
                     : undefined,
-                error:
-                  typeof data.error === "string" ? data.error : undefined,
+                error: typeof data.error === "string" ? data.error : undefined,
               });
               pushThinkingPlaceholder();
               continue;
@@ -684,8 +685,7 @@ export function useAssistantChat({
                   typeof data.passage_count === "number"
                     ? data.passage_count
                     : undefined,
-                error:
-                  typeof data.error === "string" ? data.error : undefined,
+                error: typeof data.error === "string" ? data.error : undefined,
               });
               pushThinkingPlaceholder();
               continue;
@@ -784,9 +784,7 @@ export function useAssistantChat({
 
             if (data.type === "courtlistener_get_cases") {
               updateMatchingEvent(
-                (e) =>
-                  e.type === "courtlistener_get_cases" &&
-                  !!e.isStreaming,
+                (e) => e.type === "courtlistener_get_cases" && !!e.isStreaming,
                 () => ({
                   type: "courtlistener_get_cases",
                   cluster_ids: Array.isArray(data.cluster_ids)
@@ -976,10 +974,9 @@ export function useAssistantChat({
               const rawItems = Array.isArray(data.items)
                 ? (data.items as unknown[])
                 : [];
-              const items = rawItems.reduce<Extract<
-                AssistantEvent,
-                { type: "ask_inputs" }
-              >["items"]>((acc, item, index) => {
+              const items = rawItems.reduce<
+                Extract<AssistantEvent, { type: "ask_inputs" }>["items"]
+              >((acc, item, index) => {
                 if (!item || typeof item !== "object") return acc;
                 const row = item as Record<string, unknown>;
                 const id =
@@ -1006,40 +1003,42 @@ export function useAssistantChat({
                       })
                     : [];
                   acc.push({
-                      id,
-                      kind: "choice" as const,
-                      question:
-                        typeof row.question === "string"
-                          ? row.question
-                          : "Please choose an option.",
-                      options,
-                      allow_other: row.allow_other !== false,
-                      other_label:
-                        typeof row.other_label === "string"
-                          ? row.other_label
-                          : "Other",
-                      response_prefix:
-                        typeof row.response_prefix === "string"
-                          ? row.response_prefix
-                          : undefined,
+                    id,
+                    kind: "choice" as const,
+                    question:
+                      typeof row.question === "string"
+                        ? row.question
+                        : "Please choose an option.",
+                    options,
+                    allow_other: row.allow_other !== false,
+                    other_label:
+                      typeof row.other_label === "string"
+                        ? row.other_label
+                        : "Other",
+                    response_prefix:
+                      typeof row.response_prefix === "string"
+                        ? row.response_prefix
+                        : undefined,
                   });
                   return acc;
                 }
                 if (row.kind === "documents") {
                   const documentTypes = Array.isArray(row.document_types)
                     ? (row.document_types as unknown[])
-                        .filter((type): type is string => typeof type === "string")
+                        .filter(
+                          (type): type is string => typeof type === "string",
+                        )
                         .map((type) => type.trim())
                         .filter(Boolean)
                     : [];
                   acc.push({
-                      id,
-                      kind: "documents" as const,
-                      document_types: documentTypes,
-                      response_prefix:
-                        typeof row.response_prefix === "string"
-                          ? row.response_prefix
-                          : undefined,
+                    id,
+                    kind: "documents" as const,
+                    document_types: documentTypes,
+                    response_prefix:
+                      typeof row.response_prefix === "string"
+                        ? row.response_prefix
+                        : undefined,
                   });
                   return acc;
                 }
@@ -1242,8 +1241,7 @@ export function useAssistantChat({
                 data.status === "final"
                   ? data.status
                   : "final";
-              const incoming = (data.citations ??
-                []) as Citation[];
+              const incoming = (data.citations ?? []) as Citation[];
               if (status === "started" || status === "partial") {
                 updateLatestAssistantMessage((message) => ({
                   ...message,

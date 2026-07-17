@@ -5,159 +5,159 @@
 
 import { supabase } from "@/app/lib/supabase";
 import type {
-    AssistantEvent,
-    Chat,
-    ChatDetailOut,
-    Citation,
-    Document,
-    Folder,
-    Message,
-    OpenSourceWorkflowContributorMode,
-    OpenSourceWorkflowResponse,
-    Project,
-    Workflow,
-    WorkflowContributor,
-    TabularReview,
-    TabularReviewDetailOut,
+  AssistantEvent,
+  Chat,
+  ChatDetailOut,
+  Citation,
+  Document,
+  Folder,
+  Message,
+  OpenSourceWorkflowContributorMode,
+  OpenSourceWorkflowResponse,
+  Project,
+  Workflow,
+  WorkflowContributor,
+  TabularReview,
+  TabularReviewDetailOut,
 } from "@/app/components/shared/types";
 import { dataBoundaryHeaders } from "@/app/lib/dataBoundary";
 
 // Server-side shape before mapping
 interface ServerMessage {
-    id: string;
-    chat_id: string;
-    role: "user" | "assistant";
-    content: string | AssistantEvent[] | null;
-    files?: { filename: string; document_id?: string }[] | null;
-    workflow?: { id: string; title: string } | null;
-    citations?: Citation[] | null;
-    created_at: string;
+  id: string;
+  chat_id: string;
+  role: "user" | "assistant";
+  content: string | AssistantEvent[] | null;
+  files?: { filename: string; document_id?: string }[] | null;
+  workflow?: { id: string; title: string } | null;
+  citations?: Citation[] | null;
+  created_at: string;
 }
 interface ServerChatDetailOut {
-    chat: Chat;
-    messages: ServerMessage[];
+  chat: Chat;
+  messages: ServerMessage[];
 }
 
 const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 const isDev = process.env.NODE_ENV !== "production";
 const devLog = (...args: Parameters<typeof console.log>) => {
-    if (isDev) console.log(...args);
+  if (isDev) console.log(...args);
 };
 
 export class MikeApiError extends Error {
-    status: number;
-    code: string | null;
+  status: number;
+  code: string | null;
 
-    constructor(args: { message: string; status: number; code?: string | null }) {
-        super(args.message);
-        this.name = "MikeApiError";
-        this.status = args.status;
-        this.code = args.code ?? null;
-    }
+  constructor(args: { message: string; status: number; code?: string | null }) {
+    super(args.message);
+    this.name = "MikeApiError";
+    this.status = args.status;
+    this.code = args.code ?? null;
+  }
 }
 
 export function isMfaRequiredError(error: unknown) {
-    return (
-        error instanceof MikeApiError &&
-        error.status === 403 &&
-        error.code === "mfa_verification_required"
-    );
+  return (
+    error instanceof MikeApiError &&
+    error.status === 403 &&
+    error.code === "mfa_verification_required"
+  );
 }
 
 async function getAuthHeader(): Promise<Record<string, string>> {
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
-    if (!session?.access_token) return {};
-    return { Authorization: `Bearer ${session.access_token}` };
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.access_token) return {};
+  return { Authorization: `Bearer ${session.access_token}` };
 }
 
 async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
-    const authHeaders = await getAuthHeader();
-    const { headers: initHeaders, ...restInit } = init ?? {};
-    const response = await fetch(`${API_BASE}${path}`, {
-        cache: "no-store",
-        ...restInit,
-        headers: {
-            Accept: "application/json",
-            ...authHeaders,
-            ...dataBoundaryHeaders(),
-            ...(initHeaders as Record<string, string> | undefined),
-        },
-    });
+  const authHeaders = await getAuthHeader();
+  const { headers: initHeaders, ...restInit } = init ?? {};
+  const response = await fetch(`${API_BASE}${path}`, {
+    cache: "no-store",
+    ...restInit,
+    headers: {
+      Accept: "application/json",
+      ...authHeaders,
+      ...dataBoundaryHeaders(),
+      ...(initHeaders as Record<string, string> | undefined),
+    },
+  });
 
-    if (!response.ok) {
-        throw await toApiError(response, path);
-    }
+  if (!response.ok) {
+    throw await toApiError(response, path);
+  }
 
-    if (
-        response.status === 204 ||
-        response.headers.get("content-length") === "0"
-    ) {
-        return undefined as T;
-    }
+  if (
+    response.status === 204 ||
+    response.headers.get("content-length") === "0"
+  ) {
+    return undefined as T;
+  }
 
-    return (await response.json()) as T;
+  return (await response.json()) as T;
 }
 
 async function apiBlobRequest(path: string): Promise<{
-    blob: Blob;
-    filename: string | null;
+  blob: Blob;
+  filename: string | null;
 }> {
-    const authHeaders = await getAuthHeader();
-    const response = await fetch(`${API_BASE}${path}`, {
-        cache: "no-store",
-        headers: {
-            Accept: "application/json",
-            ...authHeaders,
-        },
-    });
+  const authHeaders = await getAuthHeader();
+  const response = await fetch(`${API_BASE}${path}`, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      ...authHeaders,
+    },
+  });
 
-    if (!response.ok) {
-        throw await toApiError(response, path);
-    }
+  if (!response.ok) {
+    throw await toApiError(response, path);
+  }
 
-    const disposition = response.headers.get("content-disposition") ?? "";
-    const filenameMatch = disposition.match(/filename="?([^";]+)"?/i);
-    return {
-        blob: await response.blob(),
-        filename: filenameMatch?.[1] ?? null,
-    };
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const filenameMatch = disposition.match(/filename="?([^";]+)"?/i);
+  return {
+    blob: await response.blob(),
+    filename: filenameMatch?.[1] ?? null,
+  };
 }
 
 async function toApiError(response: Response, path: string) {
-    const text = await response.text();
-    try {
-        const parsed = JSON.parse(text) as {
-            detail?: unknown;
-            code?: unknown;
-        };
-        devLog("[mike-api] non-ok response", {
-            path,
-            status: response.status,
-            code: parsed.code,
-            detail: parsed.detail,
-        });
-        return new MikeApiError({
-            status: response.status,
-            code: typeof parsed.code === "string" ? parsed.code : null,
-            message:
-                typeof parsed.detail === "string" && parsed.detail
-                    ? parsed.detail
-                    : `API error: ${response.status}`,
-        });
-    } catch {
-        devLog("[mike-api] non-ok non-json response", {
-            path,
-            status: response.status,
-            bodyPreview: text.slice(0, 200),
-        });
-        return new MikeApiError({
-            status: response.status,
-            message: text || `API error: ${response.status}`,
-        });
-    }
+  const text = await response.text();
+  try {
+    const parsed = JSON.parse(text) as {
+      detail?: unknown;
+      code?: unknown;
+    };
+    devLog("[mike-api] non-ok response", {
+      path,
+      status: response.status,
+      code: parsed.code,
+      detail: parsed.detail,
+    });
+    return new MikeApiError({
+      status: response.status,
+      code: typeof parsed.code === "string" ? parsed.code : null,
+      message:
+        typeof parsed.detail === "string" && parsed.detail
+          ? parsed.detail
+          : `API error: ${response.status}`,
+    });
+  } catch {
+    devLog("[mike-api] non-ok non-json response", {
+      path,
+      status: response.status,
+      bodyPreview: text.slice(0, 200),
+    });
+    return new MikeApiError({
+      status: response.status,
+      message: text || `API error: ${response.status}`,
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -165,399 +165,423 @@ async function toApiError(response: Response, path: string) {
 // ---------------------------------------------------------------------------
 
 export async function listProjects(): Promise<Project[]> {
-    return apiRequest<Project[]>("/projects");
+  return apiRequest<Project[]>("/projects");
 }
 
 export async function createProject(
-    name: string,
-    cm_number?: string,
-    practice?: string,
-    jurisdictions?: Array<"CA-ON" | "CA" | "US">,
-    shared_with?: string[],
+  name: string,
+  cm_number?: string,
+  practice?: string,
+  jurisdictions?: Array<"CA-ON" | "CA" | "US">,
+  shared_with?: string[],
 ): Promise<Project> {
-    return apiRequest<Project>("/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            name,
-            cm_number,
-            practice,
-            jurisdictions,
-            shared_with,
-        }),
-    });
+  return apiRequest<Project>("/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name,
+      cm_number,
+      practice,
+      jurisdictions,
+      shared_with,
+    }),
+  });
 }
 
 export async function deleteAccount(): Promise<void> {
-    return apiRequest<void>("/user/account", { method: "DELETE" });
+  return apiRequest<void>("/user/account", { method: "DELETE" });
 }
 
 export async function deleteAllChats(): Promise<void> {
-    return apiRequest<void>("/user/chats", { method: "DELETE" });
+  return apiRequest<void>("/user/chats", { method: "DELETE" });
 }
 
 export async function deleteAllProjects(): Promise<void> {
-    return apiRequest<void>("/user/projects", { method: "DELETE" });
+  return apiRequest<void>("/user/projects", { method: "DELETE" });
 }
 
 export async function deleteAllTabularReviews(): Promise<void> {
-    return apiRequest<void>("/user/tabular-reviews", { method: "DELETE" });
+  return apiRequest<void>("/user/tabular-reviews", { method: "DELETE" });
 }
 
 export async function exportAccountData(): Promise<{
-    blob: Blob;
-    filename: string | null;
+  blob: Blob;
+  filename: string | null;
 }> {
-    return apiBlobRequest("/user/export");
+  return apiBlobRequest("/user/export");
 }
 
 export async function exportChatData(): Promise<{
-    blob: Blob;
-    filename: string | null;
+  blob: Blob;
+  filename: string | null;
 }> {
-    return apiBlobRequest("/user/chats/export");
+  return apiBlobRequest("/user/chats/export");
 }
 
 export async function exportTabularReviewsData(): Promise<{
-    blob: Blob;
-    filename: string | null;
+  blob: Blob;
+  filename: string | null;
 }> {
-    return apiBlobRequest("/user/tabular-reviews/export");
+  return apiBlobRequest("/user/tabular-reviews/export");
 }
 
 export interface UserProfile {
-    displayName: string | null;
-    organisation: string | null;
-    messageCreditsUsed: number;
-    creditsResetDate: string;
-    creditsRemaining: number;
-    tier: string;
-    titleModel: string;
-    tabularModel: string;
-    mfaOnLogin: boolean;
-    legalResearch: LegalResearchSettings;
-    /** Legacy compatibility alias for enabledJurisdictions.includes("US"). */
-    legalResearchUs: boolean;
-    apiKeyStatus: ApiKeyStatus;
+  displayName: string | null;
+  organisation: string | null;
+  messageCreditsUsed: number;
+  creditsResetDate: string;
+  creditsRemaining: number;
+  tier: string;
+  titleModel: string;
+  tabularModel: string;
+  mfaOnLogin: boolean;
+  legalResearch: LegalResearchSettings;
+  /** Legacy compatibility alias for enabledJurisdictions.includes("US"). */
+  legalResearchUs: boolean;
+  apiKeyStatus: ApiKeyStatus;
 }
 
 export interface LegalResearchSettings {
-    enabled: boolean;
-    defaultCountry: "CA" | "US";
-    defaultProvince: "ON" | null;
-    enabledJurisdictions: Array<"CA-ON" | "CA" | "US">;
-    enabledSourceProviders: string[];
+  enabled: boolean;
+  defaultCountry: "CA" | "US";
+  defaultProvince: "ON" | null;
+  enabledJurisdictions: Array<"CA-ON" | "CA" | "US">;
+  enabledSourceProviders: string[];
 }
 
 export interface LegalSourceProviderStatus {
-    id: string;
-    name: string;
-    jurisdictions: string[];
-    kinds: string[];
-    official: boolean;
-    fullTextStatus: "official" | "licensed" | "unofficial" | "metadata-only";
-    enabledByDefault: boolean;
-    enabledForUser: boolean;
-    health: { ok: boolean; detail?: string };
+  id: string;
+  name: string;
+  jurisdictions: string[];
+  kinds: string[];
+  official: boolean;
+  fullTextStatus: "official" | "licensed" | "unofficial" | "metadata-only";
+  enabledByDefault: boolean;
+  enabledForUser: boolean;
+  health: { ok: boolean; detail?: string };
 }
 
 export interface LegalSourceCoverageRow {
-    providerId: string;
-    dataset: string;
-    jurisdiction: string;
-    label: string;
-    documentCount: number | null;
-    firstDocumentDate: string | null;
-    lastDocumentDate: string | null;
-    checkedAt: string;
+  providerId: string;
+  dataset: string;
+  jurisdiction: string;
+  label: string;
+  documentCount: number | null;
+  firstDocumentDate: string | null;
+  lastDocumentDate: string | null;
+  checkedAt: string;
 }
 
 export interface LegalSourceDashboard {
-    providers: LegalSourceProviderStatus[];
-    coverage: Array<{
-        provider: Omit<
-            LegalSourceProviderStatus,
-            "enabledForUser" | "health"
-        >;
-        coverage: LegalSourceCoverageRow[];
-    }>;
-    knownOntarioGaps: Array<{ dataset: string; label: string }>;
-    warning: string;
+  providers: LegalSourceProviderStatus[];
+  coverage: Array<{
+    provider: Omit<LegalSourceProviderStatus, "enabledForUser" | "health">;
+    coverage: LegalSourceCoverageRow[];
+  }>;
+  knownOntarioGaps: Array<{ dataset: string; label: string }>;
+  warning: string;
 }
 
 export interface OntarioResearchReadiness {
+  status: "healthy" | "degraded";
+  checkedAt: string;
+  checks: Array<{
+    providerId: string;
     status: "healthy" | "degraded";
-    checkedAt: string;
-    checks: Array<{
-        providerId: string;
-        status: "healthy" | "degraded";
-        stages: string[];
-        resultCount: number | null;
-        coverageCount: number | null;
-        latencyClass: "fast" | "standard" | "slow";
-        reasonCode: string;
-    }>;
-    limitations: string[];
+    stages: string[];
+    resultCount: number | null;
+    coverageCount: number | null;
+    latencyClass: "fast" | "standard" | "slow";
+    reasonCode: string;
+  }>;
+  limitations: string[];
 }
 
 export interface UserLookupResult {
-    exists: boolean;
-    email: string;
-    display_name: string | null;
+  exists: boolean;
+  email: string;
+  display_name: string | null;
 }
 
 export async function getUserProfile(): Promise<UserProfile> {
-    return apiRequest<UserProfile>("/user/profile");
+  return apiRequest<UserProfile>("/user/profile");
 }
 
 export async function getLegalSourceDashboard(): Promise<LegalSourceDashboard> {
-    const [status, coverage] = await Promise.all([
-        apiRequest<{ providers: LegalSourceProviderStatus[] }>(
-            "/legal-sources/status",
-        ),
-        apiRequest<Omit<LegalSourceDashboard, "providers">>(
-            "/legal-sources/coverage",
-        ),
-    ]);
-    return { ...coverage, providers: status.providers };
+  const [status, coverage] = await Promise.all([
+    apiRequest<{ providers: LegalSourceProviderStatus[] }>(
+      "/legal-sources/status",
+    ),
+    apiRequest<Omit<LegalSourceDashboard, "providers">>(
+      "/legal-sources/coverage",
+    ),
+  ]);
+  return { ...coverage, providers: status.providers };
 }
 
 export async function runOntarioResearchReadiness(): Promise<{
-    readiness: OntarioResearchReadiness;
-    warning: string;
+  readiness: OntarioResearchReadiness;
+  warning: string;
 }> {
-    return apiRequest("/legal-sources/readiness", { method: "POST" });
+  return apiRequest("/legal-sources/readiness", { method: "POST" });
 }
 
 export async function recordDataBoundaryAcknowledgement(payload: {
-    version: string;
-    acknowledgement: "synthetic-or-non-confidential";
+  version: string;
+  acknowledgement: "synthetic-or-non-confidential";
 }): Promise<{ ok: true; boundaryVersion: string; acknowledgedAt: string }> {
-    return apiRequest("/user/data-boundary/acknowledge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  return apiRequest("/user/data-boundary/acknowledge", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function lookupUserByEmail(
-    email: string,
+  email: string,
 ): Promise<UserLookupResult> {
-    return apiRequest<UserLookupResult>(
-        `/user/lookup?email=${encodeURIComponent(email)}`,
-    );
+  return apiRequest<UserLookupResult>(
+    `/user/lookup?email=${encodeURIComponent(email)}`,
+  );
 }
 
 export async function updateUserProfile(payload: {
-    displayName?: string | null;
-    organisation?: string | null;
-    titleModel?: string;
-    tabularModel?: string;
-    legalResearch?: LegalResearchSettings;
-    legalResearchUs?: boolean;
+  displayName?: string | null;
+  organisation?: string | null;
+  titleModel?: string;
+  tabularModel?: string;
+  legalResearch?: LegalResearchSettings;
+  legalResearchUs?: boolean;
 }): Promise<UserProfile> {
-    return apiRequest<UserProfile>("/user/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  return apiRequest<UserProfile>("/user/profile", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function updateUserMfaOnLogin(
-    enabled: boolean,
+  enabled: boolean,
 ): Promise<UserProfile> {
-    return apiRequest<UserProfile>("/user/security/mfa-login", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enabled }),
-    });
+  return apiRequest<UserProfile>("/user/security/mfa-login", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ enabled }),
+  });
 }
 
 export type ApiKeyProvider =
-    | "claude"
-    | "gemini"
-    | "openai"
-    | "openrouter"
-    | "courtlistener";
+  | "claude"
+  | "gemini"
+  | "openai"
+  | "openrouter"
+  | "courtlistener";
 export type ApiKeySource = "user" | "env" | null;
 export type ApiKeyState = Record<
-    ApiKeyProvider,
-    {
-        configured: boolean;
-        source: ApiKeySource;
-    }
+  ApiKeyProvider,
+  {
+    configured: boolean;
+    source: ApiKeySource;
+  }
 >;
 
 export type ApiKeyStatus = Record<ApiKeyProvider, boolean> & {
-    sources?: Partial<Record<ApiKeyProvider, ApiKeySource>>;
+  sources?: Partial<Record<ApiKeyProvider, ApiKeySource>>;
 };
 
+export type ReasoningEffort =
+  | "none"
+  | "low"
+  | "medium"
+  | "high"
+  | "xhigh"
+  | "max";
+
+export interface ModelCatalogEntry {
+  id: string;
+  label: string;
+  provider: "claude" | "gemini" | "openai";
+  tier: "main" | "mid" | "low";
+  reasoningEfforts: ReasoningEffort[];
+  defaultReasoningEffort?: ReasoningEffort;
+  available: boolean;
+  availability: "live" | "configured" | "unavailable" | "fallback";
+}
+
+export interface ModelCatalog {
+  models: ModelCatalogEntry[];
+  refreshedAt: string;
+  warning?: string;
+}
+
+export async function getModelCatalog(): Promise<ModelCatalog> {
+  return apiRequest<ModelCatalog>("/user/model-catalog");
+}
+
 export async function getApiKeyStatus(): Promise<ApiKeyStatus> {
-    return apiRequest<ApiKeyStatus>("/user/api-keys");
+  return apiRequest<ApiKeyStatus>("/user/api-keys");
 }
 
 export async function saveApiKey(
-    provider: ApiKeyProvider,
-    apiKey: string | null,
+  provider: ApiKeyProvider,
+  apiKey: string | null,
 ): Promise<ApiKeyStatus> {
-    return apiRequest<ApiKeyStatus>(`/user/api-keys/${provider}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ api_key: apiKey }),
-    });
+  return apiRequest<ApiKeyStatus>(`/user/api-keys/${provider}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ api_key: apiKey }),
+  });
 }
 
 export interface McpToolSummary {
-    id: string;
-    toolName: string;
-    openaiToolName: string;
-    title: string | null;
-    description: string | null;
-    enabled: boolean;
-    readOnly: boolean;
-    destructive: boolean;
-    requiresConfirmation: boolean;
-    lastSeenAt: string;
+  id: string;
+  toolName: string;
+  openaiToolName: string;
+  title: string | null;
+  description: string | null;
+  enabled: boolean;
+  readOnly: boolean;
+  destructive: boolean;
+  requiresConfirmation: boolean;
+  lastSeenAt: string;
 }
 
 export interface McpConnectorSummary {
-    id: string;
-    name: string;
-    transport: "streamable_http";
-    serverUrl: string;
-    authType: "none" | "bearer" | "oauth";
-    enabled: boolean;
-    hasAuthConfig: boolean;
-    customHeaderKeys: string[];
-    oauthConnected: boolean;
-    toolPolicy: Record<string, unknown>;
-    tools: McpToolSummary[];
-    toolCount: number;
-    createdAt: string;
-    updatedAt: string;
+  id: string;
+  name: string;
+  transport: "streamable_http";
+  serverUrl: string;
+  authType: "none" | "bearer" | "oauth";
+  enabled: boolean;
+  hasAuthConfig: boolean;
+  customHeaderKeys: string[];
+  oauthConnected: boolean;
+  toolPolicy: Record<string, unknown>;
+  tools: McpToolSummary[];
+  toolCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export async function listMcpConnectors(): Promise<McpConnectorSummary[]> {
-    return apiRequest<McpConnectorSummary[]>("/user/mcp-connectors");
+  return apiRequest<McpConnectorSummary[]>("/user/mcp-connectors");
 }
 
 export async function getMcpConnector(
-    connectorId: string,
+  connectorId: string,
 ): Promise<McpConnectorSummary> {
-    return apiRequest<McpConnectorSummary>(
-        `/user/mcp-connectors/${connectorId}`,
-    );
+  return apiRequest<McpConnectorSummary>(`/user/mcp-connectors/${connectorId}`);
 }
 
 export async function createMcpConnector(payload: {
-    name: string;
-    serverUrl: string;
-    bearerToken?: string | null;
-    headers?: Record<string, string>;
+  name: string;
+  serverUrl: string;
+  bearerToken?: string | null;
+  headers?: Record<string, string>;
 }): Promise<McpConnectorSummary> {
-    return apiRequest<McpConnectorSummary>("/user/mcp-connectors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  return apiRequest<McpConnectorSummary>("/user/mcp-connectors", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function updateMcpConnector(
-    connectorId: string,
-    payload: {
-        name?: string;
-        serverUrl?: string;
-        enabled?: boolean;
-        bearerToken?: string | null;
-        headers?: Record<string, string>;
-    },
+  connectorId: string,
+  payload: {
+    name?: string;
+    serverUrl?: string;
+    enabled?: boolean;
+    bearerToken?: string | null;
+    headers?: Record<string, string>;
+  },
 ): Promise<McpConnectorSummary> {
-    return apiRequest<McpConnectorSummary>(
-        `/user/mcp-connectors/${connectorId}`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        },
-    );
+  return apiRequest<McpConnectorSummary>(
+    `/user/mcp-connectors/${connectorId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export async function deleteMcpConnector(connectorId: string): Promise<void> {
-    return apiRequest<void>(`/user/mcp-connectors/${connectorId}`, {
-        method: "DELETE",
-    });
+  return apiRequest<void>(`/user/mcp-connectors/${connectorId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function refreshMcpConnectorTools(
-    connectorId: string,
+  connectorId: string,
 ): Promise<McpConnectorSummary> {
-    return apiRequest<McpConnectorSummary>(
-        `/user/mcp-connectors/${connectorId}/refresh-tools`,
-        { method: "POST" },
-    );
+  return apiRequest<McpConnectorSummary>(
+    `/user/mcp-connectors/${connectorId}/refresh-tools`,
+    { method: "POST" },
+  );
 }
 
 export async function startMcpConnectorOAuth(
-    connectorId: string,
+  connectorId: string,
 ): Promise<{ authorizationUrl: string | null; alreadyAuthorized: boolean }> {
-    return apiRequest<{ authorizationUrl: string | null; alreadyAuthorized: boolean }>(
-        `/user/mcp-connectors/${connectorId}/oauth/start`,
-        { method: "POST" },
-    );
+  return apiRequest<{
+    authorizationUrl: string | null;
+    alreadyAuthorized: boolean;
+  }>(`/user/mcp-connectors/${connectorId}/oauth/start`, { method: "POST" });
 }
 
 export async function setMcpToolEnabled(
-    connectorId: string,
-    toolId: string,
-    enabled: boolean,
+  connectorId: string,
+  toolId: string,
+  enabled: boolean,
 ): Promise<McpConnectorSummary> {
-    return apiRequest<McpConnectorSummary>(
-        `/user/mcp-connectors/${connectorId}/tools/${toolId}`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ enabled }),
-        },
-    );
+  return apiRequest<McpConnectorSummary>(
+    `/user/mcp-connectors/${connectorId}/tools/${toolId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled }),
+    },
+  );
 }
 
 export async function getProject(projectId: string): Promise<Project> {
-    return apiRequest<Project>(`/projects/${projectId}`);
+  return apiRequest<Project>(`/projects/${projectId}`);
 }
 
 export async function updateProject(
-    projectId: string,
-    payload: {
-        name?: string;
-        cm_number?: string;
-        practice?: string | null;
-        shared_with?: string[];
-    },
+  projectId: string,
+  payload: {
+    name?: string;
+    cm_number?: string;
+    practice?: string | null;
+    shared_with?: string[];
+  },
 ): Promise<Project> {
-    return apiRequest<Project>(`/projects/${projectId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  return apiRequest<Project>(`/projects/${projectId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function deleteProject(projectId: string): Promise<void> {
-    await apiRequest(`/projects/${projectId}`, { method: "DELETE" });
+  await apiRequest(`/projects/${projectId}`, { method: "DELETE" });
 }
 
 export interface ProjectPeople {
-    owner: {
-        user_id: string;
-        email: string | null;
-        display_name: string | null;
-    };
-    members: { email: string; display_name: string | null }[];
+  owner: {
+    user_id: string;
+    email: string | null;
+    display_name: string | null;
+  };
+  members: { email: string; display_name: string | null }[];
 }
 
 export async function getProjectPeople(
-    projectId: string,
+  projectId: string,
 ): Promise<ProjectPeople> {
-    return apiRequest<ProjectPeople>(`/projects/${projectId}/people`);
+  return apiRequest<ProjectPeople>(`/projects/${projectId}/people`);
 }
 
 // ---------------------------------------------------------------------------
@@ -569,276 +593,265 @@ export async function getProjectPeople(
 // ---------------------------------------------------------------------------
 
 export async function createProjectFolder(
-    projectId: string,
-    name: string,
-    parentFolderId?: string | null,
+  projectId: string,
+  name: string,
+  parentFolderId?: string | null,
 ): Promise<Folder> {
-    return apiRequest<Folder>(`/projects/${projectId}/folders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            name,
-            parent_folder_id: parentFolderId ?? null,
-        }),
-    });
+  return apiRequest<Folder>(`/projects/${projectId}/folders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name,
+      parent_folder_id: parentFolderId ?? null,
+    }),
+  });
 }
 
 export async function renameProjectFolder(
-    projectId: string,
-    folderId: string,
-    name: string,
+  projectId: string,
+  folderId: string,
+  name: string,
 ): Promise<Folder> {
-    return apiRequest<Folder>(
-        `/projects/${projectId}/folders/${folderId}`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name }),
-        },
-    );
+  return apiRequest<Folder>(`/projects/${projectId}/folders/${folderId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
 }
 
 export async function deleteProjectFolder(
-    projectId: string,
-    folderId: string,
+  projectId: string,
+  folderId: string,
 ): Promise<void> {
-    await apiRequest(`/projects/${projectId}/folders/${folderId}`, {
-        method: "DELETE",
-    });
+  await apiRequest(`/projects/${projectId}/folders/${folderId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function moveSubfolderToFolder(
-    projectId: string,
-    folderId: string,
-    parentFolderId: string | null,
+  projectId: string,
+  folderId: string,
+  parentFolderId: string | null,
 ): Promise<Folder> {
-    return apiRequest<Folder>(
-        `/projects/${projectId}/folders/${folderId}`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ parent_folder_id: parentFolderId }),
-        },
-    );
+  return apiRequest<Folder>(`/projects/${projectId}/folders/${folderId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ parent_folder_id: parentFolderId }),
+  });
 }
 
 export async function moveDocumentToFolder(
-    projectId: string,
-    documentId: string,
-    folderId: string | null,
+  projectId: string,
+  documentId: string,
+  folderId: string | null,
 ): Promise<Document> {
-    return apiRequest<Document>(
-        `/projects/${projectId}/documents/${documentId}/folder`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ folder_id: folderId }),
-        },
-    );
+  return apiRequest<Document>(
+    `/projects/${projectId}/documents/${documentId}/folder`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folder_id: folderId }),
+    },
+  );
 }
 
 export async function renameProjectDocument(
-    projectId: string,
-    documentId: string,
-    filename: string,
+  projectId: string,
+  documentId: string,
+  filename: string,
 ): Promise<Document> {
-    return apiRequest<Document>(
-        `/projects/${projectId}/documents/${documentId}`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ filename }),
-        },
-    );
+  return apiRequest<Document>(
+    `/projects/${projectId}/documents/${documentId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename }),
+    },
+  );
 }
 
 export async function addDocumentToProject(
-    projectId: string,
-    documentId: string,
+  projectId: string,
+  documentId: string,
 ): Promise<Document> {
-    return apiRequest<Document>(
-        `/projects/${projectId}/documents/${documentId}`,
-        { method: "POST" },
-    );
+  return apiRequest<Document>(
+    `/projects/${projectId}/documents/${documentId}`,
+    { method: "POST" },
+  );
 }
 
 export interface DocumentVersion {
-    id: string;
-    version_number: number | null;
-    source: string;
-    created_at: string;
-    filename: string | null;
-    file_type?: string | null;
-    size_bytes?: number | null;
-    page_count?: number | null;
-    deleted_at?: string | null;
-    deleted_by?: string | null;
+  id: string;
+  version_number: number | null;
+  source: string;
+  created_at: string;
+  filename: string | null;
+  file_type?: string | null;
+  size_bytes?: number | null;
+  page_count?: number | null;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
 }
 
 export async function listDocumentVersions(documentId: string): Promise<{
-    current_version_id: string | null;
-    versions: DocumentVersion[];
+  current_version_id: string | null;
+  versions: DocumentVersion[];
 }> {
-    return apiRequest(`/single-documents/${documentId}/versions`);
+  return apiRequest(`/single-documents/${documentId}/versions`);
 }
 
 export async function uploadDocumentVersion(
-    documentId: string,
-    file: File,
-    filename?: string,
+  documentId: string,
+  file: File,
+  filename?: string,
 ): Promise<DocumentVersion> {
-    const authHeaders = await getAuthHeader();
-    const form = new FormData();
-    form.append("file", file);
-    if (filename) form.append("filename", filename);
-    const response = await fetch(
-        `${API_BASE}/single-documents/${documentId}/versions`,
-        {
-            method: "POST",
-            headers: { ...authHeaders, ...dataBoundaryHeaders() },
-            body: form,
-        },
-    );
-    if (!response.ok) throw new Error(await response.text());
-    return response.json() as Promise<DocumentVersion>;
+  const authHeaders = await getAuthHeader();
+  const form = new FormData();
+  form.append("file", file);
+  if (filename) form.append("filename", filename);
+  const response = await fetch(
+    `${API_BASE}/single-documents/${documentId}/versions`,
+    {
+      method: "POST",
+      headers: { ...authHeaders, ...dataBoundaryHeaders() },
+      body: form,
+    },
+  );
+  if (!response.ok) throw new Error(await response.text());
+  return response.json() as Promise<DocumentVersion>;
 }
 
 export async function replaceDocumentVersionFile(
-    documentId: string,
-    versionId: string,
-    file: File,
-    filename?: string,
+  documentId: string,
+  versionId: string,
+  file: File,
+  filename?: string,
 ): Promise<DocumentVersion> {
-    const authHeaders = await getAuthHeader();
-    const form = new FormData();
-    form.append("file", file);
-    if (filename) form.append("filename", filename);
-    const response = await fetch(
-        `${API_BASE}/single-documents/${documentId}/versions/${versionId}/file`,
-        {
-            method: "PUT",
-            headers: { ...authHeaders, ...dataBoundaryHeaders() },
-            body: form,
-        },
-    );
-    if (!response.ok) throw new Error(await response.text());
-    return response.json() as Promise<DocumentVersion>;
+  const authHeaders = await getAuthHeader();
+  const form = new FormData();
+  form.append("file", file);
+  if (filename) form.append("filename", filename);
+  const response = await fetch(
+    `${API_BASE}/single-documents/${documentId}/versions/${versionId}/file`,
+    {
+      method: "PUT",
+      headers: { ...authHeaders, ...dataBoundaryHeaders() },
+      body: form,
+    },
+  );
+  if (!response.ok) throw new Error(await response.text());
+  return response.json() as Promise<DocumentVersion>;
 }
 
 export async function copyDocumentVersionFromDocument(
-    documentId: string,
-    sourceDocumentId: string,
-    filename?: string,
+  documentId: string,
+  sourceDocumentId: string,
+  filename?: string,
 ): Promise<DocumentVersion> {
-    return apiRequest<DocumentVersion>(
-        `/single-documents/${documentId}/versions/from-document`,
-        {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                source_document_id: sourceDocumentId,
-                filename,
-            }),
-        },
-    );
+  return apiRequest<DocumentVersion>(
+    `/single-documents/${documentId}/versions/from-document`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source_document_id: sourceDocumentId,
+        filename,
+      }),
+    },
+  );
 }
 
 export async function renameDocumentVersion(
-    documentId: string,
-    versionId: string,
-    filename: string | null,
+  documentId: string,
+  versionId: string,
+  filename: string | null,
 ): Promise<DocumentVersion> {
-    return apiRequest<DocumentVersion>(
-        `/single-documents/${documentId}/versions/${versionId}`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ filename }),
-        },
-    );
+  return apiRequest<DocumentVersion>(
+    `/single-documents/${documentId}/versions/${versionId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename }),
+    },
+  );
 }
 
 export async function deleteDocumentVersion(
-    documentId: string,
-    versionId: string,
+  documentId: string,
+  versionId: string,
 ): Promise<{
-    deleted_version_id: string;
-    current_version_id: string | null;
+  deleted_version_id: string;
+  current_version_id: string | null;
 }> {
-    return apiRequest(`/single-documents/${documentId}/versions/${versionId}`, {
-        method: "DELETE",
-    });
+  return apiRequest(`/single-documents/${documentId}/versions/${versionId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function uploadProjectDocument(
-    projectId: string,
-    file: File,
+  projectId: string,
+  file: File,
 ): Promise<Document> {
-    const authHeaders = await getAuthHeader();
-    const form = new FormData();
-    form.append("file", file);
-    const response = await fetch(
-        `${API_BASE}/projects/${projectId}/documents`,
-        {
-            method: "POST",
-            headers: { ...authHeaders, ...dataBoundaryHeaders() },
-            body: form,
-        },
-    );
-    if (!response.ok) throw new Error(await response.text());
-    return response.json() as Promise<Document>;
+  const authHeaders = await getAuthHeader();
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(`${API_BASE}/projects/${projectId}/documents`, {
+    method: "POST",
+    headers: { ...authHeaders, ...dataBoundaryHeaders() },
+    body: form,
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json() as Promise<Document>;
 }
 
-export async function uploadStandaloneDocument(
-    file: File,
-): Promise<Document> {
-    const authHeaders = await getAuthHeader();
-    const form = new FormData();
-    form.append("file", file);
-    const response = await fetch(`${API_BASE}/single-documents`, {
-        method: "POST",
-        headers: { ...authHeaders, ...dataBoundaryHeaders() },
-        body: form,
-    });
-    if (!response.ok) throw new Error(await response.text());
-    return response.json() as Promise<Document>;
+export async function uploadStandaloneDocument(file: File): Promise<Document> {
+  const authHeaders = await getAuthHeader();
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(`${API_BASE}/single-documents`, {
+    method: "POST",
+    headers: { ...authHeaders, ...dataBoundaryHeaders() },
+    body: form,
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json() as Promise<Document>;
 }
 
 export async function listStandaloneDocuments(): Promise<Document[]> {
-    return apiRequest<Document[]>("/single-documents");
+  return apiRequest<Document[]>("/single-documents");
 }
 
 export async function deleteDocument(documentId: string): Promise<void> {
-    await apiRequest(`/single-documents/${documentId}`, { method: "DELETE" });
+  await apiRequest(`/single-documents/${documentId}`, { method: "DELETE" });
 }
 
 export async function getDocumentUrl(
-    documentId: string,
-    versionId?: string | null,
+  documentId: string,
+  versionId?: string | null,
 ): Promise<{ url: string; filename: string; version_id: string | null }> {
-    const qs = versionId ? `?version_id=${encodeURIComponent(versionId)}` : "";
-    return apiRequest(`/single-documents/${documentId}/url${qs}`);
+  const qs = versionId ? `?version_id=${encodeURIComponent(versionId)}` : "";
+  return apiRequest(`/single-documents/${documentId}/url${qs}`);
 }
 
 export async function downloadDocumentsZip(
-    documentIds: string[],
+  documentIds: string[],
 ): Promise<Blob> {
-    const authHeaders = await getAuthHeader();
-    const response = await fetch(`${API_BASE}/single-documents/download-zip`, {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-            "Content-Type": "application/json",
-            ...authHeaders,
-            ...dataBoundaryHeaders(),
-        },
-        body: JSON.stringify({ document_ids: documentIds }),
-    });
-    if (!response.ok) {
-        const detail = await response.text();
-        throw new Error(detail || `API error: ${response.status}`);
-    }
-    return response.blob();
+  const authHeaders = await getAuthHeader();
+  const response = await fetch(`${API_BASE}/single-documents/download-zip`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+      ...dataBoundaryHeaders(),
+    },
+    body: JSON.stringify({ document_ids: documentIds }),
+  });
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(detail || `API error: ${response.status}`);
+  }
+  return response.blob();
 }
 
 // ---------------------------------------------------------------------------
@@ -846,201 +859,203 @@ export async function downloadDocumentsZip(
 // ---------------------------------------------------------------------------
 
 export async function createChat(payload?: {
-    project_id?: string;
-    jurisdictions?: Array<"CA-ON" | "CA" | "US">;
-    legal_as_of_date?: string;
+  project_id?: string;
+  jurisdictions?: Array<"CA-ON" | "CA" | "US">;
+  legal_as_of_date?: string;
 }): Promise<{ id: string }> {
-    return apiRequest<{ id: string }>("/chat/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload ?? {}),
-    });
+  return apiRequest<{ id: string }>("/chat/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload ?? {}),
+  });
 }
 
 export async function listChats(options?: { limit?: number }): Promise<Chat[]> {
-    const params = new URLSearchParams();
-    if (options?.limit) params.set("limit", String(options.limit));
-    const query = params.toString();
-    return apiRequest<Chat[]>(`/chat${query ? `?${query}` : ""}`);
+  const params = new URLSearchParams();
+  if (options?.limit) params.set("limit", String(options.limit));
+  const query = params.toString();
+  return apiRequest<Chat[]>(`/chat${query ? `?${query}` : ""}`);
 }
 
 export async function listProjectChats(projectId: string): Promise<Chat[]> {
-    return apiRequest<Chat[]>(`/projects/${projectId}/chats`);
+  return apiRequest<Chat[]>(`/projects/${projectId}/chats`);
 }
 
 export async function getChat(chatId: string): Promise<ChatDetailOut> {
-    const raw = await apiRequest<ServerChatDetailOut>(`/chat/${chatId}`);
-    const messages: Message[] = raw.messages.map((m) => {
-        if (m.role === "user") {
-            return {
-                id: m.id,
-                role: "user",
-                content: typeof m.content === "string" ? m.content : "",
-                files: m.files ?? undefined,
-                workflow: m.workflow ?? undefined,
-            };
-        }
-        const events = Array.isArray(m.content)
-            ? (m.content as AssistantEvent[])
-            : undefined;
-        return {
-            id: m.id,
-            role: "assistant",
-            content:
-                events
-                    ?.filter((e) => e.type === "content")
-                    .map((e) => (e as { type: "content"; text: string }).text)
-                    .join("") ?? "",
-            citations: m.citations ?? undefined,
-            events,
-        };
-    });
-    return { chat: raw.chat, messages };
+  const raw = await apiRequest<ServerChatDetailOut>(`/chat/${chatId}`);
+  const messages: Message[] = raw.messages.map((m) => {
+    if (m.role === "user") {
+      return {
+        id: m.id,
+        role: "user",
+        content: typeof m.content === "string" ? m.content : "",
+        files: m.files ?? undefined,
+        workflow: m.workflow ?? undefined,
+      };
+    }
+    const events = Array.isArray(m.content)
+      ? (m.content as AssistantEvent[])
+      : undefined;
+    return {
+      id: m.id,
+      role: "assistant",
+      content:
+        events
+          ?.filter((e) => e.type === "content")
+          .map((e) => (e as { type: "content"; text: string }).text)
+          .join("") ?? "",
+      citations: m.citations ?? undefined,
+      events,
+    };
+  });
+  return { chat: raw.chat, messages };
 }
 
 export async function renameChat(chatId: string, title: string): Promise<void> {
-    await apiRequest(`/chat/${chatId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
-    });
+  await apiRequest(`/chat/${chatId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
 }
 
 export async function deleteChat(chatId: string): Promise<void> {
-    await apiRequest(`/chat/${chatId}`, { method: "DELETE" });
+  await apiRequest(`/chat/${chatId}`, { method: "DELETE" });
 }
 
 export async function generateChatTitle(
-    chatId: string,
-    message: string,
+  chatId: string,
+  message: string,
 ): Promise<{ title: string }> {
-    return apiRequest<{ title: string }>(`/chat/${chatId}/generate-title`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-    });
+  return apiRequest<{ title: string }>(`/chat/${chatId}/generate-title`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  });
 }
 
 export type CaseLawOpinion = {
-    opinionId: number | null;
-    apiUrl?: string | null;
-    type: string | null;
-    author: string | null;
-    url: string | null;
-    text?: string | null;
-    html?: string | null;
+  opinionId: number | null;
+  apiUrl?: string | null;
+  type: string | null;
+  author: string | null;
+  url: string | null;
+  text?: string | null;
+  html?: string | null;
 };
 
 export async function getCourtlistenerOpinions(
-    clusterId: number,
+  clusterId: number,
 ): Promise<CaseLawOpinion[]> {
-    const result = await apiRequest<{ opinions: CaseLawOpinion[] }>(
-        "/case-law/case-opinions",
-        {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                clusterId,
-            }),
-        },
-    );
-    return result.opinions;
+  const result = await apiRequest<{ opinions: CaseLawOpinion[] }>(
+    "/case-law/case-opinions",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clusterId,
+      }),
+    },
+  );
+  return result.opinions;
 }
 
 export async function streamChat(payload: {
-    messages: {
-        role: string;
-        content: string;
-        files?: { filename: string; document_id?: string }[];
-        workflow?: { id: string; title: string };
-    }[];
-    chat_id?: string;
-    project_id?: string;
-    model?: string;
-    jurisdictions?: Array<"CA-ON" | "CA" | "US">;
-    legal_as_of_date?: string;
-    ask_inputs_response?: {
-        responses: (
-            | {
-                  id: string;
-                  kind: "choice";
-                  question: string;
-                  answer?: string;
-                  skipped?: boolean;
-              }
-            | {
-                  id: string;
-                  kind: "documents";
-                  filenames: string[];
-                  skipped?: boolean;
-              }
-        )[];
-    };
-    signal?: AbortSignal;
-}): Promise<Response> {
-    const { signal, ...body } = payload;
-    const authHeaders = await getAuthHeader();
-    return fetch(`${API_BASE}/chat`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "text/event-stream",
-            ...authHeaders,
-            ...dataBoundaryHeaders(),
-            ...dataBoundaryHeaders(),
-        },
-        body: JSON.stringify(body),
-        signal,
-    });
-}
-
-type StreamChatMessage = {
+  messages: {
     role: string;
     content: string;
     files?: { filename: string; document_id?: string }[];
     workflow?: { id: string; title: string };
+  }[];
+  chat_id?: string;
+  project_id?: string;
+  model?: string;
+  reasoning_effort?: ReasoningEffort;
+  jurisdictions?: Array<"CA-ON" | "CA" | "US">;
+  legal_as_of_date?: string;
+  ask_inputs_response?: {
+    responses: (
+      | {
+          id: string;
+          kind: "choice";
+          question: string;
+          answer?: string;
+          skipped?: boolean;
+        }
+      | {
+          id: string;
+          kind: "documents";
+          filenames: string[];
+          skipped?: boolean;
+        }
+    )[];
+  };
+  signal?: AbortSignal;
+}): Promise<Response> {
+  const { signal, ...body } = payload;
+  const authHeaders = await getAuthHeader();
+  return fetch(`${API_BASE}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "text/event-stream",
+      ...authHeaders,
+      ...dataBoundaryHeaders(),
+      ...dataBoundaryHeaders(),
+    },
+    body: JSON.stringify(body),
+    signal,
+  });
+}
+
+type StreamChatMessage = {
+  role: string;
+  content: string;
+  files?: { filename: string; document_id?: string }[];
+  workflow?: { id: string; title: string };
 };
 
 export async function streamProjectChat(payload: {
-    projectId: string;
-    messages: StreamChatMessage[];
-    chat_id?: string;
-    model?: string;
-    jurisdictions?: Array<"CA-ON" | "CA" | "US">;
-    legal_as_of_date?: string;
-    displayed_doc?: { filename: string; document_id: string };
-    attached_documents?: { filename: string; document_id: string }[];
-    ask_inputs_response?: {
-        responses: (
-            | {
-                  id: string;
-                  kind: "choice";
-                  question: string;
-                  answer?: string;
-                  skipped?: boolean;
-              }
-            | {
-                  id: string;
-                  kind: "documents";
-                  filenames: string[];
-                  skipped?: boolean;
-              }
-        )[];
-    };
-    signal?: AbortSignal;
+  projectId: string;
+  messages: StreamChatMessage[];
+  chat_id?: string;
+  model?: string;
+  reasoning_effort?: ReasoningEffort;
+  jurisdictions?: Array<"CA-ON" | "CA" | "US">;
+  legal_as_of_date?: string;
+  displayed_doc?: { filename: string; document_id: string };
+  attached_documents?: { filename: string; document_id: string }[];
+  ask_inputs_response?: {
+    responses: (
+      | {
+          id: string;
+          kind: "choice";
+          question: string;
+          answer?: string;
+          skipped?: boolean;
+        }
+      | {
+          id: string;
+          kind: "documents";
+          filenames: string[];
+          skipped?: boolean;
+        }
+    )[];
+  };
+  signal?: AbortSignal;
 }): Promise<Response> {
-    const { projectId, signal, ...body } = payload;
-    const authHeaders = await getAuthHeader();
-    return fetch(`${API_BASE}/projects/${projectId}/chat`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "text/event-stream",
-            ...authHeaders,
-        },
-        body: JSON.stringify(body),
-        signal,
-    });
+  const { projectId, signal, ...body } = payload;
+  const authHeaders = await getAuthHeader();
+  return fetch(`${API_BASE}/projects/${projectId}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "text/event-stream",
+      ...authHeaders,
+    },
+    body: JSON.stringify(body),
+    signal,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -1048,242 +1063,242 @@ export async function streamProjectChat(payload: {
 // ---------------------------------------------------------------------------
 
 export async function listTabularReviews(
-    projectId?: string,
+  projectId?: string,
 ): Promise<TabularReview[]> {
-    const qs = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
-    return apiRequest<TabularReview[]>(`/tabular-review${qs}`);
+  const qs = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
+  return apiRequest<TabularReview[]>(`/tabular-review${qs}`);
 }
 
 export async function createTabularReview(payload: {
-    title?: string;
-    document_ids: string[];
-    columns_config: { index: number; name: string; prompt: string }[];
-    workflow_id?: string;
-    project_id?: string;
+  title?: string;
+  document_ids: string[];
+  columns_config: { index: number; name: string; prompt: string }[];
+  workflow_id?: string;
+  project_id?: string;
 }): Promise<TabularReview> {
-    return apiRequest<TabularReview>("/tabular-review", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  return apiRequest<TabularReview>("/tabular-review", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function getTabularReview(
-    reviewId: string,
+  reviewId: string,
 ): Promise<TabularReviewDetailOut> {
-    return apiRequest<TabularReviewDetailOut>(`/tabular-review/${reviewId}`);
+  return apiRequest<TabularReviewDetailOut>(`/tabular-review/${reviewId}`);
 }
 
 export async function updateTabularReview(
-    reviewId: string,
-    payload: {
-        title?: string;
-        columns_config?: { index: number; name: string; prompt: string }[];
-        document_ids?: string[];
-        project_id?: string | null;
-        shared_with?: string[];
-    },
+  reviewId: string,
+  payload: {
+    title?: string;
+    columns_config?: { index: number; name: string; prompt: string }[];
+    document_ids?: string[];
+    project_id?: string | null;
+    shared_with?: string[];
+  },
 ): Promise<TabularReview> {
-    return apiRequest<TabularReview>(`/tabular-review/${reviewId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  return apiRequest<TabularReview>(`/tabular-review/${reviewId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function getTabularReviewPeople(
-    reviewId: string,
+  reviewId: string,
 ): Promise<ProjectPeople> {
-    return apiRequest<ProjectPeople>(`/tabular-review/${reviewId}/people`);
+  return apiRequest<ProjectPeople>(`/tabular-review/${reviewId}/people`);
 }
 
 export async function generateTabularColumnPrompt(
-    title: string,
-    options?: { format?: string; documentName?: string; tags?: string[] },
+  title: string,
+  options?: { format?: string; documentName?: string; tags?: string[] },
 ): Promise<{ prompt: string; source: "preset" | "llm" | "fallback" }> {
-    return apiRequest<{
-        prompt: string;
-        source: "preset" | "llm" | "fallback";
-    }>("/tabular-review/prompt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            title,
-            format: options?.format,
-            documentName: options?.documentName,
-            tags: options?.tags,
-        }),
-    });
+  return apiRequest<{
+    prompt: string;
+    source: "preset" | "llm" | "fallback";
+  }>("/tabular-review/prompt", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title,
+      format: options?.format,
+      documentName: options?.documentName,
+      tags: options?.tags,
+    }),
+  });
 }
 
 export async function uploadReviewDocument(
-    reviewId: string,
-    file: File,
-    options?: {
-        projectId?: string;
-        documentIds?: string[];
-        columnsConfig?: { index: number; name: string; prompt: string }[];
-    },
+  reviewId: string,
+  file: File,
+  options?: {
+    projectId?: string;
+    documentIds?: string[];
+    columnsConfig?: { index: number; name: string; prompt: string }[];
+  },
 ): Promise<Document> {
-    const uploaded = options?.projectId
-        ? await uploadProjectDocument(options.projectId, file)
-        : await uploadStandaloneDocument(file);
+  const uploaded = options?.projectId
+    ? await uploadProjectDocument(options.projectId, file)
+    : await uploadStandaloneDocument(file);
 
-    await updateTabularReview(reviewId, {
-        columns_config: options?.columnsConfig,
-        document_ids: [...(options?.documentIds ?? []), uploaded.id],
-    });
+  await updateTabularReview(reviewId, {
+    columns_config: options?.columnsConfig,
+    document_ids: [...(options?.documentIds ?? []), uploaded.id],
+  });
 
-    return uploaded;
+  return uploaded;
 }
 
 export async function deleteTabularReview(reviewId: string): Promise<void> {
-    await apiRequest(`/tabular-review/${reviewId}`, { method: "DELETE" });
+  await apiRequest(`/tabular-review/${reviewId}`, { method: "DELETE" });
 }
 
 export async function streamTabularGeneration(
-    reviewId: string,
+  reviewId: string,
 ): Promise<Response> {
-    const authHeaders = await getAuthHeader();
-    return fetch(`${API_BASE}/tabular-review/${reviewId}/generate`, {
-        method: "POST",
-        headers: { ...authHeaders, ...dataBoundaryHeaders() },
-    });
+  const authHeaders = await getAuthHeader();
+  return fetch(`${API_BASE}/tabular-review/${reviewId}/generate`, {
+    method: "POST",
+    headers: { ...authHeaders, ...dataBoundaryHeaders() },
+  });
 }
 
 export async function streamTabularChat(
-    reviewId: string,
-    messages: { role: string; content: string }[],
-    chat_id?: string | null,
-    signal?: AbortSignal,
-    context?: { reviewTitle?: string | null; projectName?: string | null },
+  reviewId: string,
+  messages: { role: string; content: string }[],
+  chat_id?: string | null,
+  signal?: AbortSignal,
+  context?: { reviewTitle?: string | null; projectName?: string | null },
 ): Promise<Response> {
-    const authHeaders = await getAuthHeader();
-    return fetch(`${API_BASE}/tabular-review/${reviewId}/chat`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            ...authHeaders,
-            ...dataBoundaryHeaders(),
-        },
-        body: JSON.stringify({
-            messages,
-            chat_id: chat_id ?? undefined,
-            review_title: context?.reviewTitle ?? undefined,
-            project_name: context?.projectName ?? undefined,
-        }),
-        signal: signal ?? undefined,
-    });
+  const authHeaders = await getAuthHeader();
+  return fetch(`${API_BASE}/tabular-review/${reviewId}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+      ...dataBoundaryHeaders(),
+    },
+    body: JSON.stringify({
+      messages,
+      chat_id: chat_id ?? undefined,
+      review_title: context?.reviewTitle ?? undefined,
+      project_name: context?.projectName ?? undefined,
+    }),
+    signal: signal ?? undefined,
+  });
 }
 
 export interface TRCitationAnnotation {
-    type: "tabular_citation";
-    ref: number;
-    col_index: number;
-    row_index: number;
-    col_name: string;
-    doc_name: string;
-    quote: string;
+  type: "tabular_citation";
+  ref: number;
+  col_index: number;
+  row_index: number;
+  col_name: string;
+  doc_name: string;
+  quote: string;
 }
 
 interface RawTRMessage {
-    id: string;
-    chat_id: string;
-    role: "user" | "assistant";
-    content: string | AssistantEvent[] | null;
-    annotations?: TRCitationAnnotation[] | null;
-    created_at: string;
+  id: string;
+  chat_id: string;
+  role: "user" | "assistant";
+  content: string | AssistantEvent[] | null;
+  annotations?: TRCitationAnnotation[] | null;
+  created_at: string;
 }
 
 export interface TRDisplayMessage {
-    role: "user" | "assistant";
-    content: string;
-    events?: AssistantEvent[];
-    annotations?: TRCitationAnnotation[];
+  role: "user" | "assistant";
+  content: string;
+  events?: AssistantEvent[];
+  annotations?: TRCitationAnnotation[];
 }
 
 export interface TRChat {
-    id: string;
-    title: string | null;
-    created_at: string;
-    updated_at: string;
+  id: string;
+  title: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function mapTRMessages(raw: RawTRMessage[]): TRDisplayMessage[] {
-    return raw.map((m) => {
-        if (m.role === "user") {
-            return {
-                role: "user" as const,
-                content: typeof m.content === "string" ? m.content : "",
-            };
-        }
-        const events = Array.isArray(m.content)
-            ? (m.content as AssistantEvent[])
-            : undefined;
-        const content =
-            events
-                ?.filter((e) => e.type === "content")
-                .map((e) => (e as { type: "content"; text: string }).text)
-                .join("") ?? "";
-        return {
-            role: "assistant" as const,
-            content,
-            events,
-            annotations: m.annotations ?? undefined,
-        };
-    });
+  return raw.map((m) => {
+    if (m.role === "user") {
+      return {
+        role: "user" as const,
+        content: typeof m.content === "string" ? m.content : "",
+      };
+    }
+    const events = Array.isArray(m.content)
+      ? (m.content as AssistantEvent[])
+      : undefined;
+    const content =
+      events
+        ?.filter((e) => e.type === "content")
+        .map((e) => (e as { type: "content"; text: string }).text)
+        .join("") ?? "";
+    return {
+      role: "assistant" as const,
+      content,
+      events,
+      annotations: m.annotations ?? undefined,
+    };
+  });
 }
 
 export async function getTabularChats(reviewId: string): Promise<TRChat[]> {
-    return apiRequest<TRChat[]>(`/tabular-review/${reviewId}/chats`);
+  return apiRequest<TRChat[]>(`/tabular-review/${reviewId}/chats`);
 }
 
 export async function getTabularChatMessages(
-    reviewId: string,
-    chatId: string,
+  reviewId: string,
+  chatId: string,
 ): Promise<RawTRMessage[]> {
-    return apiRequest<RawTRMessage[]>(
-        `/tabular-review/${reviewId}/chats/${chatId}/messages`,
-    );
+  return apiRequest<RawTRMessage[]>(
+    `/tabular-review/${reviewId}/chats/${chatId}/messages`,
+  );
 }
 
 export async function deleteTabularChat(
-    reviewId: string,
-    chatId: string,
+  reviewId: string,
+  chatId: string,
 ): Promise<void> {
-    await apiRequest(`/tabular-review/${reviewId}/chats/${chatId}`, {
-        method: "DELETE",
-    });
+  await apiRequest(`/tabular-review/${reviewId}/chats/${chatId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function regenerateTabularCell(
-    reviewId: string,
-    documentId: string,
-    columnIndex: number,
+  reviewId: string,
+  documentId: string,
+  columnIndex: number,
 ): Promise<{
-    summary: string;
-    flag: "green" | "grey" | "yellow" | "red";
-    reasoning: string;
+  summary: string;
+  flag: "green" | "grey" | "yellow" | "red";
+  reasoning: string;
 }> {
-    return apiRequest(`/tabular-review/${reviewId}/regenerate-cell`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            document_id: documentId,
-            column_index: columnIndex,
-        }),
-    });
+  return apiRequest(`/tabular-review/${reviewId}/regenerate-cell`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      document_id: documentId,
+      column_index: columnIndex,
+    }),
+  });
 }
 
 export async function clearTabularCells(
-    reviewId: string,
-    documentIds: string[],
+  reviewId: string,
+  documentIds: string[],
 ): Promise<void> {
-    await apiRequest(`/tabular-review/${reviewId}/clear-cells`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ document_ids: documentIds }),
-    });
+  await apiRequest(`/tabular-review/${reviewId}/clear-cells`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ document_ids: documentIds }),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -1292,118 +1307,116 @@ export async function clearTabularCells(
 
 type WorkflowType = Workflow["metadata"]["type"];
 
-export async function listWorkflows(
-    type: WorkflowType,
-): Promise<Workflow[]> {
-    return apiRequest<Workflow[]>(`/workflows?type=${type}`);
+export async function listWorkflows(type: WorkflowType): Promise<Workflow[]> {
+  return apiRequest<Workflow[]>(`/workflows?type=${type}`);
 }
 
 export async function getWorkflow(workflowId: string): Promise<Workflow> {
-    return apiRequest<Workflow>(`/workflows/${workflowId}`);
+  return apiRequest<Workflow>(`/workflows/${workflowId}`);
 }
 
 export async function createWorkflow(payload: {
-    metadata: {
-        title: string;
-        type: "assistant" | "tabular";
-        language?: string | null;
-        practice?: string | null;
-        jurisdictions?: string[] | null;
-    };
-    skill_md?: string;
-    columns_config?: { index: number; name: string; prompt: string }[];
+  metadata: {
+    title: string;
+    type: "assistant" | "tabular";
+    language?: string | null;
+    practice?: string | null;
+    jurisdictions?: string[] | null;
+  };
+  skill_md?: string;
+  columns_config?: { index: number; name: string; prompt: string }[];
 }): Promise<Workflow> {
-    return apiRequest<Workflow>("/workflows", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  return apiRequest<Workflow>("/workflows", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function updateWorkflow(
-    workflowId: string,
-    payload: {
-        metadata?: {
-            title?: string;
-            language?: string | null;
-            practice?: string | null;
-            jurisdictions?: string[] | null;
-        };
-        skill_md?: string;
-        columns_config?: { index: number; name: string; prompt: string }[];
-    },
+  workflowId: string,
+  payload: {
+    metadata?: {
+      title?: string;
+      language?: string | null;
+      practice?: string | null;
+      jurisdictions?: string[] | null;
+    };
+    skill_md?: string;
+    columns_config?: { index: number; name: string; prompt: string }[];
+  },
 ): Promise<Workflow> {
-    return apiRequest<Workflow>(`/workflows/${workflowId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  return apiRequest<Workflow>(`/workflows/${workflowId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function deleteWorkflow(workflowId: string): Promise<void> {
-    await apiRequest(`/workflows/${workflowId}`, { method: "DELETE" });
+  await apiRequest(`/workflows/${workflowId}`, { method: "DELETE" });
 }
 
 export async function openSourceWorkflow(
-    workflowId: string,
-    payload: {
-        contributor_mode: OpenSourceWorkflowContributorMode;
-        contributor?: WorkflowContributor | null;
-    },
+  workflowId: string,
+  payload: {
+    contributor_mode: OpenSourceWorkflowContributorMode;
+    contributor?: WorkflowContributor | null;
+  },
 ): Promise<OpenSourceWorkflowResponse> {
-    return apiRequest<OpenSourceWorkflowResponse>(
-        `/workflows/${workflowId}/open-source`,
-        {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        },
-    );
+  return apiRequest<OpenSourceWorkflowResponse>(
+    `/workflows/${workflowId}/open-source`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export async function listHiddenWorkflows(): Promise<string[]> {
-    return apiRequest<string[]>("/workflows/hidden");
+  return apiRequest<string[]>("/workflows/hidden");
 }
 
 export async function hideWorkflow(workflowId: string): Promise<void> {
-    await apiRequest("/workflows/hidden", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workflow_id: workflowId }),
-    });
+  await apiRequest("/workflows/hidden", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ workflow_id: workflowId }),
+  });
 }
 
 export async function unhideWorkflow(workflowId: string): Promise<void> {
-    await apiRequest(`/workflows/hidden/${workflowId}`, { method: "DELETE" });
+  await apiRequest(`/workflows/hidden/${workflowId}`, { method: "DELETE" });
 }
 
 export async function shareWorkflow(
-    workflowId: string,
-    payload: { emails: string[]; allow_edit: boolean },
+  workflowId: string,
+  payload: { emails: string[]; allow_edit: boolean },
 ): Promise<void> {
-    await apiRequest<void>(`/workflows/${workflowId}/share`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+  await apiRequest<void>(`/workflows/${workflowId}/share`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function listWorkflowShares(workflowId: string): Promise<
-    {
-        id: string;
-        shared_with_email: string;
-        allow_edit: boolean;
-        created_at: string;
-    }[]
+  {
+    id: string;
+    shared_with_email: string;
+    allow_edit: boolean;
+    created_at: string;
+  }[]
 > {
-    return apiRequest(`/workflows/${workflowId}/shares`);
+  return apiRequest(`/workflows/${workflowId}/shares`);
 }
 
 export async function deleteWorkflowShare(
-    workflowId: string,
-    shareId: string,
+  workflowId: string,
+  shareId: string,
 ): Promise<void> {
-    await apiRequest(`/workflows/${workflowId}/shares/${shareId}`, {
-        method: "DELETE",
-    });
+  await apiRequest(`/workflows/${workflowId}/shares/${shareId}`, {
+    method: "DELETE",
+  });
 }

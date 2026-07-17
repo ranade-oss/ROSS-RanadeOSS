@@ -4,7 +4,7 @@ Generated from governed records. This report is evidence inventory, not approval
 
 - Version: 1.0.0-draft
 - As of: 2026-07-17
-- Release ID: unassigned
+- Release ID: ross-public-beta-20260717-rc1
 - Status: blocked-awaiting-external-completion
 - Data boundary: synthetic-or-non-confidential-only
 

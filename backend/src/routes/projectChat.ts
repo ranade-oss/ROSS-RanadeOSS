@@ -2,25 +2,31 @@ import { Router } from "express";
 import { requireAuth } from "../middleware/auth";
 import { createServerSupabase } from "../lib/supabase";
 import {
-    buildProjectDocContext,
-    buildMessages,
-    buildWorkflowStore,
-    enrichWithPriorEvents,
-    appendAskInputsResponseToLastAssistantMessage,
-    appendAssistantEventsToLastAssistantMessage,
-    AssistantStreamError,
-    buildCancelledAssistantMessage,
-    extractCitations,
-    isAbortError,
-    runLLMStream,
-    stripTransientAssistantEvents,
-    PROJECT_EXTRA_TOOLS,
-    parseAskInputsResponsePayload,
-    type ChatMessage,
+  buildProjectDocContext,
+  buildMessages,
+  buildWorkflowStore,
+  enrichWithPriorEvents,
+  appendAskInputsResponseToLastAssistantMessage,
+  appendAssistantEventsToLastAssistantMessage,
+  AssistantStreamError,
+  buildCancelledAssistantMessage,
+  extractCitations,
+  isAbortError,
+  runLLMStream,
+  stripTransientAssistantEvents,
+  PROJECT_EXTRA_TOOLS,
+  parseAskInputsResponsePayload,
+  type ChatMessage,
 } from "../lib/chat";
 import { getUserModelSettings } from "../lib/userSettings";
 import { checkProjectAccess } from "../lib/access";
 import { safeErrorLog, safeErrorMessage } from "../lib/safeError";
+import {
+  DEFAULT_MAIN_MODEL,
+  resolveModel,
+  supportsReasoningEffort,
+  type ReasoningEffort,
+} from "../lib/llm";
 
 const PROJECT_SYSTEM_PROMPT_EXTRA = `PROJECT CONTEXT:
 You are operating within a project folder that contains a collection of legal documents the user has organised for a single matter. The user's questions will usually refer to one or more documents in this project — your job is to find the relevant files to work on. Use list_documents to see what is available and fetch_documents / read_document to pull in any documents you need before answering.
@@ -33,394 +39,382 @@ When the user wants to use an existing project document as a starting point for 
 export const projectChatRouter = Router({ mergeParams: true });
 
 function parseProjectLegalScope(
-    jurisdictions: unknown,
-    legalAsOfDate: unknown,
+  jurisdictions: unknown,
+  legalAsOfDate: unknown,
 ) {
-    if (!Array.isArray(jurisdictions) || jurisdictions.length === 0)
-        return {
-            ok: false as const,
-            detail: "jurisdictions must be a non-empty array",
-        };
-    const allowed = new Set(["CA-ON", "CA", "US"]);
-    if (
-        jurisdictions.some(
-            (item) => typeof item !== "string" || !allowed.has(item),
-        )
-    )
-        return {
-            ok: false as const,
-            detail: "jurisdictions contains an unsupported value",
-        };
-    if (
-        legalAsOfDate !== undefined &&
-        (typeof legalAsOfDate !== "string" ||
-            !/^\d{4}-\d{2}-\d{2}$/.test(legalAsOfDate) ||
-            Number.isNaN(Date.parse(`${legalAsOfDate}T00:00:00Z`)))
-    )
-        return {
-            ok: false as const,
-            detail: "legal_as_of_date must use YYYY-MM-DD",
-        };
+  if (!Array.isArray(jurisdictions) || jurisdictions.length === 0)
     return {
-        ok: true as const,
-        jurisdictions: [
-            ...new Set(jurisdictions as Array<"CA-ON" | "CA" | "US">),
-        ],
-        legalAsOfDate: typeof legalAsOfDate === "string" ? legalAsOfDate : null,
+      ok: false as const,
+      detail: "jurisdictions must be a non-empty array",
     };
+  const allowed = new Set(["CA-ON", "CA", "US"]);
+  if (
+    jurisdictions.some((item) => typeof item !== "string" || !allowed.has(item))
+  )
+    return {
+      ok: false as const,
+      detail: "jurisdictions contains an unsupported value",
+    };
+  if (
+    legalAsOfDate !== undefined &&
+    (typeof legalAsOfDate !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(legalAsOfDate) ||
+      Number.isNaN(Date.parse(`${legalAsOfDate}T00:00:00Z`)))
+  )
+    return {
+      ok: false as const,
+      detail: "legal_as_of_date must use YYYY-MM-DD",
+    };
+  return {
+    ok: true as const,
+    jurisdictions: [...new Set(jurisdictions as Array<"CA-ON" | "CA" | "US">)],
+    legalAsOfDate: typeof legalAsOfDate === "string" ? legalAsOfDate : null,
+  };
 }
 
 // POST /projects/:projectId/chat — streaming
 projectChatRouter.post("/", requireAuth, async (req, res) => {
-    const userId = res.locals.userId as string;
-    const userEmail = res.locals.userEmail as string | undefined;
-    const { projectId } = req.params;
-    const {
-        messages,
-        chat_id,
-        model,
-        displayed_doc,
-        attached_documents,
-        ask_inputs_response,
-        jurisdictions,
-        legal_as_of_date,
-    } = req.body as {
-        messages: ChatMessage[];
-        chat_id?: string;
-        model?: string;
-        displayed_doc?: { filename: string; document_id: string };
-        attached_documents?: { filename: string; document_id: string }[];
-        ask_inputs_response?: unknown;
-        jurisdictions?: Array<"CA-ON" | "CA" | "US">;
-        legal_as_of_date?: string;
-    };
-    const parsedScope = parseProjectLegalScope(
-        jurisdictions ?? ["CA-ON", "CA"],
-        legal_as_of_date,
-    );
-    if (!parsedScope.ok)
-        return void res.status(400).json({ detail: parsedScope.detail });
-    const askInputsResponse =
-        parseAskInputsResponsePayload(ask_inputs_response);
+  const userId = res.locals.userId as string;
+  const userEmail = res.locals.userEmail as string | undefined;
+  const { projectId } = req.params;
+  const {
+    messages,
+    chat_id,
+    model,
+    displayed_doc,
+    attached_documents,
+    ask_inputs_response,
+    jurisdictions,
+    legal_as_of_date,
+    reasoning_effort,
+  } = req.body as {
+    messages: ChatMessage[];
+    chat_id?: string;
+    model?: string;
+    displayed_doc?: { filename: string; document_id: string };
+    attached_documents?: { filename: string; document_id: string }[];
+    ask_inputs_response?: unknown;
+    jurisdictions?: Array<"CA-ON" | "CA" | "US">;
+    legal_as_of_date?: string;
+    reasoning_effort?: ReasoningEffort;
+  };
+  const effectiveModel = resolveModel(model, DEFAULT_MAIN_MODEL);
+  if (
+    reasoning_effort !== undefined &&
+    !supportsReasoningEffort(effectiveModel, reasoning_effort)
+  ) {
+    return void res.status(400).json({
+      detail: `reasoning_effort is not supported by ${effectiveModel}`,
+    });
+  }
+  const parsedScope = parseProjectLegalScope(
+    jurisdictions ?? ["CA-ON", "CA"],
+    legal_as_of_date,
+  );
+  if (!parsedScope.ok)
+    return void res.status(400).json({ detail: parsedScope.detail });
+  const askInputsResponse = parseAskInputsResponsePayload(ask_inputs_response);
 
-    const db = createServerSupabase();
+  const db = createServerSupabase();
 
-    // Verify the user has access to the project (owner or shared member).
-    const projectAccess = await checkProjectAccess(
-        projectId,
-        userId,
-        userEmail,
-        db,
-    );
-    if (!projectAccess.ok)
-        return void res.status(404).json({ detail: "Project not found" });
+  // Verify the user has access to the project (owner or shared member).
+  const projectAccess = await checkProjectAccess(
+    projectId,
+    userId,
+    userEmail,
+    db,
+  );
+  if (!projectAccess.ok)
+    return void res.status(404).json({ detail: "Project not found" });
 
-    let chatId = chat_id ?? null;
-    let chatTitle: string | null = null;
+  let chatId = chat_id ?? null;
+  let chatTitle: string | null = null;
 
-    if (chatId) {
-        const { data: existing } = await db
-            .from("chats")
-            .select("id, title, project_id")
-            .eq("id", chatId)
-            .single();
-        const canUse = !!existing && existing.project_id === projectId;
-        if (!canUse) chatId = null;
-        else {
-            chatTitle = existing!.title;
-            await db
-                .from("chats")
-                .update({
-                    jurisdictions: parsedScope.jurisdictions,
-                    ...(parsedScope.legalAsOfDate
-                        ? { legal_as_of_date: parsedScope.legalAsOfDate }
-                        : {}),
-                })
-                .eq("id", chatId);
-        }
+  if (chatId) {
+    const { data: existing } = await db
+      .from("chats")
+      .select("id, title, project_id")
+      .eq("id", chatId)
+      .single();
+    const canUse = !!existing && existing.project_id === projectId;
+    if (!canUse) chatId = null;
+    else {
+      chatTitle = existing!.title;
+      await db
+        .from("chats")
+        .update({
+          jurisdictions: parsedScope.jurisdictions,
+          ...(parsedScope.legalAsOfDate
+            ? { legal_as_of_date: parsedScope.legalAsOfDate }
+            : {}),
+        })
+        .eq("id", chatId);
     }
+  }
 
-    if (!chatId) {
-        const { data: newChat, error } = await db
-            .from("chats")
-            .insert({
-                user_id: userId,
-                project_id: projectId,
-                jurisdictions: parsedScope.jurisdictions,
-                ...(parsedScope.legalAsOfDate
-                    ? { legal_as_of_date: parsedScope.legalAsOfDate }
-                    : {}),
-            })
-            .select("id, title")
-            .single();
-        if (error || !newChat)
-            return void res
-                .status(500)
-                .json({ detail: "Failed to create chat" });
-        chatId = newChat.id as string;
-        chatTitle = newChat.title;
-    }
+  if (!chatId) {
+    const { data: newChat, error } = await db
+      .from("chats")
+      .insert({
+        user_id: userId,
+        project_id: projectId,
+        jurisdictions: parsedScope.jurisdictions,
+        ...(parsedScope.legalAsOfDate
+          ? { legal_as_of_date: parsedScope.legalAsOfDate }
+          : {}),
+      })
+      .select("id, title")
+      .single();
+    if (error || !newChat)
+      return void res.status(500).json({ detail: "Failed to create chat" });
+    chatId = newChat.id as string;
+    chatTitle = newChat.title;
+  }
 
-    const lastUser = [...messages].reverse().find((m) => m.role === "user");
-    if (askInputsResponse) {
-        await appendAskInputsResponseToLastAssistantMessage(
-            db,
-            chatId,
-            askInputsResponse,
-        );
-    } else if (lastUser) {
-        const { error: userMessageError } = await db
-            .from("chat_messages")
-            .insert({
-                chat_id: chatId,
-                role: "user",
-                content: lastUser.content,
-                files: lastUser.files ?? null,
-                workflow: lastUser.workflow ?? null,
-            });
-        if (userMessageError) {
-            console.error(
-                "[project-chat/stream] failed to save user message",
-                safeErrorLog(userMessageError),
-            );
-            return void res
-                .status(500)
-                .json({ detail: "Failed to save user message" });
-        }
-    }
-
-    const { docIndex, docStore, folderPaths } = await buildProjectDocContext(
-        projectId,
-        userId,
-        db,
+  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  if (askInputsResponse) {
+    await appendAskInputsResponseToLastAssistantMessage(
+      db,
+      chatId,
+      askInputsResponse,
     );
-    const docAvailability = Object.entries(docIndex).map(([doc_id, info]) => ({
-        doc_id,
-        filename: info.filename,
-        folder_path: folderPaths.get(doc_id),
-    }));
-
-    const enrichedMessages = await enrichWithPriorEvents(
-        messages,
-        chatId,
-        db,
-        docIndex,
-    );
-    const messagesForLLM: ChatMessage[] = displayed_doc
-        ? enrichedMessages.map((m, i) => {
-              if (i !== enrichedMessages.length - 1 || m.role !== "user")
-                  return m;
-              return {
-                  ...m,
-                  content: `${m.content}\n\ndisplayed_doc: ${displayed_doc.filename}, displayed_doc_id: ${displayed_doc.document_id}`,
-              };
-          })
-        : enrichedMessages;
-
-    // The user-attached docs for this turn (dragged into / picked from
-    // the chat input) come in as a request-level field. Surface them in
-    // the system prompt with the current-turn doc_id slugs so the model
-    // knows which docs the user is highlighting *now*, distinct from
-    // the broader project doc list.
-    let systemPromptExtra = PROJECT_SYSTEM_PROMPT_EXTRA;
-    if (attached_documents?.length) {
-        const slugByDocumentId = new Map<string, string>();
-        for (const [slug, info] of Object.entries(docIndex)) {
-            if (info.document_id) slugByDocumentId.set(info.document_id, slug);
-        }
-        const lines = attached_documents.map((d) => {
-            const slug = slugByDocumentId.get(d.document_id);
-            return slug ? `- ${slug}: ${d.filename}` : `- ${d.filename}`;
-        });
-        systemPromptExtra += `\n\nUSER-ATTACHED DOCUMENTS FOR THIS TURN:\nThe user has attached the following document(s) directly to their latest message. Treat these as the primary focus of the request unless their message clearly says otherwise.\n${lines.join("\n")}`;
+  } else if (lastUser) {
+    const { error: userMessageError } = await db.from("chat_messages").insert({
+      chat_id: chatId,
+      role: "user",
+      content: lastUser.content,
+      files: lastUser.files ?? null,
+      workflow: lastUser.workflow ?? null,
+    });
+    if (userMessageError) {
+      console.error(
+        "[project-chat/stream] failed to save user message",
+        safeErrorLog(userMessageError),
+      );
+      return void res
+        .status(500)
+        .json({ detail: "Failed to save user message" });
     }
+  }
 
-    const { api_keys: apiKeys, legal_research: legalResearch } =
-        await getUserModelSettings(userId, db);
-    const scopedLegalResearch = {
-        ...legalResearch,
-        defaultCountry: parsedScope.jurisdictions.includes("US")
-            ? ("US" as const)
-            : ("CA" as const),
-        defaultProvince: parsedScope.jurisdictions.includes("CA-ON")
-            ? ("ON" as const)
-            : null,
-        enabledJurisdictions: parsedScope.jurisdictions,
-    };
-    const legalScopeExtra = parsedScope.legalAsOfDate
-        ? `\n\nLEGAL AS-OF DATE FOR THIS CHAT: ${parsedScope.legalAsOfDate}. Do not substitute current law without disclosure.`
-        : "";
-    const apiMessages = buildMessages(
-        messagesForLLM,
-        docAvailability,
-        `${systemPromptExtra}${legalScopeExtra}`,
-        undefined,
-        scopedLegalResearch,
-    );
+  const { docIndex, docStore, folderPaths } = await buildProjectDocContext(
+    projectId,
+    userId,
+    db,
+  );
+  const docAvailability = Object.entries(docIndex).map(([doc_id, info]) => ({
+    doc_id,
+    filename: info.filename,
+    folder_path: folderPaths.get(doc_id),
+  }));
 
-    const workflowStore = await buildWorkflowStore(userId, userEmail, db);
+  const enrichedMessages = await enrichWithPriorEvents(
+    messages,
+    chatId,
+    db,
+    docIndex,
+  );
+  const messagesForLLM: ChatMessage[] = displayed_doc
+    ? enrichedMessages.map((m, i) => {
+        if (i !== enrichedMessages.length - 1 || m.role !== "user") return m;
+        return {
+          ...m,
+          content: `${m.content}\n\ndisplayed_doc: ${displayed_doc.filename}, displayed_doc_id: ${displayed_doc.document_id}`,
+        };
+      })
+    : enrichedMessages;
 
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.setHeader("X-Accel-Buffering", "no");
-    res.flushHeaders();
+  // The user-attached docs for this turn (dragged into / picked from
+  // the chat input) come in as a request-level field. Surface them in
+  // the system prompt with the current-turn doc_id slugs so the model
+  // knows which docs the user is highlighting *now*, distinct from
+  // the broader project doc list.
+  let systemPromptExtra = PROJECT_SYSTEM_PROMPT_EXTRA;
+  if (attached_documents?.length) {
+    const slugByDocumentId = new Map<string, string>();
+    for (const [slug, info] of Object.entries(docIndex)) {
+      if (info.document_id) slugByDocumentId.set(info.document_id, slug);
+    }
+    const lines = attached_documents.map((d) => {
+      const slug = slugByDocumentId.get(d.document_id);
+      return slug ? `- ${slug}: ${d.filename}` : `- ${d.filename}`;
+    });
+    systemPromptExtra += `\n\nUSER-ATTACHED DOCUMENTS FOR THIS TURN:\nThe user has attached the following document(s) directly to their latest message. Treat these as the primary focus of the request unless their message clearly says otherwise.\n${lines.join("\n")}`;
+  }
 
-    const write = (line: string) => res.write(line);
-    const streamAbort = new AbortController();
-    let streamFinished = false;
-    res.on("close", () => {
-        if (!streamFinished) streamAbort.abort();
+  const { api_keys: apiKeys, legal_research: legalResearch } =
+    await getUserModelSettings(userId, db);
+  const scopedLegalResearch = {
+    ...legalResearch,
+    defaultCountry: parsedScope.jurisdictions.includes("US")
+      ? ("US" as const)
+      : ("CA" as const),
+    defaultProvince: parsedScope.jurisdictions.includes("CA-ON")
+      ? ("ON" as const)
+      : null,
+    enabledJurisdictions: parsedScope.jurisdictions,
+  };
+  const legalScopeExtra = parsedScope.legalAsOfDate
+    ? `\n\nLEGAL AS-OF DATE FOR THIS CHAT: ${parsedScope.legalAsOfDate}. Do not substitute current law without disclosure.`
+    : "";
+  const apiMessages = buildMessages(
+    messagesForLLM,
+    docAvailability,
+    `${systemPromptExtra}${legalScopeExtra}`,
+    undefined,
+    scopedLegalResearch,
+  );
+
+  const workflowStore = await buildWorkflowStore(userId, userEmail, db);
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  const write = (line: string) => res.write(line);
+  const streamAbort = new AbortController();
+  let streamFinished = false;
+  res.on("close", () => {
+    if (!streamFinished) streamAbort.abort();
+  });
+
+  try {
+    write(`data: ${JSON.stringify({ type: "chat_id", chatId })}\n\n`);
+
+    const { events, citations } = await runLLMStream({
+      apiMessages,
+      docStore,
+      docIndex,
+      userId,
+      db,
+      write,
+      extraTools: PROJECT_EXTRA_TOOLS,
+      workflowStore,
+      includeResearchTools: legalResearch.enabled,
+      model,
+      reasoningEffort: reasoning_effort,
+      apiKeys,
+      signal: streamAbort.signal,
+      projectId,
     });
 
-    try {
-        write(`data: ${JSON.stringify({ type: "chat_id", chatId })}\n\n`);
+    const persistedEvents = stripTransientAssistantEvents(events);
+    if (askInputsResponse) {
+      await appendAssistantEventsToLastAssistantMessage(
+        db,
+        chatId,
+        persistedEvents,
+        citations,
+      );
+    } else {
+      await db.from("chat_messages").insert({
+        chat_id: chatId,
+        role: "assistant",
+        content: persistedEvents.length ? persistedEvents : null,
+        citations: citations.length ? citations : null,
+      });
+    }
 
-        const { events, citations } = await runLLMStream({
-            apiMessages,
-            docStore,
-            docIndex,
-            userId,
-            db,
-            write,
-            extraTools: PROJECT_EXTRA_TOOLS,
-            workflowStore,
-            includeResearchTools: legalResearch.enabled,
-            model,
-            apiKeys,
-            signal: streamAbort.signal,
-            projectId,
+    // Send the canonical saved response after persistence so the browser
+    // can replace its provisional stream, including any short tail held
+    // back while the server checked for the <CITATIONS> marker.
+    write(
+      `data: ${JSON.stringify({
+        type: "assistant_message_final",
+        events: persistedEvents,
+        citations,
+      })}\n\n`,
+    );
+    write("data: [DONE]\n\n");
+
+    if (!chatTitle && lastUser?.content) {
+      await db
+        .from("chats")
+        .update({ title: lastUser.content.slice(0, 120) })
+        .eq("id", chatId);
+    }
+  } catch (err) {
+    if (isAbortError(err)) {
+      console.log("[project-chat/stream] client aborted stream", {
+        chatId,
+      });
+      if (err instanceof AssistantStreamError) {
+        const partial = buildCancelledAssistantMessage({
+          fullText: err.fullText,
+          events: err.events,
+          buildCitations: (fullText, events) =>
+            extractCitations(fullText, docIndex, events),
         });
-
-        const persistedEvents = stripTransientAssistantEvents(events);
-        if (askInputsResponse) {
-            await appendAssistantEventsToLastAssistantMessage(
-                db,
-                chatId,
-                persistedEvents,
-                citations,
-            );
-        } else {
-            await db.from("chat_messages").insert({
+        const saveError = askInputsResponse
+          ? null
+          : (
+              await db.from("chat_messages").insert({
                 chat_id: chatId,
                 role: "assistant",
-                content: persistedEvents.length ? persistedEvents : null,
-                citations: citations.length ? citations : null,
-            });
+                content: partial.events.length ? partial.events : null,
+                citations: partial.citations.length ? partial.citations : null,
+              })
+            ).error;
+        if (askInputsResponse) {
+          await appendAssistantEventsToLastAssistantMessage(
+            db,
+            chatId,
+            partial.events,
+            partial.citations,
+          );
         }
-
-        // Send the canonical saved response after persistence so the browser
-        // can replace its provisional stream, including any short tail held
-        // back while the server checked for the <CITATIONS> marker.
-        write(
-            `data: ${JSON.stringify({
-                type: "assistant_message_final",
-                events: persistedEvents,
-                citations,
-            })}\n\n`,
-        );
-        write("data: [DONE]\n\n");
-
-        if (!chatTitle && lastUser?.content) {
-            await db
-                .from("chats")
-                .update({ title: lastUser.content.slice(0, 120) })
-                .eq("id", chatId);
+        if (saveError) {
+          console.error(
+            "[project-chat/stream] failed to save aborted stream",
+            saveError,
+          );
         }
-    } catch (err) {
-        if (isAbortError(err)) {
-            console.log("[project-chat/stream] client aborted stream", {
-                chatId,
-            });
-            if (err instanceof AssistantStreamError) {
-                const partial = buildCancelledAssistantMessage({
-                    fullText: err.fullText,
-                    events: err.events,
-                    buildCitations: (fullText, events) =>
-                        extractCitations(fullText, docIndex, events),
-                });
-                const saveError = askInputsResponse
-                    ? null
-                    : (
-                          await db.from("chat_messages").insert({
-                              chat_id: chatId,
-                              role: "assistant",
-                              content: partial.events.length
-                                  ? partial.events
-                                  : null,
-                              citations: partial.citations.length
-                                  ? partial.citations
-                                  : null,
-                          })
-                      ).error;
-                if (askInputsResponse) {
-                    await appendAssistantEventsToLastAssistantMessage(
-                        db,
-                        chatId,
-                        partial.events,
-                        partial.citations,
-                    );
-                }
-                if (saveError) {
-                    console.error(
-                        "[project-chat/stream] failed to save aborted stream",
-                        saveError,
-                    );
-                }
-            }
-            return;
-        }
-        console.error("[project-chat/stream] error:", safeErrorLog(err));
-        const message = safeErrorMessage(err, "Stream error");
-        const errorEvents =
-            err instanceof AssistantStreamError
-                ? stripTransientAssistantEvents(err.events)
-                : [{ type: "error" as const, message }];
-        const errorFullText =
-            err instanceof AssistantStreamError ? err.fullText : "";
-        try {
-            const citations = extractCitations(
-                errorFullText,
-                docIndex,
-                errorEvents,
-            );
-            const saveError = askInputsResponse
-                ? null
-                : (
-                      await db.from("chat_messages").insert({
-                          chat_id: chatId,
-                          role: "assistant",
-                          content: errorEvents.length ? errorEvents : null,
-                          citations: citations.length ? citations : null,
-                      })
-                  ).error;
-            if (askInputsResponse) {
-                await appendAssistantEventsToLastAssistantMessage(
-                    db,
-                    chatId,
-                    errorEvents,
-                    citations,
-                );
-            }
-            if (saveError)
-                console.error(
-                    "[project-chat/stream] failed to save error",
-                    saveError,
-                );
-        } catch (saveErr) {
-            console.error(
-                "[project-chat/stream] failed to save error",
-                saveErr,
-            );
-        }
-        try {
-            write(`data: ${JSON.stringify({ type: "error", message })}\n\n`);
-            write("data: [DONE]\n\n");
-        } catch {
-            /* ignore */
-        }
-    } finally {
-        streamFinished = true;
-        res.end();
+      }
+      return;
     }
+    console.error("[project-chat/stream] error:", safeErrorLog(err));
+    const message = safeErrorMessage(err, "Stream error");
+    const errorEvents =
+      err instanceof AssistantStreamError
+        ? stripTransientAssistantEvents(err.events)
+        : [{ type: "error" as const, message }];
+    const errorFullText =
+      err instanceof AssistantStreamError ? err.fullText : "";
+    try {
+      const citations = extractCitations(errorFullText, docIndex, errorEvents);
+      const saveError = askInputsResponse
+        ? null
+        : (
+            await db.from("chat_messages").insert({
+              chat_id: chatId,
+              role: "assistant",
+              content: errorEvents.length ? errorEvents : null,
+              citations: citations.length ? citations : null,
+            })
+          ).error;
+      if (askInputsResponse) {
+        await appendAssistantEventsToLastAssistantMessage(
+          db,
+          chatId,
+          errorEvents,
+          citations,
+        );
+      }
+      if (saveError)
+        console.error("[project-chat/stream] failed to save error", saveError);
+    } catch (saveErr) {
+      console.error("[project-chat/stream] failed to save error", saveErr);
+    }
+    try {
+      write(`data: ${JSON.stringify({ type: "error", message })}\n\n`);
+      write("data: [DONE]\n\n");
+    } catch {
+      /* ignore */
+    }
+  } finally {
+    streamFinished = true;
+    res.end();
+  }
 });

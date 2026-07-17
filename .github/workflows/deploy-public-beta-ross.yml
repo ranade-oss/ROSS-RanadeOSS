@@ -59,11 +59,14 @@ jobs:
       WEB_APP: ${{ inputs.web_app_name }}
       FLY_ORG: ${{ inputs.fly_organization }}
       INPUT_RELEASE_ID: ${{ inputs.release_id }}
+      VERIFY_RELEASE_TAG: "true"
       PUBLIC_WEBSITE_URL: https://ross-ontario.augustmaat.chatgpt.site
       POLICY_VERSION: 2026-07-17-public-beta
     steps:
       - name: Check out approved candidate
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate operator confirmations
         shell: bash

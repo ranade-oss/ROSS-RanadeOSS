@@ -3,6 +3,7 @@ import type {
   NormalizedToolCall,
   NormalizedToolResult,
   OpenAIToolSchema,
+  ReasoningEffort,
   StreamChatParams,
   StreamChatResult,
 } from "./types";
@@ -170,6 +171,7 @@ async function createResponse(params: {
   maxTokens?: number;
   previousResponseId?: string;
   reasoningSummary?: boolean;
+  reasoningEffort?: ReasoningEffort;
   apiKey: string;
   signal?: AbortSignal;
 }): Promise<Response> {
@@ -187,7 +189,13 @@ async function createResponse(params: {
       stream: params.stream,
       max_output_tokens: params.maxTokens ?? MAX_OUTPUT_TOKENS,
       previous_response_id: params.previousResponseId,
-      reasoning: params.reasoningSummary ? { summary: "auto" } : undefined,
+      reasoning:
+        params.reasoningSummary || params.reasoningEffort
+          ? {
+              summary: params.reasoningSummary ? "auto" : undefined,
+              effort: params.reasoningEffort,
+            }
+          : undefined,
     }),
     signal: params.signal,
   });
@@ -215,6 +223,7 @@ export async function streamOpenAI(
     runTools,
     apiKeys,
     enableThinking,
+    reasoningEffort,
   } = params;
   const maxIter = params.maxIterations ?? 10;
   const key = apiKey(apiKeys?.openai);
@@ -242,6 +251,7 @@ export async function streamOpenAI(
         stream: true,
         previousResponseId,
         reasoningSummary: !!enableThinking,
+        reasoningEffort,
         apiKey: key,
         signal: params.abortSignal,
       });

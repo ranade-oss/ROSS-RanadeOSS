@@ -357,6 +357,7 @@ export interface Message {
   files?: { filename: string; document_id?: string }[];
   workflow?: { id: string; title: string };
   model?: string;
+  reasoningEffort?: "none" | "low" | "medium" | "high" | "xhigh" | "max";
   jurisdictions?: Array<"CA-ON" | "CA" | "US">;
   legalAsOfDate?: string;
   citations?: Citation[];
@@ -417,9 +418,7 @@ export type CaseCitation = {
  * anchors. Case citations anchor to a CourtListener cluster and include a
  * quoted opinion passage.
  */
-export type Citation =
-  | DocumentCitation
-  | CaseCitation;
+export type Citation = DocumentCitation | CaseCitation;
 
 const PAGE_BREAK_SENTINEL = "[[PAGE_BREAK]]";
 
@@ -460,7 +459,9 @@ export function getCitationCells(
     .map((q) => ({ sheet: q.sheet, cell: q.cell }));
 }
 
-function expandDocumentQuoteEntry(entry: DocumentCitationQuote): CitationQuote[] {
+function expandDocumentQuoteEntry(
+  entry: DocumentCitationQuote,
+): CitationQuote[] {
   const rangeMatch =
     typeof entry.page === "string"
       ? entry.page.match(/^(\d+)\s*-\s*(\d+)$/)
@@ -497,9 +498,7 @@ export function getDocumentCitationQuotes(
  * highlighting in the PDF viewer. A single-page citation yields one entry; a
  * cross-page citation with page "N-M" and a `[[PAGE_BREAK]]` split yields two.
  */
-export function expandCitationToEntries(
-  a: Citation,
-): CitationQuote[] {
+export function expandCitationToEntries(a: Citation): CitationQuote[] {
   if (a.kind === "case") return [];
   return getDocumentCitationQuotes(a).flatMap(expandDocumentQuoteEntry);
 }
@@ -547,10 +546,7 @@ export function formatCitationQuotePage(
  * Reader-friendly version of a single raw quote: replaces [[PAGE_BREAK]] with
  * "...". Spreadsheet quotes now carry plain cell values, so no stripping.
  */
-export function cleanCitationQuoteText(
-  _a: Citation,
-  rawQuote: string,
-): string {
+export function cleanCitationQuoteText(_a: Citation, rawQuote: string): string {
   return rawQuote.replaceAll(PAGE_BREAK_SENTINEL, "...");
 }
 
@@ -630,8 +626,7 @@ export interface WorkflowOpenSourceSubmission {
   reviewed_at?: string | null;
 }
 
-export interface OpenSourceWorkflowResponse
-  extends WorkflowOpenSourceSubmission {
+export interface OpenSourceWorkflowResponse extends WorkflowOpenSourceSubmission {
   mode: "created" | "updated";
 }
 
