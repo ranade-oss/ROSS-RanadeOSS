@@ -23,17 +23,19 @@ approved until the named evidence actually exists.
    dependency, and incident exercises.
 6. **Launch decisions.** Name the legal operator and accountable owners; approve
    domains, vendors/residency, effective notices, support/privacy contacts,
-   beta cohort/terms, and the go-live decision.
+   public-beta registration/terms, abuse controls, and the go-live decision.
 7. **Immutable candidate.** Assign one release ID everywhere, rebuild generated
    records, run the release-candidate workflow, and deploy that exact candidate
    to isolated staging.
 8. **Final gate.** Run `npm run final:check`. Any blocker ends the promotion
    attempt. If it passes, run the GitHub **Final controlled-beta evidence**
    workflow and retain its artifact and approval record.
-9. **Limited launch.** Launch only the invitation-only synthetic or
-   non-confidential cohort. Public indexing and confidential/privileged files
-   remain outside this approval.
+9. **Limited launch.** Open verified self-registration without anonymous use.
+   Keep the hosted beta restricted to synthetic or affirmatively
+   non-confidential material. Public search indexing and confidential or
+   privileged files remain outside this approval. Self-hosted operators retain
+   responsibility for their own approved data boundary.
 
-There is no further software package after F unless a reviewer requires code
-changes, a provider contract requires a specific adapter, or the product scope
-is expanded.
+Deliverable G implements the approved public-registration expansion. There is
+no further planned software package after G unless a reviewer requires code
+changes, a provider contract requires a specific adapter, or scope expands.

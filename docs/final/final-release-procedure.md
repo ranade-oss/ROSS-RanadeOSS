@@ -33,7 +33,8 @@ events. Stop or roll back on any declared condition.
 
 ## Boundary after promotion
 
-The approved endpoint remains invitation-only and accepts synthetic or
-non-confidential content. Expanding users, practice areas, source operations,
-public indexing, analytics, payment, or confidential/privileged data requires
-a successor decision and review; it is not an administrative toggle.
+The approved endpoint permits verified public self-registration and accepts
+synthetic or affirmatively non-confidential content. Anonymous use remains
+disabled. Expanding practice areas, source operations, public indexing,
+analytics, payment, or confidential/privileged data requires a successor
+decision and review; it is not an administrative toggle.

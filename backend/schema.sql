@@ -30,6 +30,11 @@ create table if not exists public.user_profiles (
   enabled_source_providers text[] not null default array['a2aj-canada', 'ontario-elaws', 'justice-laws-canada', 'courtlistener-us']::text[],
   beta_data_boundary_version text,
   beta_data_boundary_acknowledged_at timestamptz,
+  terms_version text,
+  terms_accepted_at timestamptz,
+  privacy_notice_version text,
+  privacy_acknowledged_at timestamptz,
+  registration_source text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -51,8 +56,32 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.user_profiles (user_id, email)
-  values (new.id, lower(new.email))
+  insert into public.user_profiles (
+    user_id,
+    email,
+    display_name,
+    organisation,
+    terms_version,
+    terms_accepted_at,
+    privacy_notice_version,
+    privacy_acknowledged_at,
+    registration_source
+  )
+  values (
+    new.id,
+    lower(new.email),
+    nullif(btrim(new.raw_user_meta_data ->> 'ross_display_name'), ''),
+    nullif(btrim(new.raw_user_meta_data ->> 'ross_organisation'), ''),
+    case when new.raw_user_meta_data ->> 'ross_terms_accepted' = 'true'
+      then nullif(btrim(new.raw_user_meta_data ->> 'ross_terms_version'), '') end,
+    case when new.raw_user_meta_data ->> 'ross_terms_accepted' = 'true'
+      then now() end,
+    case when new.raw_user_meta_data ->> 'ross_privacy_acknowledged' = 'true'
+      then nullif(btrim(new.raw_user_meta_data ->> 'ross_privacy_version'), '') end,
+    case when new.raw_user_meta_data ->> 'ross_privacy_acknowledged' = 'true'
+      then now() end,
+    nullif(btrim(new.raw_user_meta_data ->> 'ross_registration_source'), '')
+  )
   on conflict (user_id) do update
     set email = excluded.email,
         updated_at = now();

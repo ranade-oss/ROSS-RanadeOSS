@@ -2,10 +2,11 @@
 
 ## Provider inquiry
 
-Subject: Authorized Ontario legal-data access for invitation-only ROSS beta
+Subject: Authorized Ontario legal-data access for public-registration ROSS beta
 
-We are evaluating an invitation-only, synthetic/non-confidential Ontario legal
-research beta derived from the AGPL-licensed Mike project. Please confirm
+We are evaluating a verified-account, public-registration,
+synthetic/non-confidential Ontario legal research beta derived from the
+AGPL-licensed Mike project. Please confirm
 whether you can authorize API access for ONCA, ONSC, and Ontario Small Claims
 decisions and provide terms for search, citation lookup, exact-passage/full-text
 retrieval, model input/RAG, generated output, bounded caching, deletion, audit,
@@ -34,7 +35,8 @@ the benchmark. No real client information may be used.
 Subject: Independent ROSS controlled-beta review
 
 We seek an evidence-bearing review of one immutable ROSS release candidate for
-an invitation-only synthetic/non-confidential Ontario beta. Please scope your
+an authenticated public-registration synthetic/non-confidential Ontario beta.
+Please scope your
 work to the applicable items in
 `docs/professional-validation/privacy-security-accessibility-review-template.md`
 and identify the candidate ID/commit, environment, methods, findings, required

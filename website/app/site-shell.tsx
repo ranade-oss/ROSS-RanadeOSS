@@ -34,7 +34,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               className="button small-button"
               href={`${siteConfig.appUrl}/signup`}
             >
-              Request access
+              Create account
             </a>
           </div>
         </div>

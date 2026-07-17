@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     default: "ROSS — Ontario-first legal work, built in the open",
     template: "%s | ROSS",
   },
-  description: "An invitation-only, open-source legal AI workspace in development for Ontario lawyers and paralegals.",
+  description: "A public-registration, open-source legal AI workspace in development for Ontario lawyers and paralegals.",
   applicationName: "ROSS",
   openGraph: {
     type: "website",

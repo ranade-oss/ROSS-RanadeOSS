@@ -6,15 +6,14 @@ isolated from the authenticated application in `../frontend` and the API in
 
 ## Current mode
 
-The site is a governed public-content build for an invitation-only beta using
-synthetic or non-confidential materials only. It does not authenticate visitors,
-load application or client data, collect form submissions, or run product
-analytics.
+The site is a governed public-content build for an authenticated public beta
+using synthetic or non-confidential materials only. The separate public site
+does not authenticate visitors, load application or client data, collect form
+submissions, or run product analytics.
 
-An owner-only checkpoint is deployed through Sites. The production operator,
-public access decision, final domains, hosting/vendor disclosures, effective
-legal notices, contact channels, and independent reviews remain explicit
-blockers.
+An engineering checkpoint is deployed through Sites. The production operator,
+final domains, hosting/vendor disclosures, effective legal notices, contact
+channels, and independent reviews remain explicit launch blockers.
 
 ## Commands
 

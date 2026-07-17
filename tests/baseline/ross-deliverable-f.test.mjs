@@ -41,6 +41,6 @@ test("final evidence workflow is manual, immutable, and never deploys", () => {
 test("owner action sheet ends with the fail-closed gate and limited launch", () => {
   const sheet = read("docs/final/owner-action-sheet.md");
   assert.match(sheet, /npm run final:check/);
-  assert.match(sheet, /synthetic or\s+non-confidential/);
-  assert.match(sheet, /no further software package/i);
+  assert.match(sheet, /synthetic or\s+(?:affirmatively\s+)?non-confidential/);
+  assert.match(sheet, /no further planned software package after G/i);
 });

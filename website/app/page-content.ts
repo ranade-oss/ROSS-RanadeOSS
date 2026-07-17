@@ -190,7 +190,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Hosted application",
-        body: "The invitation-only hosted application is restricted to synthetic or affirmatively non-confidential material. It may process account, configuration, project, prompt, file, generated-content, source-query, connector, security, and support data as described in the engineering inventory. No real client or privileged material is approved.",
+        body: "The public-registration hosted application is restricted to verified individual accounts and synthetic or affirmatively non-confidential material. It may process account, configuration, project, prompt, file, generated-content, source-query, connector, security, and support data as described in the engineering inventory. No real client or privileged material is approved.",
       },
       {
         title: "Choices, access, and deletion",
@@ -235,7 +235,7 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Acceptable use — controlled-beta draft",
     eyebrow: "Controlled beta",
     summary:
-      "ROSS is intended for lawful professional work by approved beta participants using synthetic or non-confidential materials.",
+      "ROSS is intended for lawful professional work by registered beta participants using synthetic or non-confidential materials.",
     status: "Enforcement controls and final policy remain open.",
     governance: independentReviewRequired(
       "Operator, security, and legal reviewers — unassigned",
@@ -351,9 +351,9 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Service status",
     eyebrow: "No production service",
     summary:
-      "The public website has an owner-only checkpoint deployment. No general-public hosted application or client-material service is approved.",
+      "The public website is an engineering checkpoint. The verified-account public beta remains blocked until the recorded launch gates pass; no client-material service is approved.",
     status:
-      "Website checkpoint available to its owner; application, API, legal-source health, monitoring, and public status infrastructure remain pre-production.",
+      "Website checkpoint available publicly; application, API, legal-source health, monitoring, and public status infrastructure remain pre-production.",
     governance: independentReviewRequired("Operations owner — unassigned"),
     sections: [
       {
@@ -383,11 +383,11 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "What people must still do",
-        body: "Named reviewers must select and assess the operator, Canadian-region vendors, privacy and security controls, effective policies, support channels, accessibility, legal content, source coverage, benchmark, and limited beta cohort.",
+        body: "Named reviewers must select and assess the operator, Canadian-region vendors, privacy and security controls, effective policies, support channels, accessibility, legal content, source coverage, benchmark, and public-beta registration controls.",
       },
       {
         title: "Current safe boundary",
-        body: "The website remains owner-only and no-index. Any preview or controlled-beta use remains limited to synthetic or affirmatively non-confidential material. No confidential or privileged client-material launch is authorized.",
+        body: "The website remains no-index until publication approval. Any preview or authenticated public-beta use remains limited to synthetic or affirmatively non-confidential material. No confidential or privileged client-material launch is authorized.",
       },
       {
         title: "Promotion and rollback",

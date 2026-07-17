@@ -201,10 +201,10 @@ export default function Home() {
           <div className="deployment-options">
             <article>
               <p className="option-label">Hosted beta</p>
-              <h3>Invitation only</h3>
+              <h3>Verified public registration</h3>
               <p>
-                Placeholder domains, named owners, hosting vendors, and
-                production data controls remain open.
+                Create an individual account, verify your email, bring a model
+                API key, and acknowledge the hosted-beta data boundary.
               </p>
               <a href="/security">Review current boundaries →</a>
             </article>

@@ -1,7 +1,7 @@
 # ROSS controlled-beta threat model
 
 Status: engineering draft for independent security and privacy review  
-Scope: invitation-only hosted beta using synthetic or affirmatively non-confidential material  
+Scope: public-registration hosted beta using verified individual accounts and synthetic or affirmatively non-confidential material  
 Last engineering review: 2026-07-16  
 Owners: operator, privacy owner, and security owner remain unassigned
 
@@ -25,6 +25,7 @@ Real confidential, privileged, proprietary, regulated, or client material is out
 | Unsafe sharing/export | Existing server authorization and rate limits; metadata-only audit table foundation | Complete audit hooks and sharing/export IDOR tests remain required |
 | Source poisoning or stale law | Official/allowlisted sources, provider metadata, source hashes/checks, visible verification states | Human stale-source response and comprehensive citator coverage remain incomplete |
 | Availability or abuse | Helmet, exact CORS, bounded payloads, route-specific rate limits, fail-closed source policy, release/rollback/restore runbooks | Distributed limiter, WAF, monitoring, backups, restore and failover still require selected infrastructure and exercised evidence |
+| Automated registration or credential attacks | Hosted API requires confirmed email; Supabase auth limits and email confirmation are required; application content routes require authentication | CAPTCHA, reputation controls, distributed throttling, suspension tooling, and alert thresholds require live-environment review |
 
 ## Abuse cases
 

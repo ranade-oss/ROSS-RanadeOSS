@@ -27,6 +27,13 @@ function isLoginMfaBootstrapRoute(req: Request) {
   );
 }
 
+export function requiresVerifiedEmail(
+  user: { email_confirmed_at?: string | null },
+  enabled = process.env.ROSS_REQUIRE_VERIFIED_EMAIL === "true",
+) {
+  return enabled && !user.email_confirmed_at;
+}
+
 async function enforceLoginMfaIfEnabled(
   req: Request,
   res: Response,
@@ -113,6 +120,14 @@ export async function requireAuth(
   const { data } = await admin.auth.getUser(token);
   if (!data.user) {
     res.status(401).json({ detail: "Invalid or expired token" });
+    return;
+  }
+
+  if (requiresVerifiedEmail(data.user)) {
+    res.status(403).json({
+      code: "email_verification_required",
+      detail: "Verify your email address before using the hosted ROSS beta.",
+    });
     return;
   }
 

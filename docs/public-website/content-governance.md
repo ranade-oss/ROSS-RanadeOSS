@@ -2,7 +2,10 @@
 
 ## Scope and status
 
-The ROSS public site contains substantiated engineering content for an owner-only checkpoint and invitation-only controlled beta. It is not an effective hosted-service agreement, production privacy notice, accessibility conformance statement, live status service, or claim of comprehensive Ontario legal coverage.
+The ROSS public site contains substantiated engineering content for a
+public-registration controlled beta. It is not an effective hosted-service
+agreement, production privacy notice, accessibility conformance statement,
+live status service, or claim of comprehensive Ontario legal coverage.
 
 Every public page records an owner role, reviewer, review status, effective date, last-reviewed date, and next-review date. `engineering-reviewed` means the statement was checked against the repository implementation; it does not mean independent legal, privacy, security, accessibility, or product approval. Pages with `independent-review-required` are not effective policies.
 

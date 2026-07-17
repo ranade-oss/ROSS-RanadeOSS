@@ -1,36 +1,51 @@
-name: Deploy private ROSS
+name: Deploy public ROSS beta
 
 on:
   workflow_dispatch:
     inputs:
+      release_id:
+        description: Approved immutable release identifier
+        required: true
+        type: string
       fly_organization:
         description: Fly.io organization slug shown in the Fly dashboard
         required: true
         default: personal
         type: string
       api_app_name:
-        description: Globally unique Fly.io name for the ROSS API
+        description: Existing or new Fly.io name for the ROSS API
         required: true
         default: ross-ranadeoss-api
         type: string
       web_app_name:
-        description: Globally unique Fly.io name for the private ROSS website
+        description: Existing or new Fly.io name for the public ROSS app
         required: true
-        default: ross-ranadeoss-private
+        default: ross-ranadeoss-public
         type: string
+      confirm_auth_configuration:
+        description: I enabled Supabase email sign-up and Confirm email, and configured the app redirect URL
+        required: true
+        default: false
+        type: boolean
+      confirm_public_beta_approval:
+        description: I have the recorded go-live approval for this exact release candidate
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: deploy-private-ross
+  group: deploy-public-ross-beta
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Deploy owner-only ROSS to Toronto
+    name: Deploy verified-account ROSS beta to Toronto
     runs-on: ubuntu-latest
-    environment: private-online
+    timeout-minutes: 45
+    environment: public-beta
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       ROSS_SUPABASE_URL: ${{ secrets.ROSS_SUPABASE_URL }}
@@ -43,9 +58,30 @@ jobs:
       API_APP: ${{ inputs.api_app_name }}
       WEB_APP: ${{ inputs.web_app_name }}
       FLY_ORG: ${{ inputs.fly_organization }}
+      INPUT_RELEASE_ID: ${{ inputs.release_id }}
       PUBLIC_WEBSITE_URL: https://ross-ontario.augustmaat.chatgpt.site
+      POLICY_VERSION: 2026-07-17-public-beta
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out approved candidate
+        uses: actions/checkout@v4
+
+      - name: Validate operator confirmations
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.confirm_auth_configuration }}" != "true" ]; then
+            echo "Supabase email sign-up, Confirm email, and redirect configuration must be confirmed." >&2
+            exit 1
+          fi
+          if [ "${{ inputs.confirm_public_beta_approval }}" != "true" ]; then
+            echo "Recorded public-beta go-live approval is required." >&2
+            exit 1
+          fi
+
+      - name: Verify immutable release and final completion gate
+        run: |
+          node scripts/verify-final-release-id.mjs
+          npm run final:check
 
       - name: Validate deployment inputs and secrets
         shell: bash
@@ -72,7 +108,7 @@ jobs:
             fi
           done
           if [ "$API_APP" = "$WEB_APP" ]; then
-            echo "The API and website app names must be different." >&2
+            echo "The API and web app names must be different." >&2
             exit 1
           fi
 
@@ -91,7 +127,7 @@ jobs:
             flyctl apps create "$WEB_APP" --org "$FLY_ORG"
           fi
 
-      - name: Configure private API secrets
+      - name: Configure public-beta API secrets
         shell: bash
         run: |
           set -euo pipefail
@@ -108,8 +144,14 @@ jobs:
             "R2_BUCKET_NAME=ross-private-files" \
             "ROSS_ENV=staging" \
             "ROSS_HOSTED_MODE=controlled-beta" \
+            "ROSS_REQUIRE_VERIFIED_EMAIL=true" \
             "HOSTED_MODEL_PROVIDERS=openai" \
-            "ROSS_DATA_BOUNDARY_VERSION=2026-07-16" \
+            "ROSS_DATA_BOUNDARY_VERSION=${POLICY_VERSION}" \
+            "ROSS_RELEASE_ID=${INPUT_RELEASE_ID}" \
+            "RATE_LIMIT_GENERAL_MAX=180" \
+            "RATE_LIMIT_CHAT_MAX=20" \
+            "RATE_LIMIT_UPLOAD_MAX=20" \
+            "RATE_LIMIT_EXPORT_MAX=5" \
             "CORS_ALLOWED_ORIGINS=${WEB_URL}" \
             "FRONTEND_URL=${WEB_URL}" \
             "API_PUBLIC_URL=${API_URL}"
@@ -137,7 +179,7 @@ jobs:
           --no-cache
           --ha=false
 
-      - name: Deploy private ROSS website
+      - name: Deploy public ROSS application
         shell: bash
         run: |
           set -euo pipefail
@@ -155,10 +197,12 @@ jobs:
             --build-arg "NEXT_PUBLIC_ROSS_APP_URL=${WEB_URL}" \
             --build-arg "NEXT_PUBLIC_ROSS_WEBSITE_URL=${PUBLIC_WEBSITE_URL}" \
             --build-arg "NEXT_PUBLIC_ROSS_HOSTED_MODE=controlled-beta" \
-            --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=2026-07-16" \
-            --build-arg "NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=false"
+            --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=${POLICY_VERSION}" \
+            --build-arg "NEXT_PUBLIC_ROSS_TERMS_VERSION=${POLICY_VERSION}" \
+            --build-arg "NEXT_PUBLIC_ROSS_PRIVACY_VERSION=${POLICY_VERSION}" \
+            --build-arg "NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=true"
 
-      - name: Verify owner-only services
+      - name: Verify public-beta services
         shell: bash
         run: |
           set -euo pipefail
@@ -167,40 +211,29 @@ jobs:
           curl --fail --retry 8 --retry-delay 5 --retry-all-errors \
             "${API_URL}/health"
           curl --fail --retry 8 --retry-delay 5 --retry-all-errors \
-            "${WEB_URL}/login" >/dev/null
+            "${WEB_URL}/signup" | grep -q "Create Account"
           {
-            echo "## Private ROSS deployed"
+            echo "## Public ROSS beta deployed"
             echo
+            echo "- Create account: ${WEB_URL}/signup"
             echo "- Login: ${WEB_URL}/login"
             echo "- API health: ${API_URL}/health"
             echo "- Region: Toronto (yyz)"
-            echo "- New sign-ups: disabled"
+            echo "- Email verification: API-enforced"
+            echo "- Anonymous uploads and AI requests: disabled"
+            echo "- Hosted data boundary: synthetic or non-confidential"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify required Ontario legal sources
-        id: legal-source-observation
-        continue-on-error: true
         run: >-
           node scripts/observe-legal-sources.mjs
           --output artifacts/legal-source-health-live.json
-
-      - name: Report degraded Ontario source coverage
-        if: steps.legal-source-observation.outcome == 'failure'
-        shell: bash
-        run: |
-          echo "::warning::Private ROSS deployed successfully, but Ontario legal-source coverage is degraded. Review the uploaded sanitized observation before relying on live research."
-          {
-            echo "## Ontario source observation"
-            echo
-            echo "The private application is online, but one or more required Ontario source checks are degraded."
-            echo "This warning does not approve missing coverage or permit CanLII website scraping."
-          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload sanitized legal-source observation
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: deployed-legal-source-health-${{ github.run_id }}
+          name: public-beta-legal-source-health-${{ github.run_id }}
           path: artifacts/legal-source-health-live.json
           if-no-files-found: warn
           retention-days: 14

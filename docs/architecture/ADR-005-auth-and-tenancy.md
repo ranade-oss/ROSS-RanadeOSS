@@ -1,15 +1,16 @@
 # ADR-005 — Authentication, invitations, roles and tenancy
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-07-15
 - Owners: Product owner TBD; security owner TBD
-- Review trigger: First hosted beta, organization accounts, external identity providers, or real client data
+- Review trigger: Organization accounts, external identity providers, paid access, or real client data
+- Amended: 2026-07-17 — public verified self-registration adopted
 
 ## Context
 
-Mike already uses Supabase Auth and user-scoped records. ROSS needs controlled
-invitations without weakening inherited authentication, MFA, export, deletion,
-or sharing behaviour.
+Mike already uses Supabase Auth and user-scoped records. ROSS needs public
+registration without weakening inherited authentication, MFA, export,
+deletion, or sharing behaviour.
 
 ## Options considered
 
@@ -19,19 +20,22 @@ or sharing behaviour.
 
 ## Decision
 
-Use option 2 for the first hosted beta. Preserve inherited authentication and
-MFA. Add an invitation allow-list and explicit beta role without treating email
-domain membership as authorization. Organization tenancy and SSO remain future
-decisions.
+Use option 1 for the first hosted beta, with safeguards. Preserve inherited
+authentication and MFA. Require verified email, explicit terms/privacy and
+data-boundary acknowledgement, authenticated content routes, BYO model
+credentials, and bounded request rates. Do not treat email-domain membership
+as authorization. Organization tenancy and SSO remain future decisions.
 
 ## Consequences
 
 - Authorization must remain server-enforced and tested independently of UI.
-- Invitation state, account state, and data ownership must not be conflated.
+- Registration state, email verification, account state, and data ownership
+  must not be conflated.
 - Sharing must not bypass beta admission or expose records across users.
 - No claim of enterprise tenancy or SSO is permitted yet.
 
 ## Follow-up
 
-- [ ] Design invitation lifecycle and administrator recovery.
+- [ ] Exercise registration abuse, email-verification, suspension, deletion,
+      and administrator-recovery paths.
 - [ ] Threat-model auth, sharing, RLS, service keys, and account deletion.

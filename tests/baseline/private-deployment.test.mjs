@@ -36,11 +36,25 @@ test("private deployment observes required Ontario sources without storing sourc
   const observer = read("scripts/lib/live-source-observer.mjs");
 
   assert.match(workflow, /observe-legal-sources\.mjs/);
+  assert.match(workflow, /id: legal-source-observation/);
+  assert.match(workflow, /continue-on-error: true/);
+  assert.match(workflow, /Report degraded Ontario source coverage/);
+  assert.match(workflow, /does not approve missing coverage or permit CanLII website scraping/);
   assert.match(workflow, /deployed-legal-source-health/);
   assert.match(observer, /a2aj-canada/);
   assert.match(observer, /ontario-elaws/);
   assert.match(observer, /justice-laws-canada/);
   assert.doesNotMatch(observer, /writeFile/);
+});
+
+test("public deployment keeps Ontario source verification strict", () => {
+  const workflow = read(".github/workflows/deploy-public-beta-ross.yml");
+  const sourceStep = workflow.match(
+    /- name: Verify required Ontario legal sources[\s\S]*?(?=\n\s+- name:|$)/,
+  )?.[0] ?? "";
+
+  assert.match(sourceStep, /observe-legal-sources\.mjs/);
+  assert.doesNotMatch(sourceStep, /continue-on-error/);
 });
 
 test("private deployment credentials are supplied only through GitHub secrets", () => {

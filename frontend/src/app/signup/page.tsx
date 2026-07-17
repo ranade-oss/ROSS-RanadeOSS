@@ -22,6 +22,10 @@ const authToggleActiveClassName =
     "inline-flex h-6 items-center rounded-full border border-white/80 bg-white/86 px-3 text-gray-900 shadow-[0_2px_7px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-3px_7px_rgba(229,231,235,0.32)] backdrop-blur-xl";
 const authToggleInactiveClassName =
     "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900";
+const termsVersion =
+    process.env.NEXT_PUBLIC_ROSS_TERMS_VERSION ?? "2026-07-17-public-beta";
+const privacyVersion =
+    process.env.NEXT_PUBLIC_ROSS_PRIVACY_VERSION ?? "2026-07-17-public-beta";
 
 export default function SignupPage() {
     const signupsEnabled =
@@ -33,6 +37,8 @@ export default function SignupPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [name, setName] = useState("");
     const [organisation, setOrganisation] = useState("");
+    const [acceptedPolicies, setAcceptedPolicies] = useState(false);
+    const [acceptedBoundary, setAcceptedBoundary] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -55,9 +61,16 @@ export default function SignupPage() {
             return;
         }
 
-        // Validate password length
-        if (password.length < 6) {
-            setError("Password must be at least 6 characters");
+        if (password.length < 12) {
+            setError("Password must be at least 12 characters");
+            setLoading(false);
+            return;
+        }
+
+        if (!acceptedPolicies || !acceptedBoundary) {
+            setError(
+                "Accept the Terms of Use, Privacy Policy, and hosted-beta data boundary to continue.",
+            );
             setLoading(false);
             return;
         }
@@ -66,6 +79,20 @@ export default function SignupPage() {
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/assistant`,
+                    data: {
+                        ross_registration_source: "public-web",
+                        ross_display_name: name.trim() || null,
+                        ross_organisation: organisation.trim() || null,
+                        ross_terms_version: termsVersion,
+                        ross_terms_accepted: true,
+                        ross_privacy_version: privacyVersion,
+                        ross_privacy_acknowledged: true,
+                        ross_data_boundary:
+                            "synthetic-or-non-confidential",
+                    },
+                },
             });
 
             if (error) throw error;
@@ -88,9 +115,6 @@ export default function SignupPage() {
                 }
             }
             setSuccess(true);
-            setTimeout(() => {
-                router.push("/assistant");
-            }, 2000);
         } catch (error: unknown) {
             setError(
                 error instanceof Error
@@ -144,11 +168,18 @@ export default function SignupPage() {
                             <CheckCircle2 className="h-6 w-6 text-green-600" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-950 mb-3">
-                            Account created!
+                            Verify your email
                         </h2>
-                        <p className="text-gray-600 leading-relaxed">
-                            Redirecting you to the home page...
+                        <p className="text-gray-600 leading-relaxed mb-6">
+                            We sent a confirmation link to {email}. Open it to
+                            activate your account, then log in to ROSS.
                         </p>
+                        <Button
+                            asChild
+                            className="w-full bg-black hover:bg-gray-900 text-white"
+                        >
+                            <Link href="/login">Go to login</Link>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -253,11 +284,63 @@ export default function SignupPage() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Create a password (min. 6 characters)"
+                                placeholder="Create a password (min. 12 characters)"
                                 required
+                                minLength={12}
                                 className={`w-full ${authInputClassName}`}
                             />
                         </div>
+
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm leading-5 text-gray-700">
+                            <input
+                                type="checkbox"
+                                checked={acceptedPolicies}
+                                onChange={(event) =>
+                                    setAcceptedPolicies(event.target.checked)
+                                }
+                                required
+                                className="mt-1 h-4 w-4"
+                            />
+                            <span>
+                                I agree to the{" "}
+                                <Link
+                                    href={rossBrand.termsUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-700 underline"
+                                >
+                                    Terms of Use
+                                </Link>{" "}
+                                and acknowledge the{" "}
+                                <Link
+                                    href={rossBrand.privacyUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-700 underline"
+                                >
+                                    Privacy Policy
+                                </Link>
+                                .
+                            </span>
+                        </label>
+
+                        <label className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-5 text-amber-950">
+                            <input
+                                type="checkbox"
+                                checked={acceptedBoundary}
+                                onChange={(event) =>
+                                    setAcceptedBoundary(event.target.checked)
+                                }
+                                required
+                                className="mt-1 h-4 w-4"
+                            />
+                            <span>
+                                I will use the hosted beta only with synthetic
+                                or affirmatively non-confidential material. I
+                                will not upload privileged or confidential
+                                client files.
+                            </span>
+                        </label>
 
                         <div>
                             <label
@@ -287,34 +370,17 @@ export default function SignupPage() {
 
                         <Button
                             type="submit"
-                            disabled={loading}
+                            disabled={
+                                loading ||
+                                !acceptedPolicies ||
+                                !acceptedBoundary
+                            }
                             className="w-full bg-black hover:bg-gray-900 text-white"
                         >
                             {loading ? "Creating account..." : "Sign up"}
                         </Button>
                     </form>
 
-                    {/* Terms and Privacy */}
-                    <div className="mt-4 text-center text-xs text-gray-500">
-                        By signing up, you agree to our{" "}
-                        <Link
-                            href={rossBrand.termsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                        >
-                            Terms of Use
-                        </Link>{" "}
-                        and{" "}
-                        <Link
-                            href={rossBrand.privacyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                        >
-                            Privacy Policy
-                        </Link>
-                    </div>
                 </div>
             </div>
         </div>

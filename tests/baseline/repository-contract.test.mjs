@@ -10,7 +10,9 @@ const json = (path) => JSON.parse(read(path));
 
 test("the approved beta boundary is recorded", () => {
   const boundary = read("docs/product-boundary.md").replaceAll(/\s*>?\s+/g, " ");
-  assert.match(boundary, /invitation-only web application/i);
+  assert.match(boundary, /public-registration web application/i);
+  assert.match(boundary, /verify an individual account/i);
+  assert.match(boundary, /anonymous uploads and AI requests are not permitted/i);
   assert.match(boundary, /Ontario lawyers and paralegals/i);
   assert.match(boundary, /synthetic or non-confidential materials only/i);
   assert.match(boundary, /preserve all Mike functionality/i);
