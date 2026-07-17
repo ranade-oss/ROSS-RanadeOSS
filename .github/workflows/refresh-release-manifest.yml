@@ -1,0 +1,86 @@
+name: Refresh release manifest
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  refresh:
+    if: github.ref_name != github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out the selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+            website/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm run install:all
+
+      - name: Regenerate the exact-byte release manifest
+        run: npm run build:release-manifest
+
+      - name: Run the complete verification gate
+        run: npm run check
+
+      - name: Confirm only the generated report changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git status --short | sed -E 's/^...//')
+          if [ "${#changed[@]}" -gt 1 ] || {
+            [ "${#changed[@]}" -eq 1 ] &&
+            [ "${changed[0]}" != "reports/release-manifest-v1.json" ];
+          }; then
+            printf 'Unexpected generated changes:\n' >&2
+            printf '%s\n' "${changed[@]}" >&2
+            exit 1
+          fi
+
+      - name: Commit the refreshed report when needed
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- reports/release-manifest-v1.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Release manifest is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/release-manifest-v1.json
+          git commit -m "Refresh release manifest from exact branch bytes"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch Baseline Verification on the updated branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run baseline.yml --ref "${GITHUB_REF_NAME}"
+
+      - name: Summarize
+        run: |
+          {
+            echo "## Release manifest refreshed"
+            echo
+            echo "- Branch: ${GITHUB_REF_NAME}"
+            echo "- Report changed: ${{ steps.commit.outputs.changed }}"
+            echo "- Full check: passed"
+            echo "- Baseline Verification: dispatched"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -25,14 +25,86 @@ const report = {
 const outputPath = resolve(root, "reports/release-manifest-v1.json");
 const output = `${JSON.stringify(report, null, 2)}\n`;
 
+function explainMismatch(recorded) {
+  const differences = [];
+  for (const field of [
+    "version",
+    "releaseId",
+    "generatedAt",
+    "algorithm",
+    "artifactCount",
+  ]) {
+    if (recorded?.[field] !== report[field]) {
+      differences.push(
+        `HEADER: ${field}: recorded=${JSON.stringify(recorded?.[field])} actual=${JSON.stringify(report[field])}`,
+      );
+    }
+  }
+
+  const recordedArtifacts = new Map(
+    Array.isArray(recorded?.artifacts)
+      ? recorded.artifacts.map((item) => [item?.path, item])
+      : [],
+  );
+  for (const actual of artifacts) {
+    const saved = recordedArtifacts.get(actual.path);
+    if (!saved) {
+      differences.push(`MISSING: ${actual.path}`);
+      continue;
+    }
+    recordedArtifacts.delete(actual.path);
+    if (
+      saved.sha256 !== actual.sha256 ||
+      saved.sizeBytes !== actual.sizeBytes
+    ) {
+      differences.push(
+        `STALE: ${actual.path}: recorded size=${saved.sizeBytes} sha256=${saved.sha256}; actual size=${actual.sizeBytes} sha256=${actual.sha256}`,
+      );
+    }
+  }
+  for (const path of recordedArtifacts.keys()) {
+    differences.push(`UNEXPECTED: ${String(path)}`);
+  }
+  return differences;
+}
+
 if (process.argv.includes("--check")) {
-  if (!existsSync(outputPath) || readFileSync(outputPath, "utf8") !== output) {
-    console.error("Release manifest is missing or stale. Run npm run build:release-manifest.");
+  if (!existsSync(outputPath)) {
+    console.error(
+      "Release manifest is missing. Run npm run build:release-manifest.",
+    );
     process.exitCode = 1;
   } else {
-    console.log(`PASS: release manifest covers ${artifacts.length} governed artifacts.`);
+    const savedOutput = readFileSync(outputPath, "utf8");
+    if (savedOutput === output) {
+      console.log(
+        `PASS: release manifest covers ${artifacts.length} governed artifacts.`,
+      );
+    } else {
+      console.error(
+        "Release manifest is stale. The committed report does not match the exact bytes in this checkout.",
+      );
+      try {
+        const differences = explainMismatch(JSON.parse(savedOutput));
+        if (differences.length) {
+          for (const difference of differences) console.error(difference);
+        } else {
+          console.error(
+            "FORMAT: manifest data matches, but deterministic JSON formatting or the final newline differs.",
+          );
+        }
+      } catch (error) {
+        console.error(
+          `PARSE: committed manifest is not valid JSON: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      console.error("Run npm run build:release-manifest in this exact checkout.");
+      process.exitCode = 1;
+    }
   }
 } else {
   writeFileSync(outputPath, output);
-  console.log(`Wrote reports/release-manifest-v1.json with ${artifacts.length} artifacts.`);
+  console.log(
+    `Wrote reports/release-manifest-v1.json with ${artifacts.length} artifacts.`,
+  );
 }
