@@ -95,6 +95,34 @@ test("the inherited data model keeps its core tables", () => {
   }
 });
 
+test("the fresh database schema includes current ROSS controls and enables RLS everywhere", () => {
+  const schema = read("backend/schema.sql");
+  for (const required of [
+    "beta_data_boundary_version",
+    "beta_data_boundary_acknowledged_at",
+    "legal_source_version_checks",
+    "security_audit_events",
+  ])
+    assert.match(schema, new RegExp(required), required);
+
+  const tables = [
+    ...schema.matchAll(/create table if not exists public\.([a-z0-9_]+)/g),
+  ].map((match) => match[1]);
+  assert.ok(tables.length >= 25);
+  for (const table of tables) {
+    assert.match(
+      schema,
+      new RegExp(`alter table public\\.${table} enable row level security`, "i"),
+      `${table} must enable RLS in the fresh schema`,
+    );
+    assert.match(
+      schema,
+      new RegExp(`revoke all on(?: table)? public\\.${table} from anon, authenticated`, "i"),
+      `${table} must revoke browser grants in the fresh schema`,
+    );
+  }
+});
+
 test("baseline fixtures are explicitly synthetic", () => {
   const manifest = json("tests/fixtures/manifest.json");
   assert.equal(manifest.synthetic_only, true);

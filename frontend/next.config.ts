@@ -8,6 +8,8 @@ const repositoryRoot = path.resolve(
 );
 
 const nextConfig: NextConfig = {
+    output: "standalone",
+    outputFileTracingRoot: repositoryRoot,
     reactCompiler: true,
     turbopack: {
         root: repositoryRoot,

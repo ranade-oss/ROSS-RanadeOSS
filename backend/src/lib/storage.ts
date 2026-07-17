@@ -1,9 +1,10 @@
 /**
- * Cloudflare R2 storage utilities for Mike document management.
- * R2 is S3-compatible — uses @aws-sdk/client-s3.
+ * S3-compatible storage utilities for ROSS document management.
+ * Supports Cloudflare R2, Supabase Storage S3, and compatible providers.
  *
  * Required env vars:
  *   R2_ENDPOINT_URL     — https://<account-id>.r2.cloudflarestorage.com
+ *   R2_REGION           — signing region ("auto" for R2; project region for Supabase)
  *   R2_ACCESS_KEY_ID    — R2 API token (Access Key ID)
  *   R2_SECRET_ACCESS_KEY — R2 API token (Secret Access Key)
  *   R2_BUCKET_NAME      — bucket name (default: "mike")
@@ -25,7 +26,7 @@ let cachedClient: S3Client | undefined;
 function getClient(): S3Client {
   if (!cachedClient) {
     cachedClient = new S3Client({
-      region: "auto",
+      region: process.env.R2_REGION?.trim() || "auto",
       endpoint: process.env.R2_ENDPOINT_URL!,
       forcePathStyle: true,
       credentials: {

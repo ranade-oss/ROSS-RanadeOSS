@@ -1,0 +1,176 @@
+name: Deploy private ROSS
+
+on:
+  workflow_dispatch:
+    inputs:
+      fly_organization:
+        description: Fly.io organization slug shown in the Fly dashboard
+        required: true
+        default: personal
+        type: string
+      api_app_name:
+        description: Globally unique Fly.io name for the ROSS API
+        required: true
+        default: ross-ranadeoss-api
+        type: string
+      web_app_name:
+        description: Globally unique Fly.io name for the private ROSS website
+        required: true
+        default: ross-ranadeoss-private
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-private-ross
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy owner-only ROSS to Toronto
+    runs-on: ubuntu-latest
+    environment: private-online
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      ROSS_SUPABASE_URL: ${{ secrets.ROSS_SUPABASE_URL }}
+      ROSS_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.ROSS_SUPABASE_PUBLISHABLE_KEY }}
+      ROSS_SUPABASE_SECRET_KEY: ${{ secrets.ROSS_SUPABASE_SECRET_KEY }}
+      ROSS_S3_ENDPOINT_URL: ${{ secrets.ROSS_S3_ENDPOINT_URL }}
+      ROSS_S3_REGION: ${{ secrets.ROSS_S3_REGION }}
+      ROSS_S3_ACCESS_KEY_ID: ${{ secrets.ROSS_S3_ACCESS_KEY_ID }}
+      ROSS_S3_SECRET_ACCESS_KEY: ${{ secrets.ROSS_S3_SECRET_ACCESS_KEY }}
+      API_APP: ${{ inputs.api_app_name }}
+      WEB_APP: ${{ inputs.web_app_name }}
+      FLY_ORG: ${{ inputs.fly_organization }}
+      PUBLIC_WEBSITE_URL: https://ross-ontario.augustmaat.chatgpt.site
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate deployment inputs and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in \
+            FLY_API_TOKEN \
+            ROSS_SUPABASE_URL \
+            ROSS_SUPABASE_PUBLISHABLE_KEY \
+            ROSS_SUPABASE_SECRET_KEY \
+            ROSS_S3_ENDPOINT_URL \
+            ROSS_S3_REGION \
+            ROSS_S3_ACCESS_KEY_ID \
+            ROSS_S3_SECRET_ACCESS_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "Required GitHub Actions secret is missing: ${name}" >&2
+              exit 1
+            fi
+          done
+          for value in "$API_APP" "$WEB_APP"; do
+            if ! [[ "$value" =~ ^[a-z0-9][a-z0-9-]{2,61}[a-z0-9]$ ]]; then
+              echo "Fly app names must use 4-63 lowercase letters, numbers, or hyphens." >&2
+              exit 1
+            fi
+          done
+          if [ "$API_APP" = "$WEB_APP" ]; then
+            echo "The API and website app names must be different." >&2
+            exit 1
+          fi
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+        with:
+          version: 0.4.49
+
+      - name: Create Fly applications when absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! flyctl status --app "$API_APP" >/dev/null 2>&1; then
+            flyctl apps create "$API_APP" --org "$FLY_ORG"
+          fi
+          if ! flyctl status --app "$WEB_APP" >/dev/null 2>&1; then
+            flyctl apps create "$WEB_APP" --org "$FLY_ORG"
+          fi
+
+      - name: Configure private API secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          WEB_URL="https://${WEB_APP}.fly.dev"
+          API_URL="https://${API_APP}.fly.dev"
+
+          flyctl secrets set --stage --app "$API_APP" \
+            "SUPABASE_URL=${ROSS_SUPABASE_URL}" \
+            "SUPABASE_SECRET_KEY=${ROSS_SUPABASE_SECRET_KEY}" \
+            "R2_ENDPOINT_URL=${ROSS_S3_ENDPOINT_URL}" \
+            "R2_REGION=${ROSS_S3_REGION}" \
+            "R2_ACCESS_KEY_ID=${ROSS_S3_ACCESS_KEY_ID}" \
+            "R2_SECRET_ACCESS_KEY=${ROSS_S3_SECRET_ACCESS_KEY}" \
+            "R2_BUCKET_NAME=ross-private-files" \
+            "ROSS_ENV=staging" \
+            "ROSS_HOSTED_MODE=controlled-beta" \
+            "HOSTED_MODEL_PROVIDERS=openai" \
+            "ROSS_DATA_BOUNDARY_VERSION=2026-07-16" \
+            "CORS_ALLOWED_ORIGINS=${WEB_URL}" \
+            "FRONTEND_URL=${WEB_URL}" \
+            "API_PUBLIC_URL=${API_URL}"
+
+          ensure_random_secret() {
+            local key="$1"
+            if ! flyctl secrets list --app "$API_APP" --json \
+              | jq -e --arg key "$key" '.[] | select((.Name // .name) == $key)' \
+              >/dev/null; then
+              flyctl secrets set --stage --app "$API_APP" \
+                "${key}=$(openssl rand -hex 32)"
+            fi
+          }
+
+          ensure_random_secret DOWNLOAD_SIGNING_SECRET
+          ensure_random_secret USER_API_KEYS_ENCRYPTION_SECRET
+          ensure_random_secret MCP_CONNECTORS_ENCRYPTION_SECRET
+
+      - name: Deploy ROSS API
+        run: >-
+          flyctl deploy .
+          --config deploy/fly/api.toml
+          --app "$API_APP"
+          --remote-only
+          --ha=false
+
+      - name: Deploy private ROSS website
+        shell: bash
+        run: |
+          set -euo pipefail
+          WEB_URL="https://${WEB_APP}.fly.dev"
+          API_URL="https://${API_APP}.fly.dev"
+          flyctl deploy . \
+            --config deploy/fly/frontend.toml \
+            --app "$WEB_APP" \
+            --remote-only \
+            --ha=false \
+            --build-arg "NEXT_PUBLIC_SUPABASE_URL=${ROSS_SUPABASE_URL}" \
+            --build-arg "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${ROSS_SUPABASE_PUBLISHABLE_KEY}" \
+            --build-arg "NEXT_PUBLIC_API_BASE_URL=${API_URL}" \
+            --build-arg "NEXT_PUBLIC_ROSS_APP_URL=${WEB_URL}" \
+            --build-arg "NEXT_PUBLIC_ROSS_WEBSITE_URL=${PUBLIC_WEBSITE_URL}" \
+            --build-arg "NEXT_PUBLIC_ROSS_HOSTED_MODE=controlled-beta" \
+            --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=2026-07-16" \
+            --build-arg "NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=false"
+
+      - name: Verify owner-only services
+        shell: bash
+        run: |
+          set -euo pipefail
+          API_URL="https://${API_APP}.fly.dev"
+          WEB_URL="https://${WEB_APP}.fly.dev"
+          curl --fail --retry 8 --retry-delay 5 --retry-all-errors \
+            "${API_URL}/health"
+          curl --fail --retry 8 --retry-delay 5 --retry-all-errors \
+            "${WEB_URL}/login" >/dev/null
+          {
+            echo "## Private ROSS deployed"
+            echo
+            echo "- Login: ${WEB_URL}/login"
+            echo "- API health: ${API_URL}/health"
+            echo "- Region: Toronto (yyz)"
+            echo "- New sign-ups: disabled"
+          } >> "$GITHUB_STEP_SUMMARY"
