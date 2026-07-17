@@ -37,8 +37,8 @@
     },
     {
       "path": "config/professional-validation.v1.json",
-      "sha256": "88b12044c78de589728bdaa59ee631cca4a1d00841735171b596ef01297018ca",
-      "sizeBytes": 3667
+      "sha256": "5cdf6b17b3d078cc3086a26cf6e769453fc407013dcef4f8a0f98226b4acb959",
+      "sizeBytes": 4034
     },
     {
       "path": "config/public-source-coverage.json",
@@ -72,13 +72,13 @@
     },
     {
       "path": "scripts/lib/release-readiness.mjs",
-      "sha256": "4e974889a02a2502db80024e24b26ea9bf7113596cec4405359b0bc2c1eb3da5",
+      "sha256": "4e974889a02a2502db80024e24b26ea9bf7113596cec440535093179fe4b546",
       "sizeBytes": 3092
     },
     {
       "path": "scripts/lib/professional-validation.mjs",
-      "sha256": "cfc2664fff71d67f2866946977b8fff2a85b9534bb4cd9cf535093179fe4b546",
-      "sizeBytes": 6602
+      "sha256": "a2f561ce624bb0b90dd6b59ca518917f9f04d3ace95e9834c73c091569430774",
+      "sizeBytes": 8139
     },
     {
       "path": "scripts/lib/final-completion.mjs",
