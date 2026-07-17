@@ -13,7 +13,7 @@ import {
     ChevronLeft,
     Trash2,
 } from "lucide-react";
-import { MikeIcon } from "@/app/components/chat/mike-icon";
+import { RossIcon } from "@/app/components/chat/ross-icon";
 import {
     streamTabularChat,
     getTabularChats,
@@ -321,10 +321,9 @@ function TRResponseStatus({ isActive }: { isActive: boolean }) {
 
     return (
         <div className="w-full h-9 flex items-center mb-2">
-            <MikeIcon
+            <RossIcon
                 spin={isActive}
                 done={showDone && doneVisible}
-                mike={!(showDone && doneVisible)}
                 size={22}
             />
         </div>
@@ -1848,7 +1847,7 @@ export function TRChatPanel({
             >
                 {messages.length === 0 && !isLoadingMessages && (
                     <div className="flex flex-1 flex-col items-center justify-center gap-2">
-                        <MikeIcon size={24} />
+                        <RossIcon size={24} />
                         <p className="text-gray-400 font-serif text-center">
                             Ask a question about this tabular review.
                         </p>

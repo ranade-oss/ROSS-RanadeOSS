@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">ROSS — Ontario-first legal work</title>
+  <desc id="desc">Invitation-only beta for an Ontario-first open-source legal workspace.</desc>
+  <rect width="1200" height="630" fill="#f4f8fa"/>
+  <rect x="54" y="54" width="1092" height="522" rx="42" fill="#102a43"/>
+  <rect x="104" y="112" width="180" height="180" rx="34" fill="#fff"/>
+  <path d="M143 145h70c42 0 66 22 66 58 0 25-13 44-37 53l41 49h-49l-37-47h-17v47h-37V145Zm37 34v47h31c19 0 29-8 29-23 0-16-10-24-29-24h-31Z" fill="#102a43"/>
+  <path d="M150 273h44" stroke="#0f8b8d" stroke-width="10" stroke-linecap="round"/>
+  <text x="338" y="220" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="112" font-weight="800" letter-spacing="10">ROSS</text>
+  <text x="340" y="272" fill="#69d4d5" font-family="Inter,Arial,sans-serif" font-size="30" font-weight="800" letter-spacing="12">RANADE OSS</text>
+  <text x="106" y="402" fill="#fff" font-family="Georgia,serif" font-size="52">Ontario-first legal work.</text>
+  <text x="106" y="458" fill="#d5e1e8" font-family="Inter,Arial,sans-serif" font-size="30">Preserved open-source workspace · Canadian foundation</text>
+  <rect x="106" y="500" width="342" height="49" rx="25" fill="#0f8b8d"/>
+  <text x="123" y="533" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="800" letter-spacing="2">INVITATION-ONLY BETA</text>
+</svg>

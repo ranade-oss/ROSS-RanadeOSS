@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { MikeIcon } from "@/app/components/chat/mike-icon";
+import { RossIcon } from "@/app/components/chat/ross-icon";
+import { rossBrand } from "@/app/lib/rossBrand";
 
 interface SiteLogoProps {
     size?: "sm" | "md" | "lg" | "xl";
@@ -16,10 +17,7 @@ export function SiteLogo({
     animate = false,
     asLink = false,
 }: SiteLogoProps) {
-    const landingHref =
-        process.env.NODE_ENV === "production"
-            ? "https://mikeoss.com"
-            : "http://localhost:3000";
+    const landingHref = rossBrand.websiteUrl;
     const sizeClasses = {
         sm: "text-xl",
         md: "text-2xl",
@@ -43,9 +41,9 @@ export function SiteLogo({
             <span
                 className={`inline-flex shrink-0 items-center leading-none ${iconClassName}`}
             >
-                <MikeIcon size={iconSizes[size]} />
+                <RossIcon size={iconSizes[size]} />
             </span>
-            <span>Mike</span>
+            <span>{rossBrand.name}</span>
         </h1>
     );
 

@@ -1,4 +1,4 @@
-// Shared TypeScript types for Mike AI legal assistant
+// Shared TypeScript types for the ROSS legal assistant
 
 export interface Folder {
   id: string;
