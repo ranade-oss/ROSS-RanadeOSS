@@ -134,6 +134,7 @@ jobs:
           --config deploy/fly/api.toml
           --app "$API_APP"
           --remote-only
+          --no-cache
           --ha=false
 
       - name: Deploy private ROSS website
@@ -146,6 +147,7 @@ jobs:
             --config deploy/fly/frontend.toml \
             --app "$WEB_APP" \
             --remote-only \
+            --no-cache \
             --ha=false \
             --build-arg "NEXT_PUBLIC_SUPABASE_URL=${ROSS_SUPABASE_URL}" \
             --build-arg "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${ROSS_SUPABASE_PUBLISHABLE_KEY}" \

@@ -21,6 +21,16 @@ test("private deployment is manual, Toronto-hosted, and owner-only", () => {
   assert.match(frontend, /primary_region = "yyz"/);
 });
 
+test("private deployment rebuilds both application images from current source", () => {
+  const workflow = read(".github/workflows/deploy-private-ross.yml");
+
+  const deployCommands = workflow.match(/flyctl deploy[\s\S]*?(?=\n\s+- name:|$)/g) ?? [];
+  assert.equal(deployCommands.length, 2);
+  for (const command of deployCommands) {
+    assert.match(command, /--no-cache/);
+  }
+});
+
 test("private deployment credentials are supplied only through GitHub secrets", () => {
   const workflow = read(".github/workflows/deploy-private-ross.yml");
   for (const name of [
@@ -36,4 +46,3 @@ test("private deployment credentials are supplied only through GitHub secrets", 
     assert.match(workflow, new RegExp(`secrets\\.${name}`), name);
   }
 });
-
