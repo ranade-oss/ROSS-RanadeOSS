@@ -730,6 +730,21 @@ chatRouter.post("/", requireAuth, async (req, res) => {
             });
         }
 
+        // Send one canonical post-persistence snapshot. The incremental
+        // stream deliberately holds back a short tail while checking for the
+        // <CITATIONS> marker. Some proxies/browsers can render the earlier
+        // chunks but miss that final small delta. Replacing the provisional
+        // client events with this saved snapshot guarantees that the live UI
+        // and a refreshed chat show the same complete answer.
+        write(
+            `data: ${JSON.stringify({
+                type: "assistant_message_final",
+                events: persistedEvents,
+                citations,
+            })}\n\n`,
+        );
+        write("data: [DONE]\n\n");
+
         if (!chatTitle && lastUser?.content) {
             await db
                 .from("chats")
