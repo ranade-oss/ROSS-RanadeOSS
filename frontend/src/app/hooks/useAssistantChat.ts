@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  getChat,
   streamChat,
   streamProjectChat,
 } from "@/app/lib/mikeApi";
@@ -1245,11 +1246,34 @@ export function useAssistantChat({
         }
       }
 
+      finalizeStreamingContent();
       finalizeStreamingReasoning();
+
+      // The persisted chat is the source of truth once the stream closes.
+      // Reconcile it before clearing the loading state so a final proxy/browser
+      // chunk cannot leave the live UI showing less text than a refresh does.
+      const finalChatId = streamedChatId || chatId || null;
+      if (finalChatId) {
+        try {
+          const { messages: persistedMessages } = await getChat(finalChatId);
+          if (persistedMessages.length > 0) {
+            setMessages(persistedMessages);
+            eventsRef.current =
+              [...persistedMessages]
+                .reverse()
+                .find((item) => item.role === "assistant")?.events ?? [];
+          }
+        } catch (error) {
+          console.warn(
+            "[useAssistantChat] failed to reconcile persisted chat:",
+            error,
+          );
+        }
+      }
+
       setIsResponseLoading(false);
       setIsLoadingCitations(false);
 
-      const finalChatId = streamedChatId || chatId || null;
       if (finalChatId && finalChatId !== chatId) {
         if (chatId) {
           replaceChatId(
