@@ -23,3 +23,9 @@ queries, passages, user identifiers, tokens, or response bodies.
 Run `npm run source:check` against an actual candidate observation. A failure
 keeps the provider disabled or the release blocked. Source health is distinct
 from comprehensive court/date coverage and from legal accuracy review.
+
+Use the **Verify Ontario legal sources** GitHub Actions workflow for a sanitized
+live observation of A2AJ, Ontario e-Laws, and Justice Laws Canada. See
+`docs/operations/live-source-verification.md`. Its artifact is deliberately
+separate from the checked-in pre-production report and does not by itself
+authorize production or confidential-data use.

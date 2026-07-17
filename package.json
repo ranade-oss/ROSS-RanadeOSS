@@ -12,6 +12,7 @@
     "test:evaluation": "node --test tests/evaluation/*.test.mjs && node scripts/evaluate-ontario.mjs --check && node scripts/check-release-readiness.mjs",
     "evaluate:ontario": "node scripts/evaluate-ontario.mjs",
     "release:check": "node scripts/check-release-readiness.mjs --production",
+    "source:observe": "node scripts/observe-legal-sources.mjs",
     "source:check": "node scripts/check-source-operations.mjs --production",
     "test:operations": "node --test tests/operations/*.test.mjs && node scripts/check-source-operations.mjs",
     "test:release-manifest": "node scripts/build-release-manifest.mjs --check",

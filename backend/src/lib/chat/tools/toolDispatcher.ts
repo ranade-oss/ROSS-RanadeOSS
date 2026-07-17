@@ -564,40 +564,70 @@ async function executeLegalSourceTool(args: {
     if (name === LEGAL_SOURCE_TOOL_NAMES.search) {
       const query = typeof input.query === "string" ? input.query.trim() : "";
       const limit = Math.min(20, Math.max(1, Number(input.limit) || 10));
-      const results =
-        materialType === "decision" && provider.searchDecisions
-          ? await provider.searchDecisions(
-              {
-                query,
-                jurisdiction: jurisdiction ?? undefined,
-                court:
-                  typeof input.court === "string" ? input.court : undefined,
-                language: input.language === "fr" ? "fr" : "en",
-                from: typeof input.from === "string" ? input.from : undefined,
-                to: typeof input.to === "string" ? input.to : undefined,
-                limit,
-              },
-              context,
-            )
-          : provider.searchLegislation
-            ? await provider.searchLegislation(
-                {
-                  query,
-                  jurisdiction: jurisdiction ?? undefined,
-                  language: input.language === "fr" ? "fr" : "en",
-                  kind:
-                    materialType === "legislation" ||
-                    materialType === "regulation" ||
-                    materialType === "rule"
-                      ? materialType
-                      : undefined,
-                  limit,
-                },
-                context,
-              )
-            : [];
+      const searchTargets = requestedProvider ? [provider] : candidates;
+      const searched = await Promise.all(
+        searchTargets.map(async (target) => {
+          try {
+            const targetContext = legalSourceProviderContext(
+              target.descriptor.id,
+              db,
+              apiKeys,
+            );
+            const results =
+              materialType === "decision" && target.searchDecisions
+                ? await target.searchDecisions(
+                    {
+                      query,
+                      jurisdiction: jurisdiction ?? undefined,
+                      court:
+                        typeof input.court === "string"
+                          ? input.court
+                          : undefined,
+                      language: input.language === "fr" ? "fr" : "en",
+                      from:
+                        typeof input.from === "string" ? input.from : undefined,
+                      to: typeof input.to === "string" ? input.to : undefined,
+                      limit,
+                    },
+                    targetContext,
+                  )
+                : target.searchLegislation
+                  ? await target.searchLegislation(
+                      {
+                        query,
+                        jurisdiction: jurisdiction ?? undefined,
+                        language: input.language === "fr" ? "fr" : "en",
+                        kind:
+                          materialType === "legislation" ||
+                          materialType === "regulation" ||
+                          materialType === "rule"
+                            ? materialType
+                            : undefined,
+                        limit,
+                      },
+                      targetContext,
+                    )
+                  : [];
+            return { provider: target.descriptor, results, available: true };
+          } catch {
+            return {
+              provider: target.descriptor,
+              results: [],
+              available: false,
+            };
+          }
+        }),
+      );
+      const results = searched
+        .reduce<unknown[]>((all, entry) => {
+          all.push(...entry.results);
+          return all;
+        }, [])
+        .slice(0, limit);
       const coverageWarning =
-        provider.descriptor.id === "a2aj-canada" &&
+        searchTargets.some(
+          (target) => target.descriptor.id === "a2aj-canada",
+        ) &&
         typeof input.court === "string" &&
         ["ONSC", "ONCJ", "SMALL CLAIMS", "HRTO", "ONLTB"].includes(
           input.court.toUpperCase(),
@@ -606,7 +636,10 @@ async function executeLegalSourceTool(args: {
           : undefined;
       return {
         content: JSON.stringify({
-          provider: provider.descriptor,
+          providers: searched.map((entry) => ({
+            ...entry.provider,
+            available: entry.available,
+          })),
           results,
           ...(coverageWarning ? { coverage_warning: coverageWarning } : {}),
           next_required_action:
@@ -614,8 +647,14 @@ async function executeLegalSourceTool(args: {
         }),
         event: {
           type: "legal_source_search",
-          provider_id: provider.descriptor.id,
-          provider_name: provider.descriptor.name,
+          provider_id:
+            searchTargets.length === 1
+              ? searchTargets[0].descriptor.id
+              : null,
+          provider_name:
+            searchTargets.length === 1
+              ? searchTargets[0].descriptor.name
+              : "Multiple legal sources",
           query,
           result_count: results.length,
           ...(coverageWarning ? { coverage_warning: coverageWarning } : {}),

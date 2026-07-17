@@ -11,7 +11,7 @@ export const LEGAL_SOURCE_TOOLS = [
     function: {
       name: LEGAL_SOURCE_TOOL_NAMES.search,
       description:
-        "Search an enabled legal-source provider. Returns metadata only; fetch and find an exact passage before citing an authority.",
+        "Search enabled legal-source providers. Returns metadata only; choose a result, then fetch and find an exact passage before citing an authority.",
       parameters: {
         type: "object",
         properties: {
