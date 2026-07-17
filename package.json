@@ -26,6 +26,7 @@
     "test:baseline": "node --test tests/baseline/*.test.mjs",
     "test:e2e": "node --test tests/e2e/*.test.mjs",
     "test:website": "npm run test:routes --prefix website",
+    "audit:high": "npm audit --package-lock-only --audit-level=high --prefix backend && npm audit --package-lock-only --audit-level=high --prefix frontend && npm audit --package-lock-only --audit-level=high --prefix website",
     "build": "npm run build:public-content && npm run build:ross-workflows && npm run build:completion-dossier && npm run build:release-manifest && npm run build:backend && npm run build:frontend && npm run build:website",
     "build:public-content": "node scripts/build-public-content.mjs",
     "build:ross-workflows": "node scripts/build-ross-workflows.mjs",
@@ -38,7 +39,7 @@
     "lint:baseline": "node scripts/lint-baseline.mjs",
     "lint:strict": "npm run lint --prefix frontend",
     "lint:website": "npm run lint --prefix website",
-    "check": "npm test && npm run build && npm run lint && npm run test:website"
+    "check": "npm test && npm run audit:high && npm run build && npm run lint && npm run test:website"
   },
   "license": "AGPL-3.0-only"
 }

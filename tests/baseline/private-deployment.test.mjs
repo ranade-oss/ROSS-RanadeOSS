@@ -24,7 +24,10 @@ test("private deployment is manual, Toronto-hosted, and owner-only", () => {
 test("private deployment rebuilds both application images from current source", () => {
   const workflow = read(".github/workflows/deploy-private-ross.yml");
 
-  const deployCommands = workflow.match(/flyctl deploy[\s\S]*?(?=\n\s+- name:|$)/g) ?? [];
+  const deployCommands =
+    workflow.match(
+      /bash scripts\/fly-deploy-with-retry\.sh[\s\S]*?(?=\n\s+- name:|$)/g,
+    ) ?? [];
   assert.equal(deployCommands.length, 2);
   for (const command of deployCommands) {
     assert.match(command, /--no-cache/);

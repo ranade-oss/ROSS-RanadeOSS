@@ -416,6 +416,7 @@ export interface ModelCatalogEntry {
   defaultReasoningEffort?: ReasoningEffort;
   available: boolean;
   availability: "live" | "configured" | "unavailable" | "fallback";
+  availabilityReason?: string;
 }
 
 export interface ModelCatalog {

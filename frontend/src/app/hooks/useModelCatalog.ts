@@ -33,6 +33,7 @@ export function useModelCatalog() {
               ? ("Anthropic" as const)
               : ("Google" as const),
         available: model.available,
+        availabilityReason: model.availabilityReason,
         reasoningEfforts: [...model.reasoningEfforts],
         defaultReasoningEffort: model.defaultReasoningEffort,
       }));

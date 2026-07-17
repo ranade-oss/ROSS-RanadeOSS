@@ -64,3 +64,60 @@ test("every model adapter reserves a tool-free final synthesis turn", () => {
     assert.match(adapter, /toolsEnabled/, path);
   }
 });
+
+test("shared dialogs and warnings expose keyboard and live-region semantics", () => {
+  const modal = read("frontend/src/app/components/modals/Modal.tsx");
+  assert.match(modal, /role="dialog"/);
+  assert.match(modal, /aria-modal="true"/);
+  assert.match(modal, /event\.key === "Escape"/);
+  assert.match(modal, /previouslyFocused\?\.focus\(\)/);
+  assert.match(modal, /element\.inert = true/);
+
+  const warning = read("frontend/src/app/components/popups/WarningPopup.tsx");
+  assert.match(warning, /role="alert"/);
+  assert.match(warning, /aria-live="assertive"/);
+});
+
+test("model availability explains entitlement separately from missing keys", () => {
+  const discovery = read("backend/src/lib/llm/modelDiscovery.ts");
+  assert.match(discovery, /availabilityReason/);
+  assert.match(discovery, /does not currently list this model as available/);
+
+  const toggle = read(
+    "frontend/src/app/components/assistant/ModelToggle.tsx",
+  );
+  assert.match(toggle, /selectedUnavailableReason/);
+  assert.doesNotMatch(toggle, /API key missing for selected model/);
+});
+
+test("hosted uploads are bounded and validated against their file containers", () => {
+  const upload = read("backend/src/lib/upload.ts");
+  assert.match(upload, /25 \* 1024 \* 1024/);
+  assert.match(upload, /validateUploadedDocument/);
+
+  const validation = read("backend/src/lib/uploadValidation.ts");
+  assert.match(validation, /vbaProject/);
+  assert.match(validation, /MAX_OFFICE_ARCHIVE_ENTRIES/);
+  assert.match(validation, /strictHostedUploads/);
+
+  const conversion = read("backend/src/lib/convert.ts");
+  assert.match(conversion, /CONVERSION_TIMEOUT_MS = 60_000/);
+  assert.match(conversion, /MAX_CONCURRENT_CONVERSIONS = 2/);
+  assert.match(conversion, /SIGKILL/);
+  assert.match(conversion, /LibreOffice returned an invalid PDF result/);
+});
+
+test("release checks reject high dependency advisories and deployments retry transient Fly failures", () => {
+  const rootPackage = JSON.parse(read("package.json"));
+  assert.match(rootPackage.scripts["audit:high"], /--audit-level=high/);
+  assert.match(rootPackage.scripts.check, /npm run audit:high/);
+
+  const retry = read("scripts/fly-deploy-with-retry.sh");
+  assert.match(retry, /FLY_DEPLOY_ATTEMPTS:-3/);
+  for (const path of [
+    ".github/workflows/deploy-private-ross.yml",
+    ".github/workflows/deploy-public-beta-ross.yml",
+  ]) {
+    assert.match(read(path), /scripts\/fly-deploy-with-retry\.sh/);
+  }
+});

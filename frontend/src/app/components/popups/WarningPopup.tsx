@@ -43,6 +43,9 @@ export function WarningPopup({
     return createPortal(
         <div className="pointer-events-none fixed left-1/2 top-5 z-[220] w-[min(92vw,520px)] -translate-x-1/2 px-4">
             <div
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
                 className={cn(
                     "pointer-events-auto flex items-start gap-2 rounded-2xl border border-white/70 bg-red-50/75 px-3 py-2 text-xs shadow-[0_4px_12px_rgba(15,23,42,0.11),inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-6px_12px_rgba(255,255,255,0.2)] backdrop-blur-2xl",
                     className,

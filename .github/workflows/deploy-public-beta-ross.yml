@@ -175,7 +175,7 @@ jobs:
 
       - name: Deploy ROSS API
         run: >-
-          flyctl deploy .
+          bash scripts/fly-deploy-with-retry.sh .
           --config deploy/fly/api.toml
           --app "$API_APP"
           --remote-only
@@ -188,7 +188,7 @@ jobs:
           set -euo pipefail
           WEB_URL="https://${WEB_APP}.fly.dev"
           API_URL="https://${API_APP}.fly.dev"
-          flyctl deploy . \
+          bash scripts/fly-deploy-with-retry.sh . \
             --config deploy/fly/frontend.toml \
             --app "$WEB_APP" \
             --remote-only \

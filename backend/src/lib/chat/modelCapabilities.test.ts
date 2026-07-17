@@ -50,6 +50,11 @@ test("key-scoped discovery exposes availability but never the API key", async ()
       result.models.some((model) => model.id === "text-embedding-3-large"),
       false,
     );
+    assert.match(
+      result.models.find((model) => model.id === "gpt-5.5")
+        ?.availabilityReason ?? "",
+      /does not currently list this model/i,
+    );
     assert.equal(JSON.stringify(result).includes(secret), false);
   } finally {
     globalThis.fetch = originalFetch;

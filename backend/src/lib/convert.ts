@@ -6,6 +6,12 @@ let _convert:
   | ((buf: Buffer, ext: string, filter: undefined) => Promise<Buffer>)
   | null = null;
 let _sofficeBinaryPaths: string[] | null = null;
+const CONVERSION_TIMEOUT_MS = 60_000;
+const MAX_CONVERSION_OUTPUT_BYTES = 100 * 1024 * 1024;
+const MAX_CONCURRENT_CONVERSIONS = 2;
+const MAX_QUEUED_CONVERSIONS = 8;
+let activeConversions = 0;
+const conversionQueue: Array<() => void> = [];
 
 function executablePath(filePath: string) {
   try {
@@ -60,7 +66,16 @@ async function getConvert() {
       buf: Buffer,
       ext: string,
       filter: undefined,
-      options: { sofficeBinaryPaths?: string[] },
+      options: {
+        sofficeBinaryPaths?: string[];
+        execOptions?: {
+          timeout?: number;
+          maxBuffer?: number;
+          killSignal?: NodeJS.Signals;
+          windowsHide?: boolean;
+        };
+        sofficeAdditionalArgs?: string[];
+      },
       callback?: (err: Error | null, result: Buffer) => void,
     ) => Promise<Buffer> | void;
     _convert = (buf, ext, filter) =>
@@ -70,7 +85,21 @@ async function getConvert() {
             buf,
             ext,
             filter,
-            { sofficeBinaryPaths: resolveSofficeBinaryPaths() },
+            {
+              sofficeBinaryPaths: resolveSofficeBinaryPaths(),
+              execOptions: {
+                timeout: CONVERSION_TIMEOUT_MS,
+                maxBuffer: 1024 * 1024,
+                killSignal: "SIGKILL",
+                windowsHide: true,
+              },
+              sofficeAdditionalArgs: [
+                "--norestore",
+                "--nodefault",
+                "--nolockcheck",
+                "--nofirststartwizard",
+              ],
+            },
             (err, result) => {
               if (err) reject(err);
               else resolve(result);
@@ -128,9 +157,39 @@ export async function docxToPdf(buffer: Buffer): Promise<Buffer> {
       "LibreOffice/soffice binary was not found. Ensure Railway uses backend/nixpacks.toml or set SOFFICE_BINARY_PATH/LIBREOFFICE_BINARY_PATH.",
     );
   }
-  const convert = await getConvert();
-  const normalized = await normalizeDocxZipPaths(buffer);
-  return convert(normalized, ".pdf", undefined);
+  const release = await acquireConversionSlot();
+  try {
+    const convert = await getConvert();
+    const normalized = await normalizeDocxZipPaths(buffer);
+    const result = await convert(normalized, ".pdf", undefined);
+    if (result.length > MAX_CONVERSION_OUTPUT_BYTES) {
+      throw new Error("Converted PDF exceeds the maximum permitted size.");
+    }
+    if (!result.subarray(0, 5).equals(Buffer.from("%PDF-"))) {
+      throw new Error("LibreOffice returned an invalid PDF result.");
+    }
+    return result;
+  } finally {
+    release();
+  }
+}
+
+async function acquireConversionSlot() {
+  if (activeConversions < MAX_CONCURRENT_CONVERSIONS) {
+    activeConversions += 1;
+    return releaseConversionSlot;
+  }
+  if (conversionQueue.length >= MAX_QUEUED_CONVERSIONS) {
+    throw new Error("Document conversion capacity is temporarily full.");
+  }
+  await new Promise<void>((resolve) => conversionQueue.push(resolve));
+  activeConversions += 1;
+  return releaseConversionSlot;
+}
+
+function releaseConversionSlot() {
+  activeConversions = Math.max(0, activeConversions - 1);
+  conversionQueue.shift()?.();
 }
 
 export function convertedPdfKey(userId: string, docId: string): string {

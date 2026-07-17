@@ -1,7 +1,13 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import {
+    useEffect,
+    useId,
+    useRef,
+    type ButtonHTMLAttributes,
+    type ReactNode,
+} from "react";
 import { X } from "lucide-react";
 import { PillButton } from "@/app/components/ui/pill-button";
 import { cn } from "@/app/lib/utils";
@@ -28,6 +34,7 @@ interface ModalProps {
     primaryAction?: ModalAction;
     secondaryAction?: ModalAction;
     cancelAction?: ModalAction | false;
+    ariaLabel?: string;
 }
 
 const sizeClassName: Record<ModalSize, string> = {
@@ -49,14 +56,78 @@ export function Modal({
     primaryAction,
     secondaryAction,
     cancelAction,
+    ariaLabel = "Dialog",
 }: ModalProps) {
+    const dialogRef = useRef<HTMLDivElement>(null);
+    const titleId = useId();
     const hasHeader = breadcrumbs?.length;
     const hasFooter =
-        footerStatus ||
-        primaryAction ||
-        secondaryAction ||
-        cancelAction;
+        footerStatus || primaryAction || secondaryAction || cancelAction;
     const resolvedCancelAction = cancelAction;
+
+    useEffect(() => {
+        if (!open) return;
+
+        const previouslyFocused = document.activeElement as HTMLElement | null;
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+
+        const overlay = dialog.parentElement;
+        const backgroundStates = Array.from(document.body.children)
+            .filter((element) => element !== overlay)
+            .map((element) => ({
+                element: element as HTMLElement,
+                inert: (element as HTMLElement).inert,
+                ariaHidden: element.getAttribute("aria-hidden"),
+            }));
+        for (const { element } of backgroundStates) {
+            element.inert = true;
+            element.setAttribute("aria-hidden", "true");
+        }
+
+        const focusable = () =>
+            Array.from(
+                dialog.querySelectorAll<HTMLElement>(
+                    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+                ),
+            ).filter((element) => !element.hasAttribute("hidden"));
+        (focusable()[0] ?? dialog).focus();
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                onClose();
+                return;
+            }
+            if (event.key !== "Tab") return;
+            const candidates = focusable();
+            if (candidates.length === 0) {
+                event.preventDefault();
+                dialog.focus();
+                return;
+            }
+            const first = candidates[0];
+            const last = candidates[candidates.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            for (const { element, inert, ariaHidden } of backgroundStates) {
+                element.inert = inert;
+                if (ariaHidden === null) element.removeAttribute("aria-hidden");
+                else element.setAttribute("aria-hidden", ariaHidden);
+            }
+            previouslyFocused?.focus();
+        };
+    }, [onClose, open]);
 
     if (!open) return null;
 
@@ -69,8 +140,14 @@ export function Modal({
             onClick={onClose}
         >
             <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={hasHeader ? titleId : undefined}
+                aria-label={hasHeader ? undefined : ariaLabel}
+                tabIndex={-1}
                 className={cn(
-                    "w-full rounded-3xl flex h-[600px] flex-col",
+                    "w-full rounded-3xl flex h-[min(600px,calc(100dvh-2rem))] flex-col",
                     sizeClassName[size],
                     "border border-white/70 bg-gray-50/95 shadow-[0_14px_40px_rgba(15,23,42,0.101),0_5px_14px_rgba(15,23,42,0.067)] backdrop-blur-3xl",
                     className,
@@ -88,6 +165,12 @@ export function Modal({
                                     >
                                         {index > 0 && <span>›</span>}
                                         <span
+                                            id={
+                                                index ===
+                                                (breadcrumbs?.length ?? 0) - 1
+                                                    ? titleId
+                                                    : undefined
+                                            }
                                             className={cn(
                                                 "truncate",
                                                 index ===
@@ -122,9 +205,7 @@ export function Modal({
                     <div
                         className={cn(
                             "flex items-center gap-3 p-3",
-                            secondaryAction
-                                ? "justify-between"
-                                : "justify-end",
+                            secondaryAction ? "justify-between" : "justify-end",
                             "border-t border-white/60",
                         )}
                     >

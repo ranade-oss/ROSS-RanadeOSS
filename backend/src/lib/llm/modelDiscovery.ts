@@ -8,6 +8,7 @@ const OPENAI_MODELS_URL = "https://api.openai.com/v1/models";
 export type DiscoveredModel = ModelCapability & {
   available: boolean;
   availability: "live" | "configured" | "unavailable" | "fallback";
+  availabilityReason?: string;
 };
 
 export type ModelDiscoveryResult = {
@@ -65,6 +66,7 @@ export async function discoverCompatibleModels(
         ...capability,
         available: false,
         availability: "unavailable",
+        availabilityReason: `Add an API key for ${providerLabel(capability.provider)} to use this model.`,
       };
     }
     if (capability.provider !== "openai") {
@@ -85,6 +87,12 @@ export async function discoverCompatibleModels(
       ...capability,
       available: openAIIds.has(capability.id),
       availability: openAIIds.has(capability.id) ? "live" : "unavailable",
+      ...(openAIIds.has(capability.id)
+        ? {}
+        : {
+            availabilityReason:
+              "This OpenAI project does not currently list this model as available.",
+          }),
     };
   });
 
@@ -95,4 +103,10 @@ export async function discoverCompatibleModels(
     refreshedAt: new Date().toISOString(),
     ...(warning ? { warning } : {}),
   };
+}
+
+function providerLabel(provider: ModelCapability["provider"]) {
+  if (provider === "openai") return "OpenAI";
+  if (provider === "claude") return "Anthropic";
+  return "Google Gemini";
 }

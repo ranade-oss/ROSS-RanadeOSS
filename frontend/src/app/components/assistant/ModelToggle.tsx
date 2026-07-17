@@ -18,6 +18,7 @@ export interface ModelOption {
   label: string;
   group: "Anthropic" | "Google" | "OpenAI";
   available?: boolean;
+  availabilityReason?: string;
   reasoningEfforts?: string[];
   defaultReasoningEffort?: string;
 }
@@ -96,6 +97,13 @@ export function ModelToggle({
   const selectedAvailable =
     selected?.available !== false &&
     (apiKeys ? isModelAvailable(value, apiKeys) : true);
+  const selectedUnavailableReason =
+    selected?.available === false
+      ? (selected.availabilityReason ??
+        "This model is not currently available.")
+      : !selectedAvailable
+        ? "Add an API key for this model provider."
+        : undefined;
 
   return (
     <DropdownMenu onOpenChange={setIsOpen}>
@@ -103,11 +111,7 @@ export function ModelToggle({
         <button
           type="button"
           className={`flex items-center gap-1.5 rounded-lg px-2 h-8 text-sm transition-colors cursor-pointer text-gray-400 hover:bg-gray-100 hover:text-gray-700 ${isOpen ? "bg-gray-100 text-gray-700" : ""}`}
-          title={
-            !selectedAvailable
-              ? "API key missing for selected model"
-              : "Choose model"
-          }
+          title={selectedUnavailableReason ?? "Choose model"}
         >
           {!selectedAvailable && (
             <AlertCircle className="h-3 w-3 shrink-0 text-red-500" />
@@ -132,12 +136,20 @@ export function ModelToggle({
                 const available =
                   m.available !== false &&
                   (apiKeys ? isModelAvailable(m.id, apiKeys) : true);
+                const unavailableReason =
+                  m.available === false
+                    ? (m.availabilityReason ??
+                      "This model is not currently available.")
+                    : !available
+                      ? "Add an API key for this model provider."
+                      : undefined;
                 return (
                   <DropdownMenuItem
                     key={m.id}
                     className="cursor-pointer"
                     disabled={!available}
                     onSelect={() => onChange(m.id)}
+                    title={unavailableReason}
                   >
                     <span
                       className={`flex-1 ${available ? "" : "text-gray-400"}`}
@@ -147,7 +159,7 @@ export function ModelToggle({
                     {!available && (
                       <AlertCircle
                         className="h-3.5 w-3.5 text-red-500 ml-1"
-                        aria-label="API key missing"
+                        aria-label={unavailableReason}
                       />
                     )}
                     {m.id === value && available && (
