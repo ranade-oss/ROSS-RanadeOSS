@@ -32,8 +32,8 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "jurisdictions": [
       "Canada / Ontario"
     ],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -70,9 +70,9 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
       "No deadline or limitation opinion is inferred",
       "Regional direction is identified or the gap is visible"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-civil-pleadings-synthetic.md",
     "id": "builtin-ross-ontario-civil-claim-defence-issue-extraction",
     "appPath": "/workflows/assistant/builtin-ross-ontario-civil-claim-defence-issue-extraction"
@@ -85,8 +85,8 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "jurisdictions": [
       "Canada / Ontario"
     ],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -124,9 +124,9 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
       "Review scope and date are recorded",
       "Human production decision is explicit"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-discovery-synthetic.md",
     "id": "builtin-ross-ontario-documentary-discovery-review",
     "appPath": "/workflows/assistant/builtin-ross-ontario-documentary-discovery-review"
@@ -139,8 +139,8 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "jurisdictions": [
       "Canada / Ontario"
     ],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -181,9 +181,9 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
       "No credibility conclusion is generated",
       "Exhibit references are checked"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-affidavit-synthetic.md",
     "id": "builtin-ross-ontario-affidavit-fact-check",
     "appPath": "/workflows/assistant/builtin-ross-ontario-affidavit-fact-check"
@@ -197,8 +197,8 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
       "Canada / Ontario",
       "Canada / Federal"
     ],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -239,9 +239,9 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
       "Currency and treatment gaps are visible",
       "No unsupported proposition is marked verified"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-factum-synthetic.md",
     "id": "builtin-ross-ontario-factum-authority-record-cross-check",
     "appPath": "/workflows/assistant/builtin-ross-ontario-factum-authority-record-cross-check"
@@ -254,8 +254,8 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "jurisdictions": [
       "Canada / Ontario"
     ],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -297,9 +297,9 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
       "Court location and service facts are confirmed",
       "Professional-scope warning remains visible"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-small-claims-synthetic.md",
     "id": "builtin-ross-ontario-small-claims-intake",
     "appPath": "/workflows/assistant/builtin-ross-ontario-small-claims-intake"

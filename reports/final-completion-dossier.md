@@ -13,8 +13,8 @@ Generated from governed records. This report is evidence inventory, not approval
 | Workstream | Owner role | Status | Source of truth |
 | --- | --- | --- | --- |
 | authorized-ontario-case-law | product owner and legal-source counsel | pending | `config/professional-validation.v1.json#legalSourceDecision` |
-| lawyer-authored-benchmark | Ontario lawyer and independent adjudicator | pending | `config/professional-validation.v1.json#benchmarkReview` |
-| five-workflow-reviews | Ontario lawyer with suitable subject-matter experience | pending | `config/professional-validation.v1.json#workflowReviews` |
+| lawyer-authored-benchmark | Ontario lawyer and independent adjudicator | completed-with-evidence | `config/professional-validation.v1.json#benchmarkReview` |
+| five-workflow-reviews | Ontario lawyer with suitable subject-matter experience | completed-with-evidence | `config/professional-validation.v1.json#workflowReviews` |
 | privacy-security-accessibility | independent privacy, security, and accessibility reviewers | pending | `config/release-approvals.v1.json#approvals` |
 | operational-exercises | release and operations owners | pending | `config/operations-readiness.v1.json#evidence` |
 | accountable-launch-decisions | legal operator and product owner | pending | `config/launch-readiness.v1.json#decisions` |

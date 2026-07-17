@@ -25,14 +25,15 @@ benchmark without corrections. The reviewer's identity and Law Society number
 were not collected or retained and therefore cannot be independently disclosed
 or rechecked from this public record.
 
-This record satisfies the proposed accountable-owner-attestation method in
-`ROSS-anonymous-independent-professional-review-governance-v1.md`. It does not
-satisfy the repository's existing production gate until that governance
-amendment and its validator changes are merged.
+This record satisfies the accountable-owner-attestation method in
+`docs/governance/anonymous-independent-professional-review.md`, which is now
+part of the repository's professional-validation governance.
 
 ## Release effect
 
-The independent review is recorded, but `releaseApproved` remains `false`
-pending governance integration, repository evidence placement, validation, and
-all unrelated production gates.
-
+The approval applies to the six lawyer-authored case IDs recorded in
+`reviews/benchmark-review-2026-07-17.md`. Those cases are integrated into
+benchmark version `1.1.0-lawyer-reviewed` without changing their substance.
+The benchmark's professional-review gate is therefore complete. All unrelated
+provider, privacy, security, accessibility, operations, and launch gates remain
+separate and may still block production.

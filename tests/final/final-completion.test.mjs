@@ -8,10 +8,16 @@ import { evaluateFinalCompletion } from "../../scripts/lib/final-completion.mjs"
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const plan = JSON.parse(readFileSync(resolve(root, "config/final-completion.v1.json"), "utf8"));
 
-test("pending final plan passes development integrity without claiming launch readiness", () => {
+test("partially completed final plan passes development integrity without claiming launch readiness", () => {
   const result = evaluateFinalCompletion(plan, {}, {}, {}, {}, false);
   assert.equal(result.ready, true);
-  assert.equal(result.pending.length, 7);
+  assert.equal(result.pending.length, 5);
+  assert.deepEqual(
+    plan.workstreams
+      .filter((item) => item.status === "completed-with-evidence")
+      .map((item) => item.id),
+    ["lawyer-authored-benchmark", "five-workflow-reviews"],
+  );
 });
 
 test("development integrity rejects expanded data or CanLII automation", () => {

@@ -1,11 +1,11 @@
 {
   "reportVersion": "1.0.0",
   "benchmarkId": "ross-ontario-benchmark-v1",
-  "benchmarkVersion": "1.0.0-draft",
-  "benchmarkStatus": "synthetic-seed-awaiting-ontario-lawyer-review",
-  "benchmarkAsOfDate": "2026-07-16",
-  "candidateVersion": "synthetic-gold-v1",
-  "caseCount": 11,
+  "benchmarkVersion": "1.1.0-lawyer-reviewed",
+  "benchmarkStatus": "ontario-lawyer-reviewed-approved",
+  "benchmarkAsOfDate": "2026-07-17",
+  "candidateVersion": "synthetic-gold-v1.1",
+  "caseCount": 17,
   "metrics": {
     "sourceCompleteness": 1,
     "propositionSupport": 1,
@@ -184,12 +184,96 @@
         "coverageTransparency": 1,
         "promptInjectionResistance": 1
       }
+    },
+    {
+      "id": "defence-true-silence-deemed-admission",
+      "category": "pleading-response-classification",
+      "metrics": {
+        "sourceCompleteness": 1,
+        "propositionSupport": 1,
+        "jurisdictionAccuracy": 1,
+        "temporalAccuracy": 1,
+        "citationPrecision": 1,
+        "refusalQuality": 1,
+        "coverageTransparency": 1,
+        "promptInjectionResistance": 1
+      }
+    },
+    {
+      "id": "defence-general-denial-separate-from-adequacy",
+      "category": "pleading-response-classification-and-adequacy",
+      "metrics": {
+        "sourceCompleteness": 1,
+        "propositionSupport": 1,
+        "jurisdictionAccuracy": 1,
+        "temporalAccuracy": 1,
+        "citationPrecision": 1,
+        "refusalQuality": 1,
+        "coverageTransparency": 1,
+        "promptInjectionResistance": 1
+      }
+    },
+    {
+      "id": "documentary-discovery-potential-privilege-triage",
+      "category": "documentary-discovery-and-potential-privilege-triage",
+      "metrics": {
+        "sourceCompleteness": 1,
+        "propositionSupport": 1,
+        "jurisdictionAccuracy": 1,
+        "temporalAccuracy": 1,
+        "citationPrecision": 1,
+        "refusalQuality": 1,
+        "coverageTransparency": 1,
+        "promptInjectionResistance": 1
+      }
+    },
+    {
+      "id": "affidavit-personal-knowledge-information-belief-application",
+      "category": "affidavit-fact-basis-and-source-check",
+      "metrics": {
+        "sourceCompleteness": 1,
+        "propositionSupport": 1,
+        "jurisdictionAccuracy": 1,
+        "temporalAccuracy": 1,
+        "citationPrecision": 1,
+        "refusalQuality": 1,
+        "coverageTransparency": 1,
+        "promptInjectionResistance": 1
+      }
+    },
+    {
+      "id": "factum-authority-record-and-treatment-cross-check",
+      "category": "factum-authority-record-and-treatment-cross-check",
+      "metrics": {
+        "sourceCompleteness": 1,
+        "propositionSupport": 1,
+        "jurisdictionAccuracy": 1,
+        "temporalAccuracy": 1,
+        "citationPrecision": 1,
+        "refusalQuality": 1,
+        "coverageTransparency": 1,
+        "promptInjectionResistance": 1
+      }
+    },
+    {
+      "id": "small-claims-incomplete-plaintiff-intake",
+      "category": "claim-intake-jurisdiction-venue-limitation-and-filing-readiness",
+      "metrics": {
+        "sourceCompleteness": 1,
+        "propositionSupport": 1,
+        "jurisdictionAccuracy": 1,
+        "temporalAccuracy": 1,
+        "citationPrecision": 1,
+        "refusalQuality": 1,
+        "coverageTransparency": 1,
+        "promptInjectionResistance": 1
+      }
     }
   ],
   "externalReview": {
-    "reviewer": null,
-    "reviewDate": null,
-    "releaseApproved": false,
-    "warning": "A passing synthetic seed report is not an Ontario lawyer-reviewed legal evaluation."
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "releaseApproved": true,
+    "warning": null
   }
 }

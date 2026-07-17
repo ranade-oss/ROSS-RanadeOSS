@@ -7,13 +7,13 @@ import { evaluateProfessionalValidation } from "../../scripts/lib/professional-v
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), "utf8"));
-const pending = readJson("config/professional-validation.v1.json");
+const integrated = readJson("config/professional-validation.v1.json");
 const benchmark = readJson("tests/evaluation/ontario-benchmark.v1.json");
 const workflows = readJson("workflows/ontario/catalogue.json");
 const approvals = readJson("config/release-approvals.v1.json");
 
 function completeValidationFixture(disclosureMode = "named") {
-  const record = structuredClone(pending);
+  const record = structuredClone(integrated);
   const reviewedBenchmark = structuredClone(benchmark);
   const reviewedWorkflows = structuredClone(workflows);
   const approved = structuredClone(approvals);
@@ -91,27 +91,36 @@ function completeValidationFixture(disclosureMode = "named") {
   return { record, reviewedBenchmark, reviewedWorkflows, approved };
 }
 
-test("pending professional-validation records pass development integrity checks", () => {
-  const result = evaluateProfessionalValidation(pending, benchmark, workflows, approvals, false);
+test("integrated professional reviews pass development integrity without claiming launch readiness", () => {
+  const result = evaluateProfessionalValidation(integrated, benchmark, workflows, approvals, false);
   assert.equal(result.ready, true);
-  assert.equal(result.warnings.length, 4);
+  assert.equal(result.warnings.length, 2);
+  assert.match(result.warnings[0], /provider selection is pending/);
 });
 
-test("development validation rejects false or partial approvals", () => {
-  const falseApproval = structuredClone(pending);
-  falseApproval.workflowReviews[0].status = "approved-by-ontario-lawyer";
+test("development validation rejects partial professional-review integration", () => {
+  const partialRecord = structuredClone(integrated);
+  const partialWorkflows = structuredClone(workflows);
+  partialRecord.workflowReviews[0].status = "pending-ontario-lawyer-review";
+  partialWorkflows[0].status = "draft-awaiting-lawyer-review";
   assert.equal(
-    evaluateProfessionalValidation(falseApproval, benchmark, workflows, approvals, false).ready,
+    evaluateProfessionalValidation(
+      partialRecord,
+      benchmark,
+      partialWorkflows,
+      approvals,
+      false,
+    ).ready,
     false,
   );
 });
 
-test("production validation fails closed while external work is pending", () => {
-  const result = evaluateProfessionalValidation(pending, benchmark, workflows, approvals, true);
+test("production validation still fails closed on the remaining external gates", () => {
+  const result = evaluateProfessionalValidation(integrated, benchmark, workflows, approvals, true);
   assert.equal(result.ready, false);
   assert.ok(result.blockers.some((item) => /case-law provider/.test(item)));
-  assert.ok(result.blockers.some((item) => /benchmark/.test(item)));
   assert.ok(result.blockers.some((item) => /privacy/.test(item)));
+  assert.ok(!result.blockers.some((item) => /benchmark.*not approved/i.test(item)));
 });
 
 test("complete evidence-bearing named professional validation can pass", () => {

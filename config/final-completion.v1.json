@@ -21,7 +21,9 @@
   "providerStrategy": {
     "status": "pending-authorization-for-coverage-gaps",
     "implementedOpenProvider": "a2aj-canada",
-    "implementedReportedOntarioCourtCoverage": ["Ontario Court of Appeal"],
+    "implementedReportedOntarioCourtCoverage": [
+      "Ontario Court of Appeal"
+    ],
     "knownGaps": [
       "Ontario Superior Court of Justice",
       "Ontario Small Claims Court"
@@ -44,13 +46,13 @@
     {
       "id": "lawyer-authored-benchmark",
       "ownerRole": "Ontario lawyer and independent adjudicator",
-      "status": "pending",
+      "status": "completed-with-evidence",
       "sourceOfTruth": "config/professional-validation.v1.json#benchmarkReview"
     },
     {
       "id": "five-workflow-reviews",
       "ownerRole": "Ontario lawyer with suitable subject-matter experience",
-      "status": "pending",
+      "status": "completed-with-evidence",
       "sourceOfTruth": "config/professional-validation.v1.json#workflowReviews"
     },
     {

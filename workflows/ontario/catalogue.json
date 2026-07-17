@@ -4,9 +4,11 @@
     "title": "Ontario Civil Claim and Defence Issue Extraction",
     "description": "Extract pleaded facts, causes of action, defences, remedies, admissions, denials, and material gaps from Ontario civil pleadings.",
     "practice": "Civil Litigation",
-    "jurisdictions": ["Canada / Ontario"],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "jurisdictions": [
+      "Canada / Ontario"
+    ],
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -43,9 +45,9 @@
       "No deadline or limitation opinion is inferred",
       "Regional direction is identified or the gap is visible"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-civil-pleadings-synthetic.md",
     "skillFile": "civil-claim-defence-issue-extraction.md"
   },
@@ -54,9 +56,11 @@
     "title": "Ontario Documentary Discovery Review",
     "description": "Review a synthetic document set for relevance, issues, chronology, duplicates, and potential privilege flags without making privilege determinations.",
     "practice": "Civil Litigation",
-    "jurisdictions": ["Canada / Ontario"],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "jurisdictions": [
+      "Canada / Ontario"
+    ],
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -94,9 +98,9 @@
       "Review scope and date are recorded",
       "Human production decision is explicit"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-discovery-synthetic.md",
     "skillFile": "documentary-discovery-review.md"
   },
@@ -105,9 +109,11 @@
     "title": "Ontario Affidavit Fact Check",
     "description": "Cross-check a draft Ontario affidavit against supplied records and identify unsupported, inconsistent, ambiguous, or hearsay-sensitive passages.",
     "practice": "Civil Litigation",
-    "jurisdictions": ["Canada / Ontario"],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "jurisdictions": [
+      "Canada / Ontario"
+    ],
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -148,9 +154,9 @@
       "No credibility conclusion is generated",
       "Exhibit references are checked"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-affidavit-synthetic.md",
     "skillFile": "affidavit-fact-check.md"
   },
@@ -159,9 +165,12 @@
     "title": "Ontario Factum Authority and Record Cross-Check",
     "description": "Check a draft factum's record references, quoted passages, Canadian citations, and authority support while keeping verification states separate.",
     "practice": "Civil Litigation and Appeals",
-    "jurisdictions": ["Canada / Ontario", "Canada / Federal"],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "jurisdictions": [
+      "Canada / Ontario",
+      "Canada / Federal"
+    ],
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -202,9 +211,9 @@
       "Currency and treatment gaps are visible",
       "No unsupported proposition is marked verified"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-factum-synthetic.md",
     "skillFile": "factum-authority-record-cross-check.md"
   },
@@ -213,9 +222,11 @@
     "title": "Ontario Small Claims Claim and Defence Intake",
     "description": "Organize a synthetic Small Claims matter into parties, allegations, responses, remedies, documents, procedural questions, and missing facts.",
     "practice": "Small Claims Court",
-    "jurisdictions": ["Canada / Ontario"],
-    "version": "0.1.0-draft",
-    "status": "draft-awaiting-lawyer-review",
+    "jurisdictions": [
+      "Canada / Ontario"
+    ],
+    "version": "0.1.0",
+    "status": "lawyer-reviewed-approved",
     "intendedUsers": [
       "Ontario lawyers",
       "Ontario paralegals acting within their permitted scope"
@@ -257,9 +268,9 @@
       "Court location and service facts are confirmed",
       "Professional-scope warning remains visible"
     ],
-    "reviewer": null,
-    "reviewDate": null,
-    "reviewEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "reviewDate": "2026-07-17",
+    "reviewEvidence": "reviews/ontario-workflow-review-2026-07-17.md",
     "syntheticFixture": "tests/fixtures/workflows/ontario-small-claims-synthetic.md",
     "skillFile": "small-claims-intake.md"
   }

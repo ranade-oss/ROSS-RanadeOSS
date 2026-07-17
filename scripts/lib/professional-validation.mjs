@@ -50,6 +50,42 @@ function requireIndependentAdjudication(review, blockers) {
     blockers.push(`${label} verification date is missing or invalid.`);
 }
 
+function requireApprovedScope(record, blockers) {
+  if (record.scope?.status !== "approved-by-ontario-lawyer")
+    blockers.push("Ontario practice scope is not lawyer-approved.");
+  for (const area of record.scope?.practiceAreas ?? [])
+    if (area.status !== "approved-by-ontario-lawyer")
+      blockers.push(`Practice area ${area.id} is not lawyer-approved.`);
+}
+
+function requireApprovedProfessionalReviews(
+  record,
+  benchmark,
+  workflowCatalogue,
+  blockers,
+) {
+  requireReview(record.benchmarkReview, "Ontario benchmark review", blockers);
+  requireIndependentAdjudication(record.benchmarkReview, blockers);
+  if (benchmark.status !== "ontario-lawyer-reviewed-approved" || benchmark.releaseApproved !== true)
+    blockers.push("Versioned Ontario benchmark is not lawyer-reviewed and release-approved.");
+  if (benchmark.reviewer !== record.benchmarkReview?.reviewer)
+    blockers.push("Benchmark reviewer does not match the professional-validation record.");
+
+  const catalogueBySlug = new Map(workflowCatalogue.map((item) => [item.slug, item]));
+  for (const review of record.workflowReviews ?? []) {
+    requireReview(review, `Workflow ${review.slug}`, blockers);
+    if (!dated(review.sourceAsOfDate))
+      blockers.push(`Workflow ${review.slug} sourceAsOfDate is missing or invalid.`);
+    const workflow = catalogueBySlug.get(review.slug);
+    if (workflow?.status !== "lawyer-reviewed-approved")
+      blockers.push(`Workflow ${review.slug} catalogue status is not lawyer-reviewed-approved.`);
+    if (workflow?.reviewer !== review.reviewer || workflow?.reviewDate !== review.reviewDate)
+      blockers.push(`Workflow ${review.slug} catalogue review metadata does not match.`);
+    if (workflow?.reviewEvidence !== review.evidence)
+      blockers.push(`Workflow ${review.slug} catalogue evidence does not match.`);
+  }
+}
+
 export function evaluateProfessionalValidation(
   record,
   benchmark,
@@ -79,28 +115,45 @@ export function evaluateProfessionalValidation(
     if (!workflowSlugs.has(slug)) blockers.push(`Review record references unknown workflow ${slug}.`);
 
   if (!production) {
-    if (record.status !== "blocked-awaiting-professional-validation")
-      blockers.push("Pending development record must remain explicitly blocked.");
-    if (benchmark.releaseApproved !== false)
-      blockers.push("Synthetic benchmark cannot be release-approved in development mode.");
-    if (workflowCatalogue.some((item) => item.status !== "draft-awaiting-lawyer-review"))
-      blockers.push("Development catalogue contains a workflow represented as approved.");
-    if (record.workflowReviews?.some((item) => item.status !== "pending-ontario-lawyer-review"))
-      blockers.push("Development workflow review status is not explicitly pending.");
-    warnings.push("Authorized Ontario case-law provider selection is pending.");
-    warnings.push("Ontario lawyer benchmark authorship and independent adjudication are pending.");
-    warnings.push("Five Ontario workflow reviews are pending.");
-    warnings.push("Privacy, security, and accessibility approvals are pending.");
+    const pendingBenchmark =
+      benchmark.releaseApproved === false &&
+      record.benchmarkReview?.status === "pending-ontario-lawyer-authorship-and-review";
+    const pendingWorkflows =
+      workflowCatalogue.every((item) => item.status === "draft-awaiting-lawyer-review") &&
+      record.workflowReviews?.every((item) => item.status === "pending-ontario-lawyer-review");
+    const approvedBenchmark =
+      benchmark.releaseApproved === true &&
+      benchmark.status === "ontario-lawyer-reviewed-approved" &&
+      record.benchmarkReview?.status === "approved-by-ontario-lawyer";
+    const approvedWorkflows =
+      workflowCatalogue.every((item) => item.status === "lawyer-reviewed-approved") &&
+      record.workflowReviews?.every((item) => item.status === "approved-by-ontario-lawyer");
+
+    if (pendingBenchmark && pendingWorkflows) {
+      if (record.status !== "blocked-awaiting-professional-validation")
+        blockers.push("Pending development record must remain explicitly blocked.");
+      warnings.push("Authorized Ontario case-law provider selection is pending.");
+      warnings.push("Ontario lawyer benchmark authorship and independent adjudication are pending.");
+      warnings.push("Five Ontario workflow reviews are pending.");
+      warnings.push("Privacy, security, and accessibility approvals are pending.");
+    } else if (approvedBenchmark && approvedWorkflows) {
+      if (record.status !== "blocked-awaiting-authorized-provider")
+        blockers.push("Reviewed development record must remain blocked on the authorized provider.");
+      requireApprovedScope(record, blockers);
+      requireApprovedProfessionalReviews(record, benchmark, workflowCatalogue, blockers);
+      warnings.push("Authorized Ontario case-law provider selection is pending.");
+      warnings.push("Privacy, security, and accessibility approvals are pending.");
+    } else {
+      blockers.push(
+        "Professional review is partially integrated; benchmark and all five workflows must move together.",
+      );
+    }
     return { mode: "development", ready: blockers.length === 0, blockers, warnings };
   }
 
   if (record.status !== "approved-for-controlled-beta")
     blockers.push("Professional validation record is not approved-for-controlled-beta.");
-  if (record.scope?.status !== "approved-by-ontario-lawyer")
-    blockers.push("Ontario practice scope is not lawyer-approved.");
-  for (const area of record.scope?.practiceAreas ?? [])
-    if (area.status !== "approved-by-ontario-lawyer")
-      blockers.push(`Practice area ${area.id} is not lawyer-approved.`);
+  requireApprovedScope(record, blockers);
 
   const source = record.legalSourceDecision;
   if (source?.status !== "approved-authorized-provider")
@@ -120,26 +173,7 @@ export function evaluateProfessionalValidation(
     if (!source?.verifiedCoverage?.includes(court))
       blockers.push(`Legal-source coverage is not verified for ${court}.`);
 
-  requireReview(record.benchmarkReview, "Ontario benchmark review", blockers);
-  requireIndependentAdjudication(record.benchmarkReview, blockers);
-  if (benchmark.status !== "ontario-lawyer-reviewed-approved" || benchmark.releaseApproved !== true)
-    blockers.push("Versioned Ontario benchmark is not lawyer-reviewed and release-approved.");
-  if (benchmark.reviewer !== record.benchmarkReview?.reviewer)
-    blockers.push("Benchmark reviewer does not match the professional-validation record.");
-
-  const catalogueBySlug = new Map(workflowCatalogue.map((item) => [item.slug, item]));
-  for (const review of record.workflowReviews ?? []) {
-    requireReview(review, `Workflow ${review.slug}`, blockers);
-    if (!dated(review.sourceAsOfDate))
-      blockers.push(`Workflow ${review.slug} sourceAsOfDate is missing or invalid.`);
-    const workflow = catalogueBySlug.get(review.slug);
-    if (workflow?.status !== "lawyer-reviewed-approved")
-      blockers.push(`Workflow ${review.slug} catalogue status is not lawyer-reviewed-approved.`);
-    if (workflow?.reviewer !== review.reviewer || workflow?.reviewDate !== review.reviewDate)
-      blockers.push(`Workflow ${review.slug} catalogue review metadata does not match.`);
-    if (workflow?.reviewEvidence !== review.evidence)
-      blockers.push(`Workflow ${review.slug} catalogue evidence does not match.`);
-  }
+  requireApprovedProfessionalReviews(record, benchmark, workflowCatalogue, blockers);
 
   for (const name of ["privacy", "security", "accessibility"]) {
     const approval = releaseApprovals?.approvals?.[name];

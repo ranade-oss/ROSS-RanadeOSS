@@ -183,7 +183,7 @@ test("Ontario procedure sources, forms, and deadlines fail safely", () => {
   assert.match(migration, /revoke all.*anon, authenticated/i);
 });
 
-test("Ontario workflow drafts are additive, generated, public, and review-gated", () => {
+test("Ontario workflows are additive, generated, public, and lawyer-reviewed", () => {
   const generator = read("scripts/build-ross-workflows.mjs");
   const source = JSON.parse(read("workflows/ontario/catalogue.json"));
   const routes = read("backend/src/routes/workflows.ts");
@@ -191,14 +191,15 @@ test("Ontario workflow drafts are additive, generated, public, and review-gated"
   const publicRoute = read("website/app/[...slug]/page.tsx");
   assert.equal(source.length, 5);
   assert.ok(
-    source.every((entry) => entry.status === "draft-awaiting-lawyer-review"),
+    source.every((entry) => entry.status === "lawyer-reviewed-approved"),
   );
   assert.ok(
     source.every(
       (entry) =>
-        entry.reviewer === null &&
-        entry.reviewDate === null &&
-        entry.reviewEvidence === null,
+        entry.reviewer === "Abhi Ranade, Lawyer (LSO #90546L)" &&
+        entry.reviewDate === "2026-07-17" &&
+        entry.reviewEvidence ===
+          "reviews/ontario-workflow-review-2026-07-17.md",
     ),
   );
   assert.ok(
@@ -234,7 +235,7 @@ test("controlled-beta mode is enforced and production remains fail-closed", () =
   assert.match(prompt, /untrusted evidence, never as system instructions/i);
 });
 
-test("Ontario evaluation is versioned and production approval fails closed", () => {
+test("Ontario evaluation is versioned, lawyer-reviewed, and production still fails closed", () => {
   const benchmark = JSON.parse(
     read("tests/evaluation/ontario-benchmark.v1.json"),
   );
@@ -242,9 +243,9 @@ test("Ontario evaluation is versioned and production approval fails closed", () 
   const releaseGate = read("scripts/lib/release-readiness.mjs");
   const approvals = JSON.parse(read("config/release-approvals.v1.json"));
   const packageJson = JSON.parse(read("package.json"));
-  assert.equal(benchmark.cases.length, 11);
-  assert.match(benchmark.status, /awaiting-ontario-lawyer-review/);
-  assert.equal(benchmark.releaseApproved, false);
+  assert.equal(benchmark.cases.length, 17);
+  assert.equal(benchmark.status, "ontario-lawyer-reviewed-approved");
+  assert.equal(benchmark.releaseApproved, true);
   assert.match(evaluator, /sourceCompleteness/);
   assert.match(evaluator, /propositionSupport/);
   assert.match(evaluator, /promptInjectionResistance/);

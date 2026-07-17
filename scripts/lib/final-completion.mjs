@@ -39,9 +39,13 @@ export function evaluateFinalCompletion(
     if (plan.status !== "blocked-awaiting-external-completion")
       blockers.push("Development completion plan must remain explicitly blocked.");
     for (const id of requiredWorkstreams) {
-      if (byId.get(id)?.status !== "pending")
-        blockers.push(`Development workstream ${id} is not explicitly pending.`);
-      else pending.push({ id, ownerRole: byId.get(id).ownerRole });
+      const status = byId.get(id)?.status;
+      if (status === "pending")
+        pending.push({ id, ownerRole: byId.get(id).ownerRole });
+      else if (status !== "completed-with-evidence")
+        blockers.push(
+          `Development workstream ${id} must be pending or completed-with-evidence.`,
+        );
     }
     return { mode: "development", ready: blockers.length === 0, blockers, pending };
   }

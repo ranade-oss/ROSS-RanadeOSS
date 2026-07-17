@@ -8,9 +8,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const readJson = (path) => JSON.parse(read(path));
 
-test("Deliverable E adopts a narrow Ontario validation scope without false approval", () => {
+test("Ontario professional validation records the reviewed scope without false launch approval", () => {
   const record = readJson("config/professional-validation.v1.json");
-  assert.equal(record.status, "blocked-awaiting-professional-validation");
+  assert.equal(record.status, "blocked-awaiting-authorized-provider");
+  assert.equal(record.scope.status, "approved-by-ontario-lawyer");
   assert.deepEqual(
     record.scope.practiceAreas.map((area) => area.id),
     ["ontario-civil-litigation", "ontario-small-claims"],
@@ -19,11 +20,22 @@ test("Deliverable E adopts a narrow Ontario validation scope without false appro
   assert.equal(record.confidentialDataBoundary.confidentialUseApproved, false);
 });
 
-test("Deliverable E requires evidence for provider, benchmark, and five workflow reviews", () => {
+test("professional validation preserves the provider gate and records review evidence", () => {
   const record = readJson("config/professional-validation.v1.json");
   const validator = read("scripts/lib/professional-validation.mjs");
   assert.equal(record.workflowReviews.length, 5);
-  assert.ok(record.workflowReviews.every((review) => review.evidence === null));
+  assert.equal(record.legalSourceDecision.evidence, null);
+  assert.ok(
+    record.workflowReviews.every(
+      (review) =>
+        review.status === "approved-by-ontario-lawyer" &&
+        review.evidence === "reviews/ontario-workflow-review-2026-07-17.md",
+    ),
+  );
+  assert.equal(
+    record.benchmarkReview.adjudicationEvidence,
+    "reviews/benchmark-adjudication-anonymous-2026-07-17.md",
+  );
   assert.match(validator, /approved-authorized-provider/);
   assert.match(validator, /independentAdjudicator/);
   assert.match(validator, /sourceAsOfDate/);
@@ -32,12 +44,19 @@ test("Deliverable E requires evidence for provider, benchmark, and five workflow
   assert.match(validator, /accessibility/);
 });
 
-test("workflow approval is possible only with matching review evidence", () => {
+test("approved workflows carry matching review evidence", () => {
   const generator = read("scripts/build-ross-workflows.mjs");
   const workflows = readJson("workflows/ontario/catalogue.json");
   assert.match(generator, /lawyer-reviewed-approved/);
   assert.match(generator, /approval evidence is incomplete/);
-  assert.ok(workflows.every((workflow) => workflow.reviewEvidence === null));
+  assert.ok(
+    workflows.every(
+      (workflow) =>
+        workflow.status === "lawyer-reviewed-approved" &&
+        workflow.reviewEvidence ===
+          "reviews/ontario-workflow-review-2026-07-17.md",
+    ),
+  );
 });
 
 test("production release readiness includes the professional-validation gate", () => {

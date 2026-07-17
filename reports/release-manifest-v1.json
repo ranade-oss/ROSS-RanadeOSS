@@ -22,23 +22,23 @@
     },
     {
       "path": "config/final-completion.v1.json",
-      "sha256": "6d115fa6430f4d6ef408c18e53ec6e0e30df4306ab05dfcc200d99b562ceaa24",
-      "sizeBytes": 2839
+      "sha256": "d8e53bea2da31d1c049988e70f896b56ff4cefb02b3ab07cb3a32ab95532005d",
+      "sizeBytes": 2883
     },
     {
       "path": "config/launch-readiness.v1.json",
-      "sha256": "b1be324e2e5193d05914be0d8193f997ebcab685078025b7cc67e8b6e6b8f98e",
-      "sizeBytes": 938
+      "sha256": "e9063f0ccd8eb9b8a9dba5b2ec634c06b17e810cf8ea779d1280877c09fe9ddc",
+      "sizeBytes": 939
     },
     {
       "path": "config/operations-readiness.v1.json",
-      "sha256": "311f92bee6fcb63f88f0d4023406518eb9a71adff2a87cc51fa3319ae357bb68",
-      "sizeBytes": 997
+      "sha256": "1c679b7aa43271e1d33acdda61186940a1b24240564257a93c69494f2264ca17",
+      "sizeBytes": 998
     },
     {
       "path": "config/professional-validation.v1.json",
-      "sha256": "5cdf6b17b3d078cc3086a26cf6e769453fc407013dcef4f8a0f98226b4acb959",
-      "sizeBytes": 4034
+      "sha256": "a89f985edbbd6b23d16461790a0c7861e88d0f4ab0dee6f48482b2a3b6a15a47",
+      "sizeBytes": 5012
     },
     {
       "path": "config/public-source-coverage.json",
@@ -47,8 +47,8 @@
     },
     {
       "path": "config/release-approvals.v1.json",
-      "sha256": "3e6df14ffc9ed377befde53f25f00b5a46010527e622de967969199c7926a5f1",
-      "sizeBytes": 739
+      "sha256": "277a399781263f026db46f0b35a680a6622f56495ffc45213cd41545a5b87dae",
+      "sizeBytes": 740
     },
     {
       "path": "config/ross-brand.json",
@@ -57,18 +57,18 @@
     },
     {
       "path": "reports/legal-source-health-v1.json",
-      "sha256": "b347e4ddb627fcbc4f67392a1e71cd84d01b52c01b97c8d6abeb7d011e63ab80",
-      "sizeBytes": 1025
+      "sha256": "dce8fab3de6d56b20685b90c6fd0c772fce514ee9df9118c4af4da32faca35f3",
+      "sizeBytes": 1026
     },
     {
       "path": "reports/final-completion-dossier.md",
-      "sha256": "96932ced08e8054e1adc349dc35244f4cc502db0d71ac487d59affa4369cfae6",
-      "sizeBytes": 2202
+      "sha256": "70aed514f6cbc2c7c5e2c40cb35dff92f01fddb7f96e01ad6d61421048269a87",
+      "sizeBytes": 2234
     },
     {
       "path": "reports/ontario-evaluation-v1.json",
-      "sha256": "67dc3e089dfb30a0d7565713cc6c2104f1908a5fc2fd4c634ca37e174e5f6800",
-      "sizeBytes": 5396
+      "sha256": "b68b7adf782b58e9ac04d78e33378999bf32c1baf2c2a1eb9438a7d044b85086",
+      "sizeBytes": 7978
     },
     {
       "path": "scripts/lib/release-readiness.mjs",
@@ -77,13 +77,13 @@
     },
     {
       "path": "scripts/lib/professional-validation.mjs",
-      "sha256": "a2f561ce624bb0b90dd6b59ca518917f9f04d3ace95e9834c73c091569430774",
-      "sizeBytes": 8139
+      "sha256": "96c4fad2fcd327b63d7aa2ebbe01b454c4aafa01e6c08c5e812176e222091166",
+      "sizeBytes": 9475
     },
     {
       "path": "scripts/lib/final-completion.mjs",
-      "sha256": "4d16c33037f1ecfdaafd2197e747dc9ca5370910404f3faaa7e888e68f769e7c",
-      "sizeBytes": 2984
+      "sha256": "e30e3567f9e07287293de158e33dabd65af680ec13f07ca11608274fd6cff68b",
+      "sizeBytes": 3101
     },
     {
       "path": "website/app/site-config.ts",
@@ -92,8 +92,8 @@
     },
     {
       "path": "workflows/ontario/catalogue.json",
-      "sha256": "c32587b126e7e7237dee9efae58b0c518042ef531714b1f4208c107f37501eba",
-      "sizeBytes": 10539
+      "sha256": "6316832b71b5f7a0ae723c315b0f7ed1decba19b346f2a675201177ea6180728",
+      "sizeBytes": 10965
     }
   ]
 }

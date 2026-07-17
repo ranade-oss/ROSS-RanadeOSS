@@ -9,8 +9,8 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
         "created_at": "",
         "id": "builtin-ross-ontario-civil-claim-defence-issue-extraction",
         "metadata": {
-            "title": "Ontario Civil Claim and Defence Issue Extraction (Draft — not lawyer-reviewed)",
-            "description": "DRAFT — not lawyer-reviewed. Extract pleaded facts, causes of action, defences, remedies, admissions, denials, and material gaps from Ontario civil pleadings.",
+            "title": "Ontario Civil Claim and Defence Issue Extraction",
+            "description": "Extract pleaded facts, causes of action, defences, remedies, admissions, denials, and material gaps from Ontario civil pleadings.",
             "type": "assistant",
             "contributors": [
                 {
@@ -18,10 +18,16 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
                     "organisation": "Ranade OSS",
                     "role": "Draft workflow author",
                     "linkedin": null
+                },
+                {
+                    "name": "Abhi Ranade, Lawyer (LSO #90546L)",
+                    "organisation": "Independent Ontario legal review",
+                    "role": "Ontario workflow reviewer",
+                    "linkedin": null
                 }
             ],
             "language": "English",
-            "version": "0.1.0-draft",
+            "version": "0.1.0",
             "practice": "Civil Litigation",
             "jurisdictions": [
                 "Canada / Ontario"
@@ -36,8 +42,8 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
         "created_at": "",
         "id": "builtin-ross-ontario-documentary-discovery-review",
         "metadata": {
-            "title": "Ontario Documentary Discovery Review (Draft — not lawyer-reviewed)",
-            "description": "DRAFT — not lawyer-reviewed. Review a synthetic document set for relevance, issues, chronology, duplicates, and potential privilege flags without making privilege determinations.",
+            "title": "Ontario Documentary Discovery Review",
+            "description": "Review a synthetic document set for relevance, issues, chronology, duplicates, and potential privilege flags without making privilege determinations.",
             "type": "assistant",
             "contributors": [
                 {
@@ -45,10 +51,16 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
                     "organisation": "Ranade OSS",
                     "role": "Draft workflow author",
                     "linkedin": null
+                },
+                {
+                    "name": "Abhi Ranade, Lawyer (LSO #90546L)",
+                    "organisation": "Independent Ontario legal review",
+                    "role": "Ontario workflow reviewer",
+                    "linkedin": null
                 }
             ],
             "language": "English",
-            "version": "0.1.0-draft",
+            "version": "0.1.0",
             "practice": "Civil Litigation",
             "jurisdictions": [
                 "Canada / Ontario"
@@ -63,8 +75,8 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
         "created_at": "",
         "id": "builtin-ross-ontario-affidavit-fact-check",
         "metadata": {
-            "title": "Ontario Affidavit Fact Check (Draft — not lawyer-reviewed)",
-            "description": "DRAFT — not lawyer-reviewed. Cross-check a draft Ontario affidavit against supplied records and identify unsupported, inconsistent, ambiguous, or hearsay-sensitive passages.",
+            "title": "Ontario Affidavit Fact Check",
+            "description": "Cross-check a draft Ontario affidavit against supplied records and identify unsupported, inconsistent, ambiguous, or hearsay-sensitive passages.",
             "type": "assistant",
             "contributors": [
                 {
@@ -72,10 +84,16 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
                     "organisation": "Ranade OSS",
                     "role": "Draft workflow author",
                     "linkedin": null
+                },
+                {
+                    "name": "Abhi Ranade, Lawyer (LSO #90546L)",
+                    "organisation": "Independent Ontario legal review",
+                    "role": "Ontario workflow reviewer",
+                    "linkedin": null
                 }
             ],
             "language": "English",
-            "version": "0.1.0-draft",
+            "version": "0.1.0",
             "practice": "Civil Litigation",
             "jurisdictions": [
                 "Canada / Ontario"
@@ -90,8 +108,8 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
         "created_at": "",
         "id": "builtin-ross-ontario-factum-authority-record-cross-check",
         "metadata": {
-            "title": "Ontario Factum Authority and Record Cross-Check (Draft — not lawyer-reviewed)",
-            "description": "DRAFT — not lawyer-reviewed. Check a draft factum's record references, quoted passages, Canadian citations, and authority support while keeping verification states separate.",
+            "title": "Ontario Factum Authority and Record Cross-Check",
+            "description": "Check a draft factum's record references, quoted passages, Canadian citations, and authority support while keeping verification states separate.",
             "type": "assistant",
             "contributors": [
                 {
@@ -99,10 +117,16 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
                     "organisation": "Ranade OSS",
                     "role": "Draft workflow author",
                     "linkedin": null
+                },
+                {
+                    "name": "Abhi Ranade, Lawyer (LSO #90546L)",
+                    "organisation": "Independent Ontario legal review",
+                    "role": "Ontario workflow reviewer",
+                    "linkedin": null
                 }
             ],
             "language": "English",
-            "version": "0.1.0-draft",
+            "version": "0.1.0",
             "practice": "Civil Litigation and Appeals",
             "jurisdictions": [
                 "Canada / Ontario",
@@ -118,8 +142,8 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
         "created_at": "",
         "id": "builtin-ross-ontario-small-claims-intake",
         "metadata": {
-            "title": "Ontario Small Claims Claim and Defence Intake (Draft — not lawyer-reviewed)",
-            "description": "DRAFT — not lawyer-reviewed. Organize a synthetic Small Claims matter into parties, allegations, responses, remedies, documents, procedural questions, and missing facts.",
+            "title": "Ontario Small Claims Claim and Defence Intake",
+            "description": "Organize a synthetic Small Claims matter into parties, allegations, responses, remedies, documents, procedural questions, and missing facts.",
             "type": "assistant",
             "contributors": [
                 {
@@ -127,10 +151,16 @@ export const ROSS_SYSTEM_WORKFLOWS: SystemWorkflow[] = [
                     "organisation": "Ranade OSS",
                     "role": "Draft workflow author",
                     "linkedin": null
+                },
+                {
+                    "name": "Abhi Ranade, Lawyer (LSO #90546L)",
+                    "organisation": "Independent Ontario legal review",
+                    "role": "Ontario workflow reviewer",
+                    "linkedin": null
                 }
             ],
             "language": "English",
-            "version": "0.1.0-draft",
+            "version": "0.1.0",
             "practice": "Small Claims Court",
             "jurisdictions": [
                 "Canada / Ontario"

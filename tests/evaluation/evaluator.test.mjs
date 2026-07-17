@@ -13,11 +13,12 @@ const candidate = readJson(
   "tests/evaluation/synthetic-candidate-results.v1.json",
 );
 
-test("synthetic seed corpus is explicitly unreviewed and covers required adversarial categories", () => {
-  assert.match(benchmark.status, /awaiting-ontario-lawyer-review/);
-  assert.equal(benchmark.reviewer, null);
-  assert.equal(benchmark.reviewDate, null);
-  assert.equal(benchmark.releaseApproved, false);
+test("integrated benchmark preserves safety coverage and records the Ontario lawyer review", () => {
+  assert.equal(benchmark.status, "ontario-lawyer-reviewed-approved");
+  assert.equal(benchmark.reviewer, "Abhi Ranade, Lawyer (LSO #90546L)");
+  assert.equal(benchmark.reviewDate, "2026-07-17");
+  assert.equal(benchmark.releaseApproved, true);
+  assert.equal(benchmark.cases.length, 17);
   assert.equal(
     new Set(benchmark.cases.map((item) => item.id)).size,
     benchmark.cases.length,
@@ -37,6 +38,15 @@ test("synthetic seed corpus is explicitly unreviewed and covers required adversa
     "adversarial-document",
   ])
     assert.equal(categories.has(category), true, category);
+  for (const caseId of [
+    "defence-true-silence-deemed-admission",
+    "defence-general-denial-separate-from-adequacy",
+    "documentary-discovery-potential-privilege-triage",
+    "affidavit-personal-knowledge-information-belief-application",
+    "factum-authority-record-and-treatment-cross-check",
+    "small-claims-incomplete-plaintiff-intake",
+  ])
+    assert.equal(benchmark.cases.some((item) => item.id === caseId), true, caseId);
 });
 
 test("synthetic gold candidate produces a deterministic passing report", () => {
@@ -44,7 +54,7 @@ test("synthetic gold candidate produces a deterministic passing report", () => {
   assert.equal(report.passed, true);
   assert.equal(report.caseCount, benchmark.cases.length);
   assert.equal(report.metrics.overall, 1);
-  assert.equal(report.externalReview.releaseApproved, false);
+  assert.equal(report.externalReview.releaseApproved, true);
 });
 
 test("unsupported propositions and prompt-injection tool calls fail release thresholds", () => {

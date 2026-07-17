@@ -1,13 +1,13 @@
 {
-  "version": "1.1.0-draft",
-  "status": "blocked-awaiting-professional-validation",
+  "version": "1.2.0-professional-review-integrated",
+  "status": "blocked-awaiting-authorized-provider",
   "scope": {
-    "status": "recommended-default-awaiting-validation",
+    "status": "approved-by-ontario-lawyer",
     "practiceAreas": [
       {
         "id": "ontario-civil-litigation",
         "name": "Ontario civil litigation and appeals",
-        "status": "candidate-awaiting-ontario-lawyer-validation",
+        "status": "approved-by-ontario-lawyer",
         "workflowSlugs": [
           "civil-claim-defence-issue-extraction",
           "documentary-discovery-review",
@@ -18,8 +18,10 @@
       {
         "id": "ontario-small-claims",
         "name": "Ontario Small Claims Court",
-        "status": "candidate-awaiting-ontario-lawyer-validation",
-        "workflowSlugs": ["small-claims-intake"]
+        "status": "approved-by-ontario-lawyer",
+        "workflowSlugs": [
+          "small-claims-intake"
+        ]
       }
     ],
     "explicitlyUnsupported": [
@@ -50,78 +52,78 @@
     "canliiScrapingAllowed": false
   },
   "benchmarkReview": {
-    "status": "pending-ontario-lawyer-authorship-and-review",
+    "status": "approved-by-ontario-lawyer",
     "benchmarkId": "ross-ontario-benchmark-v1",
-    "reviewer": null,
-    "professionalStatus": null,
-    "reviewDate": null,
-    "evidence": null,
-    "independentAdjudicator": null,
-    "adjudicatorDisclosureMode": null,
-    "adjudicatorProfessionalStatus": null,
-    "adjudicatorIndependenceAttested": false,
-    "adjudicationDate": null,
-    "adjudicationDateBasis": null,
-    "adjudicationDecision": null,
-    "adjudicationEvidence": null,
+    "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+    "professionalStatus": "Lawyer, Law Society of Ontario #90546L",
+    "reviewDate": "2026-07-17",
+    "evidence": "reviews/benchmark-review-2026-07-17.md",
+    "independentAdjudicator": "Anonymous independent Ontario lawyer",
+    "adjudicatorDisclosureMode": "anonymous",
+    "adjudicatorProfessionalStatus": "Ontario lawyer; identity and LSO number not collected or retained",
+    "adjudicatorIndependenceAttested": true,
+    "adjudicationDate": "2026-07-17",
+    "adjudicationDateBasis": "approval-recorded-date",
+    "adjudicationDecision": "approved",
+    "adjudicationEvidence": "reviews/benchmark-adjudication-anonymous-2026-07-17.md",
     "adjudicatorVerification": {
-      "status": "pending",
-      "method": null,
-      "verifiedBy": null,
-      "verificationDate": null,
-      "evidence": null
+      "status": "verified",
+      "method": "accountable-owner-attestation",
+      "verifiedBy": "Abhi Ranade, Lawyer (LSO #90546L)",
+      "verificationDate": "2026-07-17",
+      "evidence": "reviews/benchmark-adjudication-anonymous-2026-07-17.md"
     }
   },
   "workflowReviews": [
     {
       "slug": "civil-claim-defence-issue-extraction",
-      "catalogueVersion": "0.1.0-draft",
-      "status": "pending-ontario-lawyer-review",
-      "reviewer": null,
-      "professionalStatus": null,
-      "reviewDate": null,
-      "sourceAsOfDate": null,
-      "evidence": null
+      "catalogueVersion": "0.1.0",
+      "status": "approved-by-ontario-lawyer",
+      "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+      "professionalStatus": "Lawyer, Law Society of Ontario #90546L",
+      "reviewDate": "2026-07-17",
+      "sourceAsOfDate": "2026-07-17",
+      "evidence": "reviews/ontario-workflow-review-2026-07-17.md"
     },
     {
       "slug": "documentary-discovery-review",
-      "catalogueVersion": "0.1.0-draft",
-      "status": "pending-ontario-lawyer-review",
-      "reviewer": null,
-      "professionalStatus": null,
-      "reviewDate": null,
-      "sourceAsOfDate": null,
-      "evidence": null
+      "catalogueVersion": "0.1.0",
+      "status": "approved-by-ontario-lawyer",
+      "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+      "professionalStatus": "Lawyer, Law Society of Ontario #90546L",
+      "reviewDate": "2026-07-17",
+      "sourceAsOfDate": "2026-07-17",
+      "evidence": "reviews/ontario-workflow-review-2026-07-17.md"
     },
     {
       "slug": "affidavit-fact-check",
-      "catalogueVersion": "0.1.0-draft",
-      "status": "pending-ontario-lawyer-review",
-      "reviewer": null,
-      "professionalStatus": null,
-      "reviewDate": null,
-      "sourceAsOfDate": null,
-      "evidence": null
+      "catalogueVersion": "0.1.0",
+      "status": "approved-by-ontario-lawyer",
+      "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+      "professionalStatus": "Lawyer, Law Society of Ontario #90546L",
+      "reviewDate": "2026-07-17",
+      "sourceAsOfDate": "2026-07-17",
+      "evidence": "reviews/ontario-workflow-review-2026-07-17.md"
     },
     {
       "slug": "factum-authority-record-cross-check",
-      "catalogueVersion": "0.1.0-draft",
-      "status": "pending-ontario-lawyer-review",
-      "reviewer": null,
-      "professionalStatus": null,
-      "reviewDate": null,
-      "sourceAsOfDate": null,
-      "evidence": null
+      "catalogueVersion": "0.1.0",
+      "status": "approved-by-ontario-lawyer",
+      "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+      "professionalStatus": "Lawyer, Law Society of Ontario #90546L",
+      "reviewDate": "2026-07-17",
+      "sourceAsOfDate": "2026-07-17",
+      "evidence": "reviews/ontario-workflow-review-2026-07-17.md"
     },
     {
       "slug": "small-claims-intake",
-      "catalogueVersion": "0.1.0-draft",
-      "status": "pending-ontario-lawyer-review",
-      "reviewer": null,
-      "professionalStatus": null,
-      "reviewDate": null,
-      "sourceAsOfDate": null,
-      "evidence": null
+      "catalogueVersion": "0.1.0",
+      "status": "approved-by-ontario-lawyer",
+      "reviewer": "Abhi Ranade, Lawyer (LSO #90546L)",
+      "professionalStatus": "Lawyer, Law Society of Ontario #90546L",
+      "reviewDate": "2026-07-17",
+      "sourceAsOfDate": "2026-07-17",
+      "evidence": "reviews/ontario-workflow-review-2026-07-17.md"
     }
   ],
   "confidentialDataBoundary": {
