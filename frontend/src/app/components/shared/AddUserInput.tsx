@@ -56,7 +56,7 @@ export function AddUserInput({
 
             const user = await lookupUserByEmail(email);
             if (!user.exists) {
-                setError(`${email} does not belong to a Mike user.`);
+                setError(`${email} does not belong to a ROSS user.`);
                 return;
             }
 

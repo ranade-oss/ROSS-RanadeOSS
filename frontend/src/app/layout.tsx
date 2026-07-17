@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, EB_Garamond } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/app/components/providers";
+import { rossBrand } from "@/app/lib/rossBrand";
 
 const inter = Inter({
     variable: "--font-inter",
@@ -15,39 +16,33 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-    metadataBase: new URL("https://app.mikeoss.com"),
-    title: "Mike - AI Legal Platform",
-    description:
-        "AI-powered legal document analysis and contract review platform.",
+    metadataBase: new URL(rossBrand.appUrl),
+    title: `${rossBrand.name} — Ontario-first legal workspace`,
+    description: `${rossBrand.description} ${rossBrand.betaLabel}.`,
     icons: {
-        icon: [
-            { url: "/icon.svg", type: "image/svg+xml" },
-            { url: "/favicon.ico" },
-        ],
+        icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
         apple: "/apple-touch-icon.png",
     },
     openGraph: {
         type: "website",
-        url: "https://app.mikeoss.com",
-        siteName: "Mike",
-        title: "Mike - AI Legal Platform",
-        description:
-            "AI-powered legal document analysis and contract review platform.",
+        url: rossBrand.appUrl,
+        siteName: rossBrand.name,
+        title: `${rossBrand.name} — Ontario-first legal workspace`,
+        description: `${rossBrand.description} ${rossBrand.betaLabel}.`,
         images: [
             {
-                url: "/link-image.jpg",
+                url: "/ross-social-card.png",
                 width: 1200,
-                height: 651,
-                alt: "Mike",
+                height: 630,
+                alt: `${rossBrand.name}: ${rossBrand.tagline}`,
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title: "Mike - AI Legal Platform",
-        description:
-            "AI-powered legal document analysis and contract review platform.",
-        images: ["/link-image.jpg"],
+        title: `${rossBrand.name} — Ontario-first legal workspace`,
+        description: `${rossBrand.description} ${rossBrand.betaLabel}.`,
+        images: ["/ross-social-card.png"],
     },
 };
 

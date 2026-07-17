@@ -315,8 +315,8 @@ export function OpenSourceWorkflowModal({
                                             htmlFor="open-source-disclosure-consent"
                                             className="cursor-pointer"
                                         >
-                                            GitHub repository and on the
-                                            mikeoss.com website.
+                                            upstream GitHub repository and on
+                                            the upstream Mike website.
                                         </label>
                                     </p>
                                 </div>
