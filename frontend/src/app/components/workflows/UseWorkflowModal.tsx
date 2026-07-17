@@ -14,6 +14,7 @@ import { ModalSelect } from "../modals/ModalSelect";
 import { ModalTextarea } from "../modals/ModalTextarea";
 import { WorkflowPickerContent } from "./WorkflowPickerContent";
 import { workflowDetailPath } from "./workflowRoutes";
+import { useSelectedModel } from "@/app/hooks/useSelectedModel";
 
 interface Props {
     workflows: Workflow[];
@@ -53,6 +54,7 @@ export function UseWorkflowModal({ workflows, workflow, onClose, skipSelect = fa
     );
     const [assistantPrompt, setAssistantPrompt] = useState("");
     const [saving, setSaving] = useState(false);
+    const [model] = useSelectedModel();
 
     const router = useRouter();
     const { saveChat, setNewChatMessages } = useChatHistoryContext();
@@ -125,6 +127,11 @@ export function UseWorkflowModal({ workflows, workflow, onClose, skipSelect = fa
                     content,
                     files: files.length > 0 ? files : undefined,
                     workflow: { id: wf.id, title: wf.metadata.title },
+                    // Workflow launches auto-send this first message before
+                    // ChatInput is used. Carry the user's selected model so
+                    // the backend does not fall back to its Gemini default on
+                    // deployments where only another provider is approved.
+                    model,
                 },
             ]);
             handleClose();

@@ -534,12 +534,27 @@ export async function buildWorkflowStore(
   db: ReturnType<typeof createServerSupabase>,
 ): Promise<WorkflowStore> {
   const { SYSTEM_ASSISTANT_WORKFLOWS } = await import("../systemWorkflows");
+  const { ROSS_SYSTEM_WORKFLOWS } = await import("../rossSystemWorkflows");
   const store: WorkflowStore = new Map();
   const normalizedUserEmail = (userEmail ?? "").trim().toLowerCase();
 
   // Seed system workflows first.
   for (const wf of SYSTEM_ASSISTANT_WORKFLOWS) {
     store.set(wf.id, { title: wf.title, skill_md: wf.skill_md });
+  }
+
+  // ROSS system workflows are generated separately from Mike's inherited
+  // workflows, but they must be available to the same Assistant workflow
+  // tools at execution time. The Workflows API already merges both
+  // catalogues; mirror that behaviour here so a workflow shown in the UI can
+  // always be loaded by its ID in chat.
+  for (const wf of ROSS_SYSTEM_WORKFLOWS) {
+    if (wf.metadata.type === "assistant" && wf.skill_md) {
+      store.set(wf.id, {
+        title: wf.metadata.title,
+        skill_md: wf.skill_md,
+      });
+    }
   }
 
   // Then overlay user-owned assistant workflows.
