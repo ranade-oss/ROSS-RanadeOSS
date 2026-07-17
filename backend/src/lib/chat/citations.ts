@@ -181,6 +181,23 @@ export const CITATIONS_BLOCK_RE = /<CITATIONS>\s*([\s\S]*?)\s*<\/CITATIONS>/;
 export const CITATIONS_OPEN_TAG = "<CITATIONS>";
 export const CITATIONS_CLOSE_TAG = "</CITATIONS>";
 
+/**
+ * Return only the trailing characters that could still become the beginning
+ * of a citation marker when the next streamed chunk arrives.
+ *
+ * Holding a fixed marker-length tail delays ordinary response endings (for
+ * example, `passed.`) until the stream closes. On some proxy/browser paths
+ * that final tiny update is not painted reliably. A prefix-aware tail keeps
+ * split-marker detection intact without withholding unrelated prose.
+ */
+export function citationMarkerPrefixLengthAtEnd(text: string): number {
+  const maxLength = Math.min(CITATIONS_OPEN_TAG.length - 1, text.length);
+  for (let length = maxLength; length > 0; length -= 1) {
+    if (text.endsWith(CITATIONS_OPEN_TAG.slice(0, length))) return length;
+  }
+  return 0;
+}
+
 type CitationParseDiagnostics = {
   hasBlock: boolean;
   rawLength: number;
