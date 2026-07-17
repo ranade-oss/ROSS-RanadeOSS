@@ -72,7 +72,7 @@
     },
     {
       "path": "scripts/lib/release-readiness.mjs",
-      "sha256": "4e974889a02a2502db80024e24b26ea9bf7113596cec440535093179fe4b546",
+      "sha256": "4e974889a02a2502db80024e24b26ea9bf7113596cec4405359b0bc2c1eb3da5",
       "sizeBytes": 3092
     },
     {
