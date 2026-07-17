@@ -7,8 +7,8 @@
   "artifacts": [
     {
       "path": "backend/schema.sql",
-      "sha256": "75dc087ae4081b23e6e6f75778678fbc6d41d69a02bac8cfb569fd9d7c43690c",
-      "sizeBytes": 31393
+      "sha256": "f21d9fc9517cab0bbbbdb1c0980a77404effe0d117d25d1ef18f3422054bf9cf",
+      "sizeBytes": 31411
     },
     {
       "path": "backend/src/config/runtime.ts",

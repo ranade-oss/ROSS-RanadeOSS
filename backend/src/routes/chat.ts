@@ -608,13 +608,24 @@ chatRouter.post("/", requireAuth, async (req, res) => {
             askInputsResponse,
         );
     } else if (lastUser) {
-        await db.from("chat_messages").insert({
-            chat_id: chatId,
-            role: "user",
-            content: lastUser.content,
-            files: lastUser.files ?? null,
-            workflow: lastUser.workflow ?? null,
-        });
+        const { error: userMessageError } = await db
+            .from("chat_messages")
+            .insert({
+                chat_id: chatId,
+                role: "user",
+                content: lastUser.content,
+                files: lastUser.files ?? null,
+                workflow: lastUser.workflow ?? null,
+            });
+        if (userMessageError) {
+            console.error(
+                "[chat/stream] failed to save user message",
+                safeErrorLog(userMessageError),
+            );
+            return void res
+                .status(500)
+                .json({ detail: "Failed to save user message" });
+        }
     }
 
     const { docIndex, docStore } = await buildDocContext(
