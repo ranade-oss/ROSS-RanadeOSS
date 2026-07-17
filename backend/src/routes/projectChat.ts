@@ -309,6 +309,18 @@ projectChatRouter.post("/", requireAuth, async (req, res) => {
             });
         }
 
+        // Send the canonical saved response after persistence so the browser
+        // can replace its provisional stream, including any short tail held
+        // back while the server checked for the <CITATIONS> marker.
+        write(
+            `data: ${JSON.stringify({
+                type: "assistant_message_final",
+                events: persistedEvents,
+                citations,
+            })}\n\n`,
+        );
+        write("data: [DONE]\n\n");
+
         if (!chatTitle && lastUser?.content) {
             await db
                 .from("chats")

@@ -413,6 +413,36 @@ export function useAssistantChat({
               continue;
             }
 
+            if (data.type === "assistant_message_final") {
+              const finalEvents = Array.isArray(data.events)
+                ? (data.events as AssistantEvent[])
+                : [];
+              const finalCitations = Array.isArray(data.citations)
+                ? (data.citations as Citation[])
+                : [];
+
+              eventsRef.current = finalEvents;
+              updateLatestAssistantMessage((assistantMessage) => ({
+                ...assistantMessage,
+                content: finalEvents
+                  .filter(
+                    (
+                      event,
+                    ): event is Extract<
+                      AssistantEvent,
+                      { type: "content" }
+                    > => event.type === "content",
+                  )
+                  .map((event) => event.text)
+                  .join(""),
+                events: finalEvents,
+                citations: finalCitations,
+                citationStatus: finalCitations.length ? "final" : undefined,
+              }));
+              setIsLoadingCitations(false);
+              continue;
+            }
+
             if (data.type === "error") {
               const message = readableStreamError(data.message);
               clearStreamingPlaceholders();

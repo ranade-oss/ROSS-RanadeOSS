@@ -43,3 +43,21 @@ test("the live assistant view reconciles with persisted messages", () => {
   assert.match(hook, /setMessages\(persistedMessages\)/);
   assert.match(hook, /finalizeStreamingContent\(\);[\s\S]*?getChat\(finalChatId\)/);
 });
+
+test("chat streams finish with a canonical post-persistence snapshot", () => {
+  const routes = [
+    read("backend/src/routes/chat.ts"),
+    read("backend/src/routes/projectChat.ts"),
+  ];
+  const hook = read("frontend/src/app/hooks/useAssistantChat.ts");
+
+  for (const route of routes) {
+    assert.match(
+      route,
+      /persistedEvents[\s\S]*?type: "assistant_message_final"[\s\S]*?events: persistedEvents/,
+    );
+  }
+  assert.match(hook, /data\.type === "assistant_message_final"/);
+  assert.match(hook, /eventsRef\.current = finalEvents/);
+  assert.match(hook, /events: finalEvents/);
+});
