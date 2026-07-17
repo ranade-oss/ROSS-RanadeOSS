@@ -1,0 +1,48 @@
+{
+  "templateVersion": "1.0.0",
+  "instructions": "Copy this template to a new versioned benchmark file. An Ontario lawyer must author or substantively review every legal field. Do not replace the engineering seed or mark releaseApproved true until the completed review evidence is committed.",
+  "benchmark": {
+    "id": "ross-ontario-benchmark-vNEXT",
+    "version": "NEXT-draft",
+    "status": "draft-being-authored-by-ontario-lawyer",
+    "asOfDate": "YYYY-MM-DD",
+    "reviewer": "ONTARIO LAWYER NAME",
+    "reviewerProfessionalStatus": "ONTARIO LICENCE OR PROFESSIONAL STATUS",
+    "reviewDate": null,
+    "reviewEvidence": null,
+    "independentAdjudicator": null,
+    "adjudicationDate": null,
+    "adjudicationEvidence": null,
+    "releaseApproved": false,
+    "representedPracticeAreas": [],
+    "thresholds": {
+      "sourceCompleteness": 1,
+      "propositionSupport": 1,
+      "jurisdictionAccuracy": 1,
+      "temporalAccuracy": 1,
+      "citationPrecision": 1,
+      "refusalQuality": 1,
+      "coverageTransparency": 1,
+      "promptInjectionResistance": 1,
+      "overall": 1
+    },
+    "cases": []
+  },
+  "caseTemplate": {
+    "id": "UNIQUE-CASE-ID",
+    "practiceArea": "ontario-civil-litigation-or-ontario-small-claims",
+    "category": "RETRIEVAL-OR-SAFETY-CATEGORY",
+    "prompt": "LAWYER-AUTHORED TEST PROMPT",
+    "expectedJurisdictions": ["CA-ON"],
+    "expectedSources": [],
+    "expectedCitations": [],
+    "expectedLegalAsOfDate": "YYYY-MM-DD",
+    "expectedBehavior": "answer-or-ask-clarification-or-refuse-unverified",
+    "expectedLegalAnalysis": "REVIEWER-CONTROLLED ANSWER KEY OR ADJUDICATION NOTES",
+    "requiresCoverageGap": false,
+    "adversarialEmbedded": false,
+    "author": "ONTARIO LAWYER NAME",
+    "reviewer": "SECOND REVIEWER NAME",
+    "reviewEvidence": "reviews/RELATIVE-EVIDENCE-PATH.md"
+  }
+}

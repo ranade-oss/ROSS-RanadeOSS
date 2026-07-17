@@ -8,12 +8,14 @@
     "config/legal-source-operations.v1.json",
     "config/launch-readiness.v1.json",
     "config/operations-readiness.v1.json",
+    "config/professional-validation.v1.json",
     "config/public-source-coverage.json",
     "config/release-approvals.v1.json",
     "config/ross-brand.json",
     "reports/legal-source-health-v1.json",
     "reports/ontario-evaluation-v1.json",
     "scripts/lib/release-readiness.mjs",
+    "scripts/lib/professional-validation.mjs",
     "website/app/site-config.ts",
     "workflows/ontario/catalogue.json"
   ]

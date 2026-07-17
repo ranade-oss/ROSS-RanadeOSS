@@ -87,6 +87,8 @@ export function evaluateReleaseReadiness(
     );
     if (productionEvidence.sourceOperations?.ready !== true)
       blockers.push("Required legal-source health is not production-ready.");
+    if (productionEvidence.professionalValidation?.ready !== true)
+      blockers.push("Ontario professional validation is not production-ready.");
   }
 
   return {

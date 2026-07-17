@@ -25,3 +25,5 @@ The seed questions and expected results were created for software verification a
 ## Release state
 
 Automated engineering gates can pass while production remains blocked. Independent legal-content, privacy, security, accessibility, and product-owner approvals are all required, with dated evidence, before this draft can be described as production-ready.
+
+The recommended first validation scope is Ontario civil litigation/appeals and Ontario Small Claims Court because those areas correspond to the five versioned workflow drafts. Criminal, family, tribunal, real-estate, and any unbenchmarked practice area remain explicitly unsupported. `config/professional-validation.v1.json` is the machine-checked source of truth for the provider decision, benchmark review, workflow reviews, and confidential-data boundary.

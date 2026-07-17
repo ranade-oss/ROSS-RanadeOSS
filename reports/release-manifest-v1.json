@@ -3,7 +3,7 @@
   "releaseId": "unassigned",
   "generatedAt": "2026-07-16T00:00:00.000Z",
   "algorithm": "sha256",
-  "artifactCount": 13,
+  "artifactCount": 15,
   "artifacts": [
     {
       "path": "backend/schema.sql",
@@ -29,6 +29,11 @@
       "path": "config/operations-readiness.v1.json",
       "sha256": "311f92bee6fcb63f88f0d4023406518eb9a71adff2a87cc51fa3319ae357bb68",
       "sizeBytes": 997
+    },
+    {
+      "path": "config/professional-validation.v1.json",
+      "sha256": "88b12044c78de589728bdaa59ee631cca4a1d00841735171b596ef01297018ca",
+      "sizeBytes": 3667
     },
     {
       "path": "config/public-source-coverage.json",
@@ -57,8 +62,13 @@
     },
     {
       "path": "scripts/lib/release-readiness.mjs",
-      "sha256": "6592d96c8d0669800a0fa38c4eb8966e0882b1e18f966334b29524abca6b8b9d",
-      "sizeBytes": 2944
+      "sha256": "4e974889a02a2502db80024e24b26ea9bf7113596cec4405359b0bc2c1eb3da5",
+      "sizeBytes": 3092
+    },
+    {
+      "path": "scripts/lib/professional-validation.mjs",
+      "sha256": "cfc2664fff71d67f2866946977b8fff2a85b9534bb4cd9cf535093179fe4b546",
+      "sizeBytes": 6602
     },
     {
       "path": "website/app/site-config.ts",
@@ -67,8 +77,8 @@
     },
     {
       "path": "workflows/ontario/catalogue.json",
-      "sha256": "406218eb0bbe6b8503cd7efc68d485c0be7374c4e1b7992a9d06c983196c87c4",
-      "sizeBytes": 10399
+      "sha256": "c32587b126e7e7237dee9efae58b0c518042ef531714b1f4208c107f37501eba",
+      "sizeBytes": 10539
     }
   ]
 }
