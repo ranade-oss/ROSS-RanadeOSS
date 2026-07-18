@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-16T00:00:00.000Z",
   "algorithm": "sha256",
-  "artifactCount": 47,
+  "artifactCount": 61,
   "artifacts": [
     {
       "path": ".github/workflows/deploy-public-beta-ross.yml",
@@ -122,13 +122,13 @@
     },
     {
       "path": "config/final-completion.v1.json",
-      "sha256": "97b9b06ed67ba0d9cddf8f9359e40f05cb028b943cc04a4dfa9533b9d7836208",
-      "sizeBytes": 2902
+      "sha256": "9f2aa8599219723a2f734e06d55a1d4aba8ac975d51bbe0e590fdccd56854364",
+      "sizeBytes": 3268
     },
     {
       "path": "config/launch-readiness.v1.json",
-      "sha256": "50ec1887cd5accd31f77d8dd9e02b664fbe851ae8a1801e27d59cd1609eca3d1",
-      "sizeBytes": 1157
+      "sha256": "9b9de6fac4ecd4d9b282a819bde94e4fefc15e9302ba11e46287b218d3348f8f",
+      "sizeBytes": 1473
     },
     {
       "path": "config/operations-readiness.v1.json",
@@ -137,23 +137,28 @@
     },
     {
       "path": "config/professional-validation.v1.json",
-      "sha256": "1a77554bd45ab4c4d1d0cd4e20e3eeeeaead789bbb2184374d27325660b72bc5",
-      "sizeBytes": 5060
+      "sha256": "756e3218585180c2150393a074273ec7363a12c96e623f9f6cbe36870f0d87a3",
+      "sizeBytes": 6386
     },
     {
       "path": "config/public-source-coverage.json",
-      "sha256": "603e8bcc82a085aa8a3f259176ebd5726f4db7125401a5ee48c47b50e7cb5763",
-      "sizeBytes": 3749
+      "sha256": "86a0f0922538e749fdd23e97bf412d7f63e99fafe4aacc54d589261d83c9eff1",
+      "sizeBytes": 3937
     },
     {
       "path": "config/release-approvals.v1.json",
-      "sha256": "1b09dc28c65da7a5572bbcc106736b8045614a9949325e51ba8088fd4a2c51aa",
-      "sizeBytes": 1292
+      "sha256": "3ca677660f4daa67ef06ad1f2089cb47a16610ffe221a0aa3dbec5f3b5e3bf6c",
+      "sizeBytes": 1414
     },
     {
       "path": "config/ross-brand.json",
-      "sha256": "e30632ea79bcd19a6549d3f9806ae88d7469abd11ca8d8d219f17ddc4f26a468",
-      "sizeBytes": 1993
+      "sha256": "29677873814c14a8cd778ea7ae9c5472c5663e93c281c6b37027fea10ccb1b41",
+      "sizeBytes": 2058
+    },
+    {
+      "path": "config/ross-brand.schema.json",
+      "sha256": "5b92b16134eb80c112267fbe718862ff10fac3e4dd744bb279c43f355dbe1244",
+      "sizeBytes": 4141
     },
     {
       "path": "deploy/fly/file-worker.Dockerfile",
@@ -171,6 +176,61 @@
       "sizeBytes": 2088
     },
     {
+      "path": "docs/release-evidence/limited-source-beta-decision-2026-07-18.md",
+      "sha256": "d03449a96a2e578d4ca4db8e9eccbf77497c7d17f6215f64409cb6f43a065a31",
+      "sizeBytes": 2334
+    },
+    {
+      "path": "docs/release-evidence/launch-owner-decision-sheet-2026-07-18.md",
+      "sha256": "0cec618e79eacdebb25ad561aace0b9f96d5479d2e74fe08a4f24d60f68be61c",
+      "sizeBytes": 3082
+    },
+    {
+      "path": "docs/release-evidence/operational-readiness-session-2026-07-18.md",
+      "sha256": "2eaa0a970d5cce6ea79673b88c756681d37125cb1cf0baabb452f693ab1cb7bf",
+      "sizeBytes": 2496
+    },
+    {
+      "path": "docs/release-evidence/privacy-review-approval-sheet-2026-07-18.md",
+      "sha256": "8da8a8fab930dbf1df07e6116835af7f215b8cd249db260e15862a90e7722327",
+      "sizeBytes": 3602
+    },
+    {
+      "path": "docs/architecture/ADR-004-hosting-and-residency.md",
+      "sha256": "45a562076e00b368cfdd79000e9451bed3c68ceb280d603f674d28aa6b34dc4d",
+      "sizeBytes": 1890
+    },
+    {
+      "path": "docs/architecture/ADR-009-logging-and-deletion.md",
+      "sha256": "871173061554e291a5f60de93ed372f51fcedc5504b37100c8a9709dc9111900",
+      "sizeBytes": 1722
+    },
+    {
+      "path": "docs/privacy/data-inventory.json",
+      "sha256": "ebcbf9f5288d0b4523d22233eac07927196f116547e329c09fc7cb16f1dd4971",
+      "sizeBytes": 3278
+    },
+    {
+      "path": "docs/privacy/privacy-impact-assessment-draft.md",
+      "sha256": "2f2a0c0a2d4d3fb6287c2110649875a68e4275b6495c3731480e6e839faed09f",
+      "sizeBytes": 4962
+    },
+    {
+      "path": "docs/privacy/retention-schedule.json",
+      "sha256": "576c778a7721ec8737a8604048e4577a6017aa0ccf919688de27e58963dd759e",
+      "sizeBytes": 2318
+    },
+    {
+      "path": "docs/privacy/subprocessor-inventory.json",
+      "sha256": "7a1b5d4dc5941f5e4ea0196a7f9d3447bdf11c6b72e39b3faf3f4474cd32464f",
+      "sizeBytes": 2797
+    },
+    {
+      "path": "docs/evaluation/capability-limitations-v1.md",
+      "sha256": "8d4a42d88e734dbdaa64107c01e0fd53531a068d43c8e01d7dd9661a423c9716",
+      "sizeBytes": 3159
+    },
+    {
       "path": "frontend/src/app/components/projects/ProjectDocumentsView.tsx",
       "sha256": "abfe65146aa653a8952f9bffa43d8ba73773f3e1e4e0bdd560a1782d9aa443c9",
       "sizeBytes": 160868
@@ -182,8 +242,8 @@
     },
     {
       "path": "frontend/src/app/(pages)/account/api-keys/page.tsx",
-      "sha256": "cd50825311e9910a0cecab12d16d626c1e7c705c302deb71495cc74747aec3a6",
-      "sizeBytes": 10898
+      "sha256": "894dd9f6376beb13a84297a97e4433fcdaeba1731f69e02183308473d91da8c8",
+      "sizeBytes": 11004
     },
     {
       "path": "frontend/src/app/contexts/UserProfileContext.tsx",
@@ -202,8 +262,8 @@
     },
     {
       "path": "reports/final-completion-dossier.md",
-      "sha256": "3b84ccdb65c30e1f29057fea177f9fc21d0ca895495d49df775773b770695248",
-      "sizeBytes": 2159
+      "sha256": "072ec6d0647f3241977cac1c728ac2544ebcf1b4f86fde055c9d8a54724601b9",
+      "sizeBytes": 2192
     },
     {
       "path": "reports/ontario-evaluation-v1.json",
@@ -217,8 +277,8 @@
     },
     {
       "path": "scripts/lib/professional-validation.mjs",
-      "sha256": "96c4fad2fcd327b63d7aa2ebbe01b454c4aafa01e6c08c5e812176e222091166",
-      "sizeBytes": 9475
+      "sha256": "6ad2cc343bcd8c7463c43a0182fbcc75f034d2ed1fb7c59d2a5baa2a61cdd3d8",
+      "sizeBytes": 12265
     },
     {
       "path": "scripts/lib/release-identifier.mjs",
@@ -232,8 +292,18 @@
     },
     {
       "path": "website/app/site-config.ts",
-      "sha256": "05ac5b38d330a90e4cc27a55c2e2b43904a104c9f580eeb98ae02f3fffaa2866",
-      "sizeBytes": 2693
+      "sha256": "e389bb858131cf3949baf557796963f1e0415079c797d1d727cbda74ea6d64f0",
+      "sizeBytes": 2950
+    },
+    {
+      "path": "website/app/page-content.ts",
+      "sha256": "4a5a4945842e93b0b367bd28bf40c9d2d538d377bee481d9d63a5075ec687a87",
+      "sizeBytes": 29511
+    },
+    {
+      "path": "website/app/generated-brand-config.ts",
+      "sha256": "8c83326ea2bddf6654f5afcdb4aa9bf734429df086796a7819b2d66e4148bf3d",
+      "sizeBytes": 1652
     },
     {
       "path": "workflows/ontario/catalogue.json",

@@ -55,10 +55,10 @@ test("the public website derives identity and policy from central configuration"
   const generatedBrand = read("website/app/generated-brand-config.ts");
   assert.match(siteConfig, /\.\/generated-brand-config/);
   assert.match(generatedBrand, /"name": "ROSS"/);
-  assert.match(generatedBrand, /"coverageStatus": "partial"/);
+  assert.match(generatedBrand, /"coverageStatus": "limited-source-reviewed"/);
   assert.equal(central.product.name, "ROSS");
-  assert.equal(central.product.legalOperator, "TBD");
-  assert.equal(central.policy.coverageStatus, "partial");
+  assert.equal(central.product.legalOperator, "Abhi Ranade");
+  assert.equal(central.policy.coverageStatus, "limited-source-reviewed");
   assert.deepEqual(central.socialLinks, []);
   assert.match(central.urls.security, /security\/advisories\/new$/);
 });
@@ -104,7 +104,7 @@ test("the public site communicates beta limits and does not use application data
   assert.match(publicSurface, /synthetic or non-confidential/i);
   assert.match(publicSurface, /live availability[\s\S]*not verified/i);
   assert.match(publicSurface, /Operator: \{siteConfig\.operator\}/);
-  assert.doesNotMatch(publicSurface, /supabase/i);
+  assert.doesNotMatch(publicSurface, /@supabase|createClient\s*\(/i);
 
   const robots = read("website/app/robots.ts");
   const layout = read("website/app/layout.tsx");
@@ -113,6 +113,7 @@ test("the public site communicates beta limits and does not use application data
   assert.match(layout, /index: siteConfig\.publicLaunchApproved/);
   assert.match(layout, /follow: siteConfig\.publicLaunchApproved/);
   assert.match(read("website/app/site-config.ts"), /legalOperator !== "TBD"/);
+  assert.match(read("website/app/site-config.ts"), /limited-source-reviewed/);
   assert.match(read("website/app/site-config.ts"), /production-reviewed/);
   assert.match(read("website/app/site-config.ts"), /\.invalid/);
 });

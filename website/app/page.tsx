@@ -193,9 +193,10 @@ export default function Home() {
             <h2>A controlled hosted beta, or infrastructure you operate.</h2>
             <p>
               The operator-hosted service is limited to synthetic or
-              non-confidential material until privacy and security controls are
-              independently ready. Self-hosting gives deployers control—and
-              responsibility—for their own configuration.
+              non-confidential material. Independent privacy and security
+              reviews are approved; operational launch evidence and final
+              vendor verification remain open. Self-hosting gives deployers
+              control—and responsibility—for their own configuration.
             </p>
           </div>
           <div className="deployment-options">

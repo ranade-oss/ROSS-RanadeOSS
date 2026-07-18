@@ -1,7 +1,8 @@
 # ROSS privacy impact assessment — controlled-beta draft
 
-Status: incomplete engineering assessment; not legal advice or operator approval  
-Assessment date: 2026-07-16  
+Status: independent privacy expert approved the stated controlled-beta boundary
+
+Assessment date: 2026-07-18
 Decision: retain the synthetic/non-confidential controlled-beta boundary
 
 ## Purpose and necessity
@@ -12,7 +13,7 @@ The Office of the Privacy Commissioner of Canada recommends using anonymized, sy
 
 ## Applicability requiring legal determination
 
-The operator is not identified. Counsel must determine the application of PIPEDA, provincial privacy statutes, professional duties, contractual confidentiality, public-sector requirements, and, before any health-data use, PHIPA. PIPEDA generally applies to private-sector organizations handling personal information in commercial activities and to cross-border commercial flows, but application is fact-specific.
+Abhi Ranade is the recorded legal operator. Applicable privacy law remains fact-specific; the operator must continue to account for PIPEDA, provincial privacy statutes, professional duties, contractual confidentiality, public-sector requirements, and, before any health-data use, PHIPA.
 
 ## Collection and data minimization
 
@@ -20,9 +21,9 @@ Beta collection is limited to account/authentication data needed to operate acce
 
 ## Use, disclosure, and transfers
 
-Application content may be sent to the configured model provider and, when explicitly invoked, legal-source or connector providers. Provider name alone does not establish retention, training, residency, or contractual terms. Hosted configurations therefore require an explicit provider allowlist, and each actual product/tier remains unapproved until entered in the subprocessor inventory with supporting terms.
+Application content may be sent to the configured model provider and, when explicitly invoked, legal-source or connector providers. The hosted model allowlist is OpenAI. CanLII and CourtListener keys are optional, encrypted per-user credentials; ROSS supplies no shared legal-source access. Provider name alone does not establish retention, training, residency, or contractual terms. Each actual product/tier remains unapproved until the owner confirms it in the subprocessor inventory with supporting terms.
 
-## Safeguards implemented in ROSS-130
+## Safeguards implemented and reviewed
 
 - Versioned acknowledgement in the authenticated application and API enforcement on content-bearing writes.
 - Fail-closed hosted-mode and model-provider configuration.
@@ -30,13 +31,16 @@ Application content may be sent to the configured model provider and, when expli
 - Metadata-only service audit records with browser roles revoked.
 - Prompt-injection and matter-scope instructions.
 - Existing authentication, MFA support, exact CORS, security headers, rate limits, encrypted user API-key storage, export, and deletion features preserved.
+- Private quarantine, malware scanning, clean-object promotion, signed downloads, and security-alert delivery were exercised against the exact base deployment.
+- Independent security and accessibility reports were approved on 2026-07-18 with no unresolved Critical or High findings; the references are retained in the controlled-beta owner approval record.
 
 ## Open risks and decisions
 
 - Attestation cannot determine whether content is actually non-confidential.
-- Operator, lawful authority, privacy contact, support access, vendors, locations, contracts, retention, backup deletion, and complaint process are unsettled.
-- Tenant-isolation and IDOR coverage is incomplete.
-- No independent privacy, security, accessibility, or legal review has occurred.
+- The legal operator, support/privacy contact, Supabase Free tier and ca-central region, Fly Toronto application region, status location, and seven-day maximum object-recovery policy are owner decisions recorded on 2026-07-18.
+- The actual S3-compatible endpoint provider/region and enforcement of the 24-hour active deletion and seven-day recovery-copy expiry still require operational verification. Fly application hosting does not itself identify the object-storage provider.
+- Provider terms and retention outside the object store remain launch-record decisions; they are not implied by the privacy approval.
+- The CanLII metadata transport is not activated and the public beta must not imply full-text or comprehensive CanLII access.
 - No production service may accept client material under this assessment.
 
 ## Official reference points

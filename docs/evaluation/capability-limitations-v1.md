@@ -1,6 +1,6 @@
 # ROSS Ontario capability and limitations report — draft v1
 
-**Status:** Engineering draft; independent Ontario legal, privacy, security, accessibility, and product review pending.
+**Status:** Controlled-beta limitations reviewed; Ontario legal, privacy, security, accessibility, and product approvals recorded 2026-07-18. Final operational and launch evidence remains pending.
 
 ## What this build can demonstrate
 

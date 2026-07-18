@@ -45,14 +45,14 @@ const OTHER_API_KEY_FIELDS = [
         label: "CanLII API Key",
         placeholder: "CanLII API key",
         description:
-            "Add the authorized CanLII REST API key issued to you. ROSS encrypts it in storage and sends it only from the backend. The operator must also enable the CanLII connector and its authorized metadata operations.",
+            "Optional. Add a CanLII REST API key issued directly to you. ROSS does not provide or share CanLII access. Your key is encrypted in storage and is used only from the backend when the metadata connector is enabled; it is not required for the rest of ROSS.",
     },
     {
         provider: "courtlistener",
         label: "CourtListener API Key",
         placeholder: "Token...",
         description:
-            "Add a CourtListener API key for optional inherited U.S. case-law research. Otherwise, ROSS uses the inherited bulk CourtListener dataset when configured by the operator.",
+            "Optional. Add your own CourtListener API key for U.S. case-law research. ROSS does not provide or share CourtListener access. Without a key, the rest of ROSS remains available and any unavailable source coverage is shown as a gap.",
     },
 ] as const;
 

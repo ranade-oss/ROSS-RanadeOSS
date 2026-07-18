@@ -8,12 +8,16 @@ export const siteConfig = {
   sourceUrl: brand.urls.source,
   upstreamUrl: brand.urls.upstreamSource,
   supportUrl: brand.urls.support,
+  privacyUrl: brand.urls.support,
+  statusUrl: brand.urls.status,
   securityUrl: brand.urls.security,
   operator: brand.product.legalOperator,
   launchMode: brand.product.betaLabel,
   coverageStatus:
     brand.policy.coverageStatus === "production-reviewed"
       ? "Production-reviewed source coverage"
+      : brand.policy.coverageStatus === "limited-source-reviewed"
+        ? "Limited-source controlled-beta coverage — known gaps disclosed"
       : brand.policy.coverageStatus === "partial"
         ? "Engineering integrations implemented — runtime coverage and legal review remain conditional"
         : "Foundation only — Ontario and Canadian source integrations are not live yet",
@@ -21,7 +25,9 @@ export const siteConfig = {
   publicLaunchApproved:
     process.env.NEXT_PUBLIC_ROSS_PUBLIC_LAUNCH_APPROVED === "true" &&
     brand.product.legalOperator !== "TBD" &&
-    brand.policy.coverageStatus === "production-reviewed" &&
+    ["limited-source-reviewed", "production-reviewed"].includes(
+      brand.policy.coverageStatus,
+    ) &&
     !(process.env.NEXT_PUBLIC_ROSS_WEBSITE_URL ?? brand.urls.website).includes(
       ".invalid",
     ),

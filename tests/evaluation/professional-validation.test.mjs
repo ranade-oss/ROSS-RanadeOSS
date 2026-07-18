@@ -95,7 +95,7 @@ test("integrated professional reviews pass development integrity without claimin
   const result = evaluateProfessionalValidation(integrated, benchmark, workflows, approvals, false);
   assert.equal(result.ready, true);
   assert.equal(result.warnings.length, 2);
-  assert.match(result.warnings[0], /provider selection is pending/);
+  assert.match(result.warnings[0], /Limited-source beta defers comprehensive coverage/);
 });
 
 test("development validation rejects partial professional-review integration", () => {
@@ -115,12 +115,38 @@ test("development validation rejects partial professional-review integration", (
   );
 });
 
-test("production validation still fails closed on the remaining external gates", () => {
+test("production professional validation passes with the limited-source and privacy approvals", () => {
   const result = evaluateProfessionalValidation(integrated, benchmark, workflows, approvals, true);
-  assert.equal(result.ready, false);
-  assert.ok(result.blockers.some((item) => /case-law provider/.test(item)));
-  assert.ok(result.blockers.some((item) => /privacy/.test(item)));
+  assert.equal(result.ready, true);
+  assert.equal(result.blockers.length, 0);
+  assert.ok(result.warnings.some((item) => /Limited-source beta/.test(item)));
+  assert.ok(!result.blockers.some((item) => /source posture/.test(item)));
   assert.ok(!result.blockers.some((item) => /benchmark.*not approved/i.test(item)));
+});
+
+test("limited-source beta fails closed if a mandatory research safeguard is relaxed", () => {
+  const record = structuredClone(integrated);
+  const approved = structuredClone(approvals);
+  for (const name of ["privacy", "security", "accessibility"])
+    Object.assign(approved.approvals[name], {
+      status: "approved",
+      approver: `${name} reviewer`,
+      date: "2026-07-18",
+      evidence: `reviews/${name}.md`,
+    });
+  record.legalSourceDecision.modelMemoryFallbackAllowed = true;
+  const result = evaluateProfessionalValidation(record, benchmark, workflows, approved, true);
+  assert.equal(result.ready, false);
+  assert.ok(result.blockers.some((item) => /model-memory substitution/.test(item)));
+});
+
+test("limited-source beta records optional isolated user provider credentials", () => {
+  assert.equal(integrated.legalSourceDecision.platformProviderAccessRequired, false);
+  assert.equal(integrated.legalSourceDecision.sharedProviderCredentialsAllowed, false);
+  assert.deepEqual(integrated.legalSourceDecision.perUserApiKeysSupported, [
+    "canlii",
+    "courtlistener",
+  ]);
 });
 
 test("complete evidence-bearing named professional validation can pass", () => {

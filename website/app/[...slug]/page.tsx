@@ -80,7 +80,9 @@ export default async function PublicPageRoute({ params }: RouteProps) {
             <span>Status</span>
             <p>
               {workflow
-                ? "Draft awaiting independent Ontario lawyer review."
+                ? workflow.status === "lawyer-reviewed-approved"
+                  ? "Ontario-lawyer reviewed and approved for the controlled-beta boundary."
+                  : "Draft awaiting independent Ontario lawyer review."
                 : update
                   ? update.status
                   : page.status}

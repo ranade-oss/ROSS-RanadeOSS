@@ -2,14 +2,16 @@
 
 - Status: Proposed
 - Date: 2026-07-15
-- Owners: Operator TBD; privacy owner TBD; technical owner TBD
+- Owners: Operator Abhi Ranade; privacy evidence retained by AR; technical owner TBD
 - Review trigger: Selecting any production vendor, region, subprocessor, backup location, or support-access arrangement
 
 ## Context
 
 Ontario legal professionals will reasonably care where documents, database
-records, logs, backups, and model requests are processed. No production vendor
-or region has been approved.
+records, logs, backups, and model requests are processed. The owner selected a
+Supabase Free project in ca-central and Fly application/API/worker deployment in
+Toronto (`yyz`). The separately configured S3-compatible object-store endpoint
+still requires provider and region verification.
 
 ## Options considered
 
@@ -22,7 +24,8 @@ or region has been approved.
 
 Use option 2 as the production target. Preview deployments outside Canada are
 permitted only for synthetic data and must not contain production secrets. This
-ADR does not approve a vendor or authorize a production launch.
+ADR does not infer the object-store provider from the Fly application host and
+does not by itself authorize a production launch.
 
 ## Consequences
 
@@ -34,5 +37,6 @@ ADR does not approve a vendor or authorize a production launch.
 
 ## Follow-up
 
-- [ ] Compare Canadian-region hosting options and costs.
-- [ ] Complete data-flow and subprocessor inventories before acceptance.
+- [x] Select Canadian-region database and application hosting targets.
+- [ ] Verify the S3 endpoint provider/region and provider terms without recording secrets.
+- [ ] Exercise deletion, recovery-copy expiry, and isolated restore behaviour.

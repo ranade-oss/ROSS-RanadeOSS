@@ -1,7 +1,7 @@
 {
-  "version": "1.2.0-professional-review-integrated",
+  "version": "1.3.0-limited-source-beta-approved",
   "releaseId": "ross-public-beta-20260717-rc1",
-  "status": "blocked-awaiting-authorized-provider",
+  "status": "approved-for-limited-source-controlled-beta",
   "scope": {
     "status": "approved-by-ontario-lawyer",
     "practiceAreas": [
@@ -34,21 +34,43 @@
     ]
   },
   "legalSourceDecision": {
-    "status": "pending-authorized-provider-selection",
+    "status": "approved-limited-source-beta",
     "purpose": "Ontario appellate, Superior Court, and Small Claims case-law retrieval",
-    "selectedProvider": null,
-    "authorizationBasis": null,
+    "selectedProvider": "Optional user-authorized CanLII and CourtListener connectors; no platform-supplied case-law credential",
+    "authorizationBasis": "Accountable-owner approval for a bring-your-own-key source model. Each user must obtain and supply any required CanLII or CourtListener API credential under that provider's terms; ROSS does not grant, share, or promise provider access. Users without a connector continue with enabled open and official sources plus user-supplied documents, with explicit coverage gaps.",
     "agreementOrAuthorizationId": null,
-    "decisionOwner": null,
-    "decisionDate": null,
-    "evidence": null,
-    "allowedOperations": [],
+    "decisionOwner": "AR",
+    "decisionDate": "2026-07-18",
+    "evidence": "docs/release-evidence/limited-source-beta-decision-2026-07-18.md",
+    "allowedOperations": [
+      "user-supplied-document-analysis",
+      "official-legislation-retrieval",
+      "availability-qualified-open-case-law-search",
+      "optional-user-authorized-canlii-metadata-and-citator",
+      "optional-user-authorized-courtlistener-research"
+    ],
     "verifiedCoverage": [],
     "requiredCoverage": [
       "Ontario Court of Appeal",
       "Ontario Superior Court of Justice",
       "Ontario Small Claims Court"
     ],
+    "deferredCoverage": [
+      "Ontario Court of Appeal",
+      "Ontario Superior Court of Justice",
+      "Ontario Small Claims Court"
+    ],
+    "comprehensiveCoverageClaimed": false,
+    "researchClaimsRestricted": true,
+    "availabilityDisclosureRequired": true,
+    "modelMemoryFallbackAllowed": false,
+    "platformProviderAccessRequired": false,
+    "sharedProviderCredentialsAllowed": false,
+    "perUserApiKeysSupported": [
+      "canlii",
+      "courtlistener"
+    ],
+    "perUserAuthorizationResponsibilityDisclosed": true,
     "licensedProviderEnabled": false,
     "canliiScrapingAllowed": false
   },

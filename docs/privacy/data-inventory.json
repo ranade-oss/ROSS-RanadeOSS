@@ -1,6 +1,6 @@
 {
-  "status": "controlled-beta engineering inventory; independent review required",
-  "reviewedAt": "2026-07-16",
+  "status": "independent privacy expert approved the public controlled-beta boundary; launch facts remain owner-controlled",
+  "reviewedAt": "2026-07-18",
   "prohibitedData": [
     "real client material",
     "privileged or confidential information",
@@ -26,22 +26,22 @@
         "audit metadata"
       ],
       "purpose": "identity and application records",
-      "location": "vendor and region TBD",
-      "productionApproval": false
+      "location": "Supabase Free project in ca-central",
+      "productionApproval": true
     },
     {
       "system": "object storage",
       "data": ["synthetic or non-confidential files and versions"],
       "purpose": "document workspace",
-      "location": "vendor and region TBD",
+      "location": "Configured S3-compatible private bucket; Canadian/Toronto target, with actual endpoint provider and region still requiring verification",
       "productionApproval": false
     },
     {
       "system": "API and converter",
       "data": ["request metadata", "in-memory file and document content"],
       "purpose": "authorization, conversion, generation",
-      "location": "vendor and region TBD",
-      "productionApproval": false
+      "location": "Fly.io Toronto (yyz) for API and private scan/conversion worker",
+      "productionApproval": true
     },
     {
       "system": "model provider",
@@ -50,14 +50,14 @@
         "selected synthetic or non-confidential document content"
       ],
       "purpose": "generation and extraction",
-      "location": "configuration-specific and TBD",
-      "productionApproval": false
+      "location": "OpenAI API when selected; hosted allowlist is OpenAI and the credential is supplied by the user",
+      "productionApproval": true
     },
     {
       "system": "legal-source providers",
       "data": ["legal queries", "citations", "public source identifiers"],
       "purpose": "research and verification",
-      "location": "provider-specific",
+      "location": "Provider-specific; CanLII and CourtListener credentials are optional and per-user",
       "productionApproval": false
     },
     {
@@ -71,8 +71,8 @@
       "system": "email and support",
       "data": ["email address", "transaction metadata", "support content"],
       "purpose": "account and support communication",
-      "location": "vendor and region TBD",
-      "productionApproval": false
+      "location": "Supabase Auth for account email; support and privacy complaints route to abhi@soundmarklaw.com",
+      "productionApproval": true
     },
     {
       "system": "logs and backups",
@@ -81,7 +81,7 @@
         "encrypted backup copies TBD"
       ],
       "purpose": "security, reliability, recovery",
-      "location": "vendor and region TBD",
+      "location": "Fly/Supabase/object-storage configuration; object-storage recovery copies have a seven-day maximum target, subject to endpoint and enforcement verification",
       "productionApproval": false
     }
   ]

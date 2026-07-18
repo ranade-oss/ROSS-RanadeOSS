@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0-draft",
+  "version": "1.1.0-approved",
   "releaseId": "ross-public-beta-20260717-rc1",
-  "status": "blocked-awaiting-privacy-review",
+  "status": "approved-for-release",
   "approvals": {
     "legalContent": {
       "status": "approved",
@@ -10,10 +10,10 @@
       "evidence": "docs/release-evidence/controlled-beta-owner-approval-2026-07-18.md#independent-ontario-lawyer-review"
     },
     "privacy": {
-      "status": "pending",
-      "approver": null,
-      "date": null,
-      "evidence": null
+      "status": "approved",
+      "approver": "Independent privacy expert; evidence retained by AR",
+      "date": "2026-07-18",
+      "evidence": "docs/release-evidence/privacy-review-approval-sheet-2026-07-18.md#decision"
     },
     "security": {
       "status": "approved",

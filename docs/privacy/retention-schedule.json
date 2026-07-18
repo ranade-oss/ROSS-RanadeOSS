@@ -1,6 +1,6 @@
 {
-  "status": "current-state and proposed schedule; production enforcement not approved",
-  "reviewedAt": "2026-07-16",
+  "status": "owner-approved controlled-beta schedule; object-storage enforcement and restore behaviour require operational verification",
+  "reviewedAt": "2026-07-18",
   "records": [
     {
       "class": "account and profile",
@@ -19,7 +19,7 @@
     {
       "class": "document objects and versions",
       "currentRule": "deletion/soft-deletion paths exist; backup expiry unverified",
-      "proposedRule": "operator and backup decision required",
+      "proposedRule": "retain while the user keeps the item; remove active and quarantine objects within 24 hours of user/account deletion or terminal scan failure; encrypted recovery copies, if configured, expire within 7 days and must not be restored after intentional deletion",
       "automated": "partial",
       "legalHold": "not implemented"
     },
@@ -46,8 +46,8 @@
     },
     {
       "class": "provider, email, connector, infrastructure logs and backups",
-      "currentRule": "configuration-specific and unapproved",
-      "proposedRule": "must be entered before provider approval",
+      "currentRule": "configuration-specific; exact storage endpoint and backup behaviour not yet verified",
+      "proposedRule": "object recovery copies expire within 7 days; other provider-specific retention must be disclosed and verified before its launch decision is approved",
       "automated": "unknown",
       "legalHold": "unknown"
     }

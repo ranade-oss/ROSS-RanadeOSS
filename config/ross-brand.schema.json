@@ -62,7 +62,7 @@
         "defaultJurisdiction": { "const": "CA-ON" },
         "productionDataResidencyTarget": { "const": "Canada" },
         "previewData": { "const": "synthetic-only" },
-        "coverageStatus": { "enum": ["foundation-only", "partial", "production-reviewed"] },
+        "coverageStatus": { "enum": ["foundation-only", "partial", "limited-source-reviewed", "production-reviewed"] },
         "courtListenerPreserved": { "const": true },
         "canliiScrapingAllowed": { "const": false },
         "governmentAffiliation": { "const": false },

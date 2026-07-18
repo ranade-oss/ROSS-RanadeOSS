@@ -11,12 +11,17 @@ const plan = JSON.parse(readFileSync(resolve(root, "config/final-completion.v1.j
 test("partially completed final plan passes development integrity without claiming launch readiness", () => {
   const result = evaluateFinalCompletion(plan, {}, {}, {}, {}, false);
   assert.equal(result.ready, true);
-  assert.equal(result.pending.length, 5);
+  assert.equal(result.pending.length, 3);
   assert.deepEqual(
     plan.workstreams
       .filter((item) => item.status === "completed-with-evidence")
       .map((item) => item.id),
-    ["lawyer-authored-benchmark", "five-workflow-reviews"],
+    [
+      "authorized-ontario-case-law",
+      "lawyer-authored-benchmark",
+      "five-workflow-reviews",
+      "privacy-security-accessibility",
+    ],
   );
 });
 
@@ -38,8 +43,9 @@ test("production final gate accepts the reserved ID but fails closed while exter
     result.blockers.some((item) => /release ID/i.test(item)),
     false,
   );
-  assert.ok(
+  assert.equal(
     result.blockers.some((item) => /authorized-ontario-case-law/i.test(item)),
+    false,
   );
   assert.ok(result.blockers.some((item) => /professional validation/i.test(item)));
   assert.ok(

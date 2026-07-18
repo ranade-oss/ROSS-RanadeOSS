@@ -7,7 +7,10 @@ export type PublicPage = {
   governance: {
     owner: string;
     reviewer: string | null;
-    reviewStatus: "engineering-reviewed" | "independent-review-required";
+    reviewStatus:
+      | "engineering-reviewed"
+      | "independent-reviewed"
+      | "independent-review-required";
     effectiveDate: string | null;
     lastReviewedDate: string | null;
     nextReviewDate: string;
@@ -34,6 +37,30 @@ const independentReviewRequired = (
   nextReviewDate: "2026-08-16",
 });
 
+const independentlyReviewed = (
+  owner: string,
+  reviewer: string,
+): PublicPage["governance"] => ({
+  owner,
+  reviewer,
+  reviewStatus: "independent-reviewed",
+  effectiveDate: "2026-07-18",
+  lastReviewedDate: "2026-07-18",
+  nextReviewDate: "2026-08-16",
+});
+
+const independentlyReviewedPendingEffect = (
+  owner: string,
+  reviewer: string,
+): PublicPage["governance"] => ({
+  owner,
+  reviewer,
+  reviewStatus: "independent-reviewed",
+  effectiveDate: null,
+  lastReviewedDate: "2026-07-18",
+  nextReviewDate: "2026-08-16",
+});
+
 export const publicPages: Record<string, PublicPage> = {
   ontario: {
     title: "Ontario and Canadian capability",
@@ -41,8 +68,11 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "ROSS adds an Ontario-first, provider-neutral research foundation without removing inherited optional U.S. research.",
     status:
-      "Engineering integrations are implemented; live availability, completeness, and legal-content approval are not claimed.",
-    governance: independentReviewRequired("Legal-content owner — unassigned"),
+      "The Ontario workflows and benchmark have legal-content approval for the controlled beta; live availability and comprehensive source coverage are not claimed.",
+    governance: independentlyReviewed(
+      "Legal-content owner — AR",
+      "Independent Ontario lawyer; evidence retained by AR",
+    ),
     sections: [
       {
         title: "Implemented foundation",
@@ -50,7 +80,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Authorized sources",
-        body: "The implemented connectors use A2AJ, official government sources, optional CourtListener for U.S. research, and a disabled licensed-provider boundary. ROSS does not scrape CanLII; its connector requires a separately approved licence and transport.",
+        body: "The implemented connectors use A2AJ, official government sources, and optional per-user CourtListener access. Users may store their own authorized CanLII API key for the governed metadata connector; ROSS supplies no shared key and does not scrape CanLII.",
       },
       {
         title: "Visible gaps",
@@ -85,11 +115,12 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Ontario workflow catalogue",
     eyebrow: "Public catalogue",
     summary:
-      "Five versioned Ontario workflow drafts are available for transparent review while the inherited Mike workflow library remains intact.",
+      "Five versioned Ontario workflows are approved for the controlled-beta boundary while the inherited Mike workflow library remains intact.",
     status:
-      "Drafts await independent Ontario lawyer review and are not approved for production use.",
-    governance: independentReviewRequired(
-      "Ontario workflow owner — unassigned",
+      "Ontario-lawyer review and independent adjudication are recorded; use remains limited to synthetic or affirmatively non-confidential material.",
+    governance: independentlyReviewed(
+      "Ontario workflow owner — AR",
+      "Independent Ontario lawyer; evidence retained by AR",
     ),
     sections: [
       {
@@ -98,7 +129,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Current availability",
-        body: "Draft catalogue entries can be inspected publicly and opened in the authenticated application. They remain limited to synthetic or non-confidential material until the controlled-beta gates are met.",
+        body: "Catalogue entries can be inspected publicly and opened in the authenticated application. They remain limited to synthetic or affirmatively non-confidential material throughout the controlled beta.",
       },
     ],
   },
@@ -115,7 +146,7 @@ export const publicPages: Record<string, PublicPage> = {
     sections: [
       {
         title: "Decisions",
-        body: "A2AJ is implemented for Canadian decision discovery and unofficial text, subject to its runtime-reported datasets and availability. CourtListener remains available for optional U.S. research. CanLII remains disabled without a separately approved licensed transport.",
+        body: "A2AJ is implemented for Canadian decision discovery and unofficial text, subject to its runtime-reported datasets and availability. CourtListener and CanLII credentials are optional and supplied separately by each authorized user. The CanLII boundary is metadata-only and never represents full-text or comprehensive access.",
       },
       {
         title: "Legislation",
@@ -156,8 +187,11 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "ROSS is not yet approved for real confidential or privileged client material in an operator-hosted service.",
     status:
-      "Engineering threat model, incident plan, data inventory, retention schedule, and vendor inventory exist; independent security and privacy review remains open.",
-    governance: independentReviewRequired("Security owner — unassigned"),
+      "Independent security and privacy reviews are approved with no unresolved Critical or High findings; production operator and vendor decisions remain open.",
+    governance: independentlyReviewed(
+      "Security owner — AR",
+      "Security reviewer report; approval evidence retained by AR",
+    ),
     sections: [
       {
         title: "Current beta boundary",
@@ -165,7 +199,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Architecture direction",
-        body: "The inherited application uses authenticated API, database, object storage, model-provider, conversion, and email services. Production regions and vendors are not yet approved.",
+        body: "The hosted route uses a Supabase Free project in ca-central, Fly application/API/worker services in Toronto, a separately configured private S3-compatible object store, user-supplied OpenAI keys, conversion, and account email. The object-store endpoint and remaining provider terms still require verification.",
       },
       {
         title: "Report safely",
@@ -175,18 +209,19 @@ export const publicPages: Record<string, PublicPage> = {
   },
   privacy: {
     title: "Privacy notice — controlled-beta draft",
-    eyebrow: "Legal review required",
+    eyebrow: "Independent privacy review completed",
     summary:
       "The public site does not intentionally collect form submissions, run product analytics, authenticate visitors, or load application data; hosting-level request records may still be processed.",
     status:
-      "Independent privacy/legal review, operator identity, effective date, vendor terms, and complaint contact are required before this notice can take effect.",
-    governance: independentReviewRequired(
-      "Privacy owner and legal operator — unassigned",
+      "Independent privacy review is approved. Abhi Ranade is the operator and abhi@soundmarklaw.com is the privacy contact. Final storage-provider verification and complete vendor disclosures are still required before this notice can take effect.",
+    governance: independentlyReviewedPendingEffect(
+      "Legal operator — Abhi Ranade; privacy evidence retained by AR",
+      "Independent privacy expert; evidence retained by AR",
     ),
     sections: [
       {
         title: "Public website",
-        body: "The site serves public content only and has no first-party form or analytics integration. Its hosting service may process network identifiers, request metadata, security events, and necessary cookies or tokens; the selected operator must publish the actual hosting terms, purposes, locations, access, and retention.",
+        body: "The site serves public content only and has no first-party form or analytics integration. Its hosting service may process network identifiers, request metadata, security events, and necessary cookies or tokens; the effective notice must publish the actual hosting terms, purposes, locations, access, and retention.",
       },
       {
         title: "Hosted application",
@@ -194,11 +229,11 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Choices, access, and deletion",
-        body: "The inherited application includes account export, content deletion, and account deletion surfaces. Applicable legal rights, verification steps, response periods, appeals, and the privacy contact cannot be finalized until the operator and governing privacy obligations are determined.",
+        body: "The application includes account export, content deletion, and account deletion surfaces. Privacy questions, complaints, and deletion requests may be sent to abhi@soundmarklaw.com. Applicable legal rights, verification steps, response periods, and appeals remain subject to the effective notice and governing law.",
       },
       {
         title: "Retention and disclosure",
-        body: "Draft retention periods and deletion triggers exist, but infrastructure, backups, provider retention, lawful disclosure, cross-border processing, and contract terms are not approved. The effective notice must identify each actual subprocessor and material transfer.",
+        body: "The approved target removes active and quarantine document objects within 24 hours of deletion or terminal scan failure and expires encrypted recovery copies within seven days. The actual object-store endpoint, enforcement, provider retention, lawful disclosure, cross-border processing, and contract terms still require verification before the notice becomes effective.",
       },
     ],
   },
@@ -260,8 +295,12 @@ export const publicPages: Record<string, PublicPage> = {
     eyebrow: "WCAG 2.2 AA target",
     summary:
       "New ROSS public surfaces target accessible semantics, keyboard operation, visible focus, contrast, zoom, and reduced-motion support.",
-    status: "Formal conformance has not been audited or claimed.",
-    governance: independentReviewRequired("Accessibility owner — unassigned"),
+    status:
+      "Independent manual accessibility review is approved with no unresolved Critical or High findings; this is not a blanket conformance certification for every assistive-technology combination.",
+    governance: independentlyReviewed(
+      "Accessibility owner — AR",
+      "Accessibility reviewer report; approval evidence retained by AR",
+    ),
     sections: [
       {
         title: "Built into the public site",
@@ -269,7 +308,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Feedback",
-        body: "A production accessibility feedback channel will be published after the operator and contact system are approved.",
+        body: "Accessibility feedback may be sent to abhi@soundmarklaw.com without including client information or confidential facts.",
       },
     ],
   },
@@ -277,11 +316,11 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Contact ROSS",
     eyebrow: "Verified channels",
     summary:
-      "Security-sensitive reports use private GitHub vulnerability reporting; other operational and legal contact channels are not yet approved.",
+      "Security-sensitive reports use private GitHub vulnerability reporting. Support, privacy, accessibility, and complaints use abhi@soundmarklaw.com.",
     status:
-      "Do not send client information or confidential facts through a public issue or unapproved mailbox.",
+      "Do not send client information, privileged material, credentials, or confidential facts through email or a public issue.",
     governance: independentReviewRequired(
-      "Legal operator and support owner — unassigned",
+      "Legal operator and support owner — Abhi Ranade",
     ),
     sections: [
       {
@@ -289,8 +328,8 @@ export const publicPages: Record<string, PublicPage> = {
         body: "Use the repository’s private vulnerability reporting for security-sensitive details. Do not place vulnerability details in a public issue.",
       },
       {
-        title: "Other enquiries",
-        body: "The repository issue tracker may be used for non-sensitive software defects and feature discussion. Privacy, legal, licensing, partnership, and support mailboxes remain intentionally unpublished until the operator, retention, routing, access, and privacy terms are approved.",
+        title: "Support, privacy, and accessibility",
+        body: "Email abhi@soundmarklaw.com for support, privacy questions or complaints, accessibility feedback, legal, licensing, or partnership enquiries. The repository issue tracker may be used for non-sensitive software defects and feature discussion.",
       },
     ],
   },
@@ -300,8 +339,8 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "ROSS is an Ontario-focused, open-source legal workspace in development and a modified fork of Mike.",
     status:
-      "The legal operator and accountable independent reviewers remain unassigned.",
-    governance: independentReviewRequired("Product owner — unassigned"),
+      "Abhi Ranade is the legal operator and product owner. Independent privacy, security, accessibility, and Ontario legal reviews are recorded for the controlled-beta boundary.",
+    governance: engineeringReviewed("Product owner — Abhi Ranade"),
     sections: [
       {
         title: "Purpose",
@@ -349,16 +388,16 @@ export const publicPages: Record<string, PublicPage> = {
   },
   status: {
     title: "Service status",
-    eyebrow: "No production service",
+    eyebrow: "Public status location",
     summary:
       "The public website is an engineering checkpoint. The verified-account public beta remains blocked until the recorded launch gates pass; no client-material service is approved.",
     status:
-      "Website checkpoint available publicly; application, API, legal-source health, monitoring, and public status infrastructure remain pre-production.",
-    governance: independentReviewRequired("Operations owner — unassigned"),
+      "This /status page is the approved public status location for launch; application, API, legal-source health, and monitoring evidence remain pre-production.",
+    governance: independentReviewRequired("Operations owner — AR"),
     sections: [
       {
-        title: "Future status reporting",
-        body: "Production status will be independently hosted and cover website, application, API, legal-source ingestion, and material incidents.",
+        title: "Status reporting",
+        body: "This page is the public status location until a separate service is approved. It will cover website, application, API, legal-source ingestion, and material incidents.",
       },
       {
         title: "Release control",
@@ -370,11 +409,11 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Launch readiness",
     eyebrow: "Fail-closed release status",
     summary:
-      "ROSS now has executable engineering gates and operational runbooks, but every production approval and live-environment exercise remains pending.",
+      "ROSS has executable engineering gates, recorded independent reviews, named ownership, approved public domains and contacts, and operational runbooks. Live-environment exercises and final vendor verification remain pending.",
     status:
-      "Blocked: owner, domains, vendors, effective notices, independent reviews, live source health, staging, restore, rollback, monitoring, and go-live evidence are not approved.",
+      "Blocked: the object-store endpoint/provider and retention enforcement, effective notices, final-candidate source observation, staging, restore, rollback, monitoring, and other operational evidence are not yet approved.",
     governance: independentReviewRequired(
-      "Release and product owners — unassigned",
+      "Release owner — AR; product owner — Abhi Ranade",
     ),
     sections: [
       {
@@ -383,7 +422,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "What people must still do",
-        body: "Named reviewers must select and assess the operator, Canadian-region vendors, privacy and security controls, effective policies, support channels, accessibility, legal content, source coverage, benchmark, and public-beta registration controls.",
+        body: "Operator, domains, contacts, controlled-beta terms, privacy, security, accessibility, legal content, and product decisions are recorded. Remaining work is operational verification, final vendor disclosure, effective notices, and immutable-candidate evidence.",
       },
       {
         title: "Current safe boundary",
@@ -397,20 +436,23 @@ export const publicPages: Record<string, PublicPage> = {
   },
   subprocessors: {
     title: "Subprocessors",
-    eyebrow: "Vendor selection pending",
+    eyebrow: "Launch vendor inventory",
     summary:
-      "No production hosting, analytics, support, email, monitoring, or model-provider configuration has been approved for the ROSS hosted service.",
+      "The owner selected Supabase Free in ca-central, Fly services in Toronto, user-supplied OpenAI keys, the public site, and public contact channels. ROSS does not intentionally add product analytics at launch.",
     status:
-      "A draft candidate inventory exists; no production subprocessors, tiers, regions, retention terms, or contracts are approved.",
-    governance: independentReviewRequired("Privacy owner — unassigned"),
+      "The separately configured S3-compatible object-store provider/region, retention enforcement, and remaining provider terms still require verification before this list can take effect.",
+    governance: independentlyReviewedPendingEffect(
+      "Legal operator — Abhi Ranade; privacy evidence retained by AR",
+      "Independent privacy expert; evidence retained by AR",
+    ),
     sections: [
       {
         title: "Required disclosure",
-        body: "Before launch, the inventory must identify purpose, data categories, region, retention, access, contractual basis, and review date for each service.",
+        body: "The effective inventory must identify purpose, data categories, product/tier, region, retention, access, contractual basis, and review date for each service. User-selected model and connector providers must also be disclosed as user-directed processing.",
       },
       {
         title: "Candidate categories",
-        body: "The engineering inventory identifies authentication/database, object storage, model providers, email, hosting, logging, monitoring, backups, and support as candidate categories. A product name in source configuration is not approval of a vendor, tier, region, or term.",
+        body: "Recorded launch categories include Supabase authentication/database and account email, private S3-compatible object storage, user-supplied OpenAI access, Fly hosting and private worker, public-site hosting, logging, monitoring, backups, and support. Fly application hosting does not identify the separate object-store provider.",
       },
     ],
   },
@@ -420,9 +462,10 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "Model output is not authority. ROSS is designed to connect propositions to inspectable sources and make uncertainty visible.",
     status:
-      "Automated synthetic thresholds are implemented and passing; Ontario lawyer review and all production approvals remain blocked.",
-    governance: independentReviewRequired(
-      "Legal-content and evaluation owners — unassigned",
+      "Automated thresholds, Ontario-lawyer benchmark review, and independent adjudication are complete; source gaps and the remaining launch gates stay explicit.",
+    governance: independentlyReviewed(
+      "Legal-content and evaluation owner — AR",
+      "Independent Ontario lawyer; evidence retained by AR",
     ),
     sections: [
       {
@@ -435,7 +478,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Release boundary",
-        body: "A perfect synthetic score is not legal validation. Production remains blocked until a named Ontario lawyer approves the benchmark and named legal-content, privacy, security, accessibility, and product reviewers provide dated evidence.",
+        body: "A passing benchmark does not make model output legal advice or prove comprehensive source coverage. The benchmark, legal-content, security, accessibility, and product reviews are recorded; privacy and operational launch evidence remain fail-closed.",
       },
     ],
   },
@@ -473,7 +516,7 @@ export const publicUpdates = [
     slug: "foundation",
     title: "Ontario product foundation and trust gates",
     publishedAt: "2026-07-16",
-    status: "Engineering update — independent approvals pending",
+    status: "Engineering update — selected independent approvals completed",
     summary:
       "ROSS now has an Ontario-first provider layer, draft workflows, controlled-beta data boundary, and synthetic evaluation gate while preserving inherited Mike functions.",
     changes: [
@@ -483,7 +526,7 @@ export const publicUpdates = [
       "Added an 11-case synthetic Ontario evaluation seed, generated report, accessibility/performance contracts, and independent-approval gate.",
     ],
     limitations:
-      "No Ontario lawyer has approved the benchmark or workflows. No production operator, vendor set, confidential-data mode, comprehensive citator, or public launch has been approved.",
+      "The operator, public domains and contacts are recorded, and the benchmark, workflows, and privacy decision are approved. Exact storage-provider verification, effective vendor notices, confidential-data mode, comprehensive citator, and final operational launch evidence remain unapproved.",
   },
   {
     slug: "release-controls",
@@ -496,9 +539,9 @@ export const publicUpdates = [
       "Added required-provider freshness, quarantine, and recovery policy with a deliberately unobserved pre-production health report.",
       "Added an immutable SHA-256 release manifest and manual CI evidence workflow with no automatic production deployment.",
       "Added release, backup/restore, rollback, source, monitoring, incident, and launch procedures tied to dated evidence.",
-      "Added a public readiness page and a launch flag that cannot enable indexing while the operator, production coverage, or domain remains a placeholder.",
+      "Added a public readiness page and a launch flag that cannot enable indexing while the operator, reviewed limited-source posture, or domain remains a placeholder.",
     ],
     limitations:
-      "No operator, production vendor, domain, live source monitor, staging exercise, restore, rollback, penetration test, accessibility audit, Ontario lawyer review, effective legal notice, support channel, or go-live decision is approved.",
+      "The legal operator, domains, contacts, go-live owner decision, privacy approval, penetration retest, accessibility review, and Ontario-lawyer review are recorded. Storage-provider verification, effective notices, final-candidate source observation, isolated restore, and staging rollback evidence remain open.",
   },
 ] as const;

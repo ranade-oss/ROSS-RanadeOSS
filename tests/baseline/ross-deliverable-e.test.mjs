@@ -8,9 +8,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const readJson = (path) => JSON.parse(read(path));
 
-test("Ontario professional validation records the reviewed scope without false launch approval", () => {
+test("Ontario professional validation records the reviewed limited-source launch scope", () => {
   const record = readJson("config/professional-validation.v1.json");
-  assert.equal(record.status, "blocked-awaiting-authorized-provider");
+  assert.equal(record.status, "approved-for-limited-source-controlled-beta");
   assert.equal(record.scope.status, "approved-by-ontario-lawyer");
   assert.deepEqual(
     record.scope.practiceAreas.map((area) => area.id),
@@ -24,7 +24,14 @@ test("professional validation preserves the provider gate and records review evi
   const record = readJson("config/professional-validation.v1.json");
   const validator = read("scripts/lib/professional-validation.mjs");
   assert.equal(record.workflowReviews.length, 5);
-  assert.equal(record.legalSourceDecision.evidence, null);
+  assert.equal(
+    record.legalSourceDecision.evidence,
+    "docs/release-evidence/limited-source-beta-decision-2026-07-18.md",
+  );
+  assert.equal(record.legalSourceDecision.comprehensiveCoverageClaimed, false);
+  assert.equal(record.legalSourceDecision.modelMemoryFallbackAllowed, false);
+  assert.equal(record.legalSourceDecision.platformProviderAccessRequired, false);
+  assert.equal(record.legalSourceDecision.sharedProviderCredentialsAllowed, false);
   assert.ok(
     record.workflowReviews.every(
       (review) =>

@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-07-15
-- Owners: Privacy owner TBD; security owner TBD
+- Owners: Privacy evidence retained by AR; security owner AR
 - Review trigger: Staging deployment, hosted user admission, incident response requirement, or data-boundary expansion
 
 ## Context
@@ -22,7 +22,11 @@ Deletion must cover primary data and documented downstream copies.
 
 Adopt option 3 as the design default. Never intentionally log document bodies,
 prompt bodies, model responses, credentials, signed URLs, or access tokens.
-Production retention periods remain open pending privacy and operational review.
+For controlled-beta document objects, active and quarantine copies must be
+removed within 24 hours of user/account deletion or terminal scan failure.
+Encrypted recovery copies, if configured, expire within seven days and must not
+be used to reverse an intentional deletion. Other provider retention periods
+remain subject to inventory and operational verification.
 
 ## Consequences
 
@@ -33,5 +37,5 @@ Production retention periods remain open pending privacy and operational review.
 
 ## Follow-up
 
-- [ ] Create a data inventory and retention schedule.
+- [x] Create a data inventory and retention schedule.
 - [ ] Add deletion, redaction, and restore tests in ROSS-130.

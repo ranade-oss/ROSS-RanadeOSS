@@ -50,7 +50,7 @@ test("central brand configuration uses approved safe defaults", () => {
   const brand = json("config/ross-brand.json");
   assert.equal(brand.product.name, "ROSS");
   assert.equal(brand.product.expandedName, "Ranade OSS");
-  assert.equal(brand.product.legalOperator, "TBD");
+  assert.equal(brand.product.legalOperator, "Abhi Ranade");
   assert.match(brand.product.betaLabel, /synthetic or non-confidential/i);
   assert.equal(brand.policy.defaultJurisdiction, "CA-ON");
   assert.equal(brand.policy.productionDataResidencyTarget, "Canada");
@@ -59,9 +59,10 @@ test("central brand configuration uses approved safe defaults", () => {
   assert.equal(brand.policy.canliiScrapingAllowed, false);
   assert.equal(brand.policy.governmentAffiliation, false);
 
-  for (const key of ["website", "app", "api", "status"]) {
-    assert.match(new URL(brand.urls[key]).hostname, /\.invalid$/);
-  }
+  assert.equal(new URL(brand.urls.website).hostname, "ross-ontario.augustmaat.chatgpt.site");
+  assert.equal(new URL(brand.urls.app).hostname, "ross-ranadeoss-public.fly.dev");
+  assert.equal(new URL(brand.urls.api).hostname, "ross-ranadeoss-api.fly.dev");
+  assert.equal(brand.urls.status, `${brand.urls.website}/status`);
   assert.equal(brand.urls.source, "https://github.com/ranade-oss/ROSS-RanadeOSS");
   assert.equal(brand.urls.upstreamSource, "https://github.com/Open-Legal-Products/mike");
 });

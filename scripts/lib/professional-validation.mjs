@@ -7,6 +7,10 @@ const VERIFICATION_METHODS = new Set([
   "trusted-intermediary-attestation",
   "accountable-owner-attestation",
 ]);
+const SOURCE_DECISION_MODES = new Set([
+  "approved-authorized-provider",
+  "approved-limited-source-beta",
+]);
 
 const text = (value) => typeof value === "string" && value.trim().length > 0;
 const dated = (value) => text(value) && DATE.test(value);
@@ -56,6 +60,58 @@ function requireApprovedScope(record, blockers) {
   for (const area of record.scope?.practiceAreas ?? [])
     if (area.status !== "approved-by-ontario-lawyer")
       blockers.push(`Practice area ${area.id} is not lawyer-approved.`);
+}
+
+function requireLegalSourceDecision(source, blockers, warnings) {
+  if (!SOURCE_DECISION_MODES.has(source?.status)) {
+    blockers.push("Ontario case-law source posture has not been approved.");
+    return;
+  }
+
+  for (const field of ["authorizationBasis", "decisionOwner", "evidence"])
+    if (!text(source?.[field])) blockers.push(`Legal-source decision ${field} is missing.`);
+  if (!dated(source?.decisionDate)) blockers.push("Legal-source decision date is missing or invalid.");
+  if (!Array.isArray(source?.allowedOperations) || source.allowedOperations.length === 0)
+    blockers.push("Legal-source allowed operations are missing.");
+
+  if (source.status === "approved-authorized-provider") {
+    for (const field of ["selectedProvider", "agreementOrAuthorizationId"])
+      if (!text(source?.[field])) blockers.push(`Legal-source decision ${field} is missing.`);
+    for (const court of source?.requiredCoverage ?? [])
+      if (!source?.verifiedCoverage?.includes(court))
+        blockers.push(`Legal-source coverage is not verified for ${court}.`);
+    return;
+  }
+
+  if (source.licensedProviderEnabled !== false)
+    blockers.push("Limited-source beta must keep the platform-supplied licensed provider disabled.");
+  if (source.comprehensiveCoverageClaimed !== false)
+    blockers.push("Limited-source beta must not claim comprehensive case-law coverage.");
+  if (source.researchClaimsRestricted !== true)
+    blockers.push("Limited-source beta must restrict legal-research coverage claims.");
+  if (source.availabilityDisclosureRequired !== true)
+    blockers.push("Limited-source beta must disclose source availability and coverage gaps.");
+  if (source.modelMemoryFallbackAllowed !== false)
+    blockers.push("Limited-source beta must prohibit model-memory substitution for missing sources.");
+  if (source.platformProviderAccessRequired !== false)
+    blockers.push("Limited-source beta must not depend on platform-supplied provider access.");
+  if (source.sharedProviderCredentialsAllowed !== false)
+    blockers.push("Limited-source beta must prohibit shared legal-source credentials.");
+  if (source.perUserAuthorizationResponsibilityDisclosed !== true)
+    blockers.push("Limited-source beta must disclose each user's provider authorization responsibility.");
+  for (const provider of ["canlii", "courtlistener"])
+    if (!source?.perUserApiKeysSupported?.includes(provider))
+      blockers.push(`Limited-source beta must record optional per-user ${provider} credentials.`);
+
+  const required = source.requiredCoverage ?? [];
+  const deferred = source.deferredCoverage ?? [];
+  if (!Array.isArray(deferred) || deferred.length === 0)
+    blockers.push("Limited-source beta deferred coverage is missing.");
+  for (const court of required)
+    if (!deferred.includes(court) && !source?.verifiedCoverage?.includes(court))
+      blockers.push(`Limited-source beta does not classify required coverage for ${court}.`);
+  if (blockers.length === 0)
+    warnings.push(`Limited-source beta defers comprehensive coverage for: ${deferred.join(", ")}.`);
 }
 
 function requireApprovedProfessionalReviews(
@@ -137,11 +193,17 @@ export function evaluateProfessionalValidation(
       warnings.push("Five Ontario workflow reviews are pending.");
       warnings.push("Privacy, security, and accessibility approvals are pending.");
     } else if (approvedBenchmark && approvedWorkflows) {
-      if (record.status !== "blocked-awaiting-authorized-provider")
-        blockers.push("Reviewed development record must remain blocked on the authorized provider.");
+      const limitedSourceBeta =
+        record.status === "approved-for-limited-source-controlled-beta" &&
+        record.legalSourceDecision?.status === "approved-limited-source-beta";
+      if (!limitedSourceBeta && record.status !== "blocked-awaiting-authorized-provider")
+        blockers.push("Reviewed development record must use an approved source posture.");
       requireApprovedScope(record, blockers);
       requireApprovedProfessionalReviews(record, benchmark, workflowCatalogue, blockers);
-      warnings.push("Authorized Ontario case-law provider selection is pending.");
+      if (limitedSourceBeta)
+        requireLegalSourceDecision(record.legalSourceDecision, blockers, warnings);
+      else
+        warnings.push("Authorized Ontario case-law provider selection is pending.");
       warnings.push("Privacy, security, and accessibility approvals are pending.");
     } else {
       blockers.push(
@@ -151,27 +213,12 @@ export function evaluateProfessionalValidation(
     return { mode: "development", ready: blockers.length === 0, blockers, warnings };
   }
 
-  if (record.status !== "approved-for-controlled-beta")
-    blockers.push("Professional validation record is not approved-for-controlled-beta.");
+  if (!["approved-for-controlled-beta", "approved-for-limited-source-controlled-beta"].includes(record.status))
+    blockers.push("Professional validation record is not approved for a controlled beta.");
   requireApprovedScope(record, blockers);
 
   const source = record.legalSourceDecision;
-  if (source?.status !== "approved-authorized-provider")
-    blockers.push("Authorized Ontario case-law provider has not been approved.");
-  for (const field of [
-    "selectedProvider",
-    "authorizationBasis",
-    "agreementOrAuthorizationId",
-    "decisionOwner",
-    "evidence",
-  ])
-    if (!text(source?.[field])) blockers.push(`Legal-source decision ${field} is missing.`);
-  if (!dated(source?.decisionDate)) blockers.push("Legal-source decision date is missing or invalid.");
-  if (!Array.isArray(source?.allowedOperations) || source.allowedOperations.length === 0)
-    blockers.push("Legal-source allowed operations are missing.");
-  for (const court of source?.requiredCoverage ?? [])
-    if (!source?.verifiedCoverage?.includes(court))
-      blockers.push(`Legal-source coverage is not verified for ${court}.`);
+  requireLegalSourceDecision(source, blockers, warnings);
 
   requireApprovedProfessionalReviews(record, benchmark, workflowCatalogue, blockers);
 

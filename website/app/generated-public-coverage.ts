@@ -77,7 +77,7 @@ export const PUBLIC_SOURCE_COVERAGE = {
     },
     {
       "id": "canlii-licensed",
-      "name": "CanLII licensed connector boundary",
+      "name": "CanLII bring-your-own-key metadata connector boundary",
       "jurisdictions": [
         "Canada",
         "Ontario"
@@ -85,10 +85,10 @@ export const PUBLIC_SOURCE_COVERAGE = {
       "materials": [
         "Entitlement-defined metadata or text"
       ],
-      "authority": "Requires separate provider agreement and approved transport",
-      "integrationStatus": "Disabled; no licence or transport approved",
+      "authority": "Each user must obtain their own CanLII API key and comply with the access granted to them",
+      "integrationStatus": "Per-user encrypted key storage is implemented; metadata transport remains disabled until the governed connector is activated",
       "enabledByDefault": false,
-      "knownLimits": "ROSS does not scrape CanLII. No request is implemented by the connector until contract, operation, retention, redistribution, credential, and transport gates are satisfied.",
+      "knownLimits": "ROSS does not scrape CanLII and supplies no shared access. CanLII's documented API exposes collection metadata, not decision full text. The rest of ROSS remains usable without a CanLII key; unavailable coverage must be disclosed.",
       "implementationSource": "backend/src/lib/legalSources/licensedConnector.ts"
     }
   ]

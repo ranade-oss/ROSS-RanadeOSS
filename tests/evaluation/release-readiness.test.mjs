@@ -34,8 +34,8 @@ test("production release preserves recorded approvals and fails closed on the re
     professionalValidation: { ready: false },
   });
   assert.equal(result.ready, false);
-  assert.ok(result.blockers.some((blocker) => blocker.includes("privacy")));
-  for (const name of ["legalContent", "security", "accessibility", "productOwner"])
+  assert.ok(!result.blockers.some((blocker) => blocker.includes("privacy approval")));
+  for (const name of ["legalContent", "privacy", "security", "accessibility", "productOwner"])
     assert.ok(
       !result.blockers.some((blocker) => blocker.includes(`${name} approval`)),
       name,

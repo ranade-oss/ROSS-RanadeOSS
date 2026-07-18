@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0-draft",
-  "asOfDate": "2026-07-17",
+  "version": "1.1.0-limited-source-beta",
+  "asOfDate": "2026-07-18",
   "releaseId": "ross-public-beta-20260717-rc1",
   "status": "blocked-awaiting-external-completion",
   "target": {
@@ -14,12 +14,15 @@
       "Ontario Superior Court of Justice",
       "Ontario Small Claims Court"
     ],
+    "sourceReleaseMode": "limited-source-controlled-beta",
+    "coverageExpansionDeferred": true,
+    "coverageDeferralEvidence": "docs/release-evidence/limited-source-beta-decision-2026-07-18.md",
     "dataBoundary": "synthetic-or-non-confidential-only",
     "confidentialUseApproved": false,
     "publicIndexingApproved": false
   },
   "providerStrategy": {
-    "status": "pending-authorization-for-coverage-gaps",
+    "status": "owner-approved-limited-source-beta",
     "implementedOpenProvider": "a2aj-canada",
     "implementedReportedOntarioCourtCoverage": [
       "Ontario Court of Appeal"
@@ -28,7 +31,7 @@
       "Ontario Superior Court of Justice",
       "Ontario Small Claims Court"
     ],
-    "recommendedGapRoute": "Obtain an authorized commercial API or original-source channel with express permission for the required operations.",
+    "recommendedGapRoute": "Users may connect their own authorized CanLII or CourtListener API credentials when the corresponding transport is enabled. ROSS supplies no shared provider access; until coverage is available, disclose gaps and never substitute model memory.",
     "canliiWebsiteAutomationAllowed": false,
     "sourceEvidence": [
       "https://a2aj.ca/data/",
@@ -40,7 +43,7 @@
     {
       "id": "authorized-ontario-case-law",
       "ownerRole": "product owner and legal-source counsel",
-      "status": "pending",
+      "status": "completed-with-evidence",
       "sourceOfTruth": "config/professional-validation.v1.json#legalSourceDecision"
     },
     {
@@ -58,7 +61,7 @@
     {
       "id": "privacy-security-accessibility",
       "ownerRole": "independent privacy, security, and accessibility reviewers",
-      "status": "pending",
+      "status": "completed-with-evidence",
       "sourceOfTruth": "config/release-approvals.v1.json#approvals"
     },
     {

@@ -12,24 +12,31 @@ test("production records preserve completed approvals and remain blocked on miss
   const approvals = json("config/release-approvals.v1.json");
   const operations = json("config/operations-readiness.v1.json");
   const launch = json("config/launch-readiness.v1.json");
-  assert.match(approvals.status, /^blocked-/);
+  assert.equal(approvals.status, "approved-for-release");
   assert.match(operations.status, /^blocked-/);
   assert.match(launch.status, /^blocked-/);
 
-  for (const name of ["legalContent", "security", "accessibility", "productOwner"]) {
+  for (const name of ["legalContent", "privacy", "security", "accessibility", "productOwner"]) {
     const item = approvals.approvals[name];
     assert.equal(item.status, "approved");
     assert.ok(item.approver);
     assert.equal(item.date, "2026-07-18");
-    assert.match(item.evidence, /controlled-beta-owner-approval-2026-07-18\.md/);
+    assert.match(item.evidence, /release-evidence\/.*2026-07-18\.md/);
   }
-  assert.equal(approvals.approvals.privacy.status, "pending");
 
-  for (const name of ["accountableOwners", "goLiveDecision"]) {
+  for (const name of [
+    "legalOperator",
+    "accountableOwners",
+    "productionDomains",
+    "supportAndPrivacyChannels",
+    "betaCohortAndTerms",
+    "goLiveDecision",
+  ]) {
     const item = launch.decisions[name];
     assert.equal(item.status, "approved");
-    assert.equal(item.approver, "AR");
     assert.equal(item.date, "2026-07-18");
+    assert.ok(item.approver);
+    assert.ok(item.evidence);
   }
 
   for (const item of Object.values(operations.evidence)) {
@@ -39,7 +46,14 @@ test("production records preserve completed approvals and remain blocked on miss
   }
 
   for (const [name, item] of Object.entries(launch.decisions)) {
-    if (["accountableOwners", "goLiveDecision"].includes(name)) continue;
+    if ([
+      "legalOperator",
+      "accountableOwners",
+      "productionDomains",
+      "supportAndPrivacyChannels",
+      "betaCohortAndTerms",
+      "goLiveDecision",
+    ].includes(name)) continue;
     assert.equal(item.status, "pending");
     assert.equal(item.approver, null);
     assert.equal(item.evidence, null);
