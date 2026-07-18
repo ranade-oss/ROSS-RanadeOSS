@@ -7,8 +7,8 @@
   "artifacts": [
     {
       "path": ".github/workflows/deploy-public-beta-ross.yml",
-      "sha256": "dea1468771949e195d5b991c67e967fa7b850dbd13ae7a052a1600d7d90a73a9",
-      "sizeBytes": 12007
+      "sha256": "7bf7210816ef33714d2d00349da43fc45b4e8f99b6fb8f39d57410378a7438bc",
+      "sizeBytes": 12002
     },
     {
       "path": "backend/migrations/20260718_01_document_scan_pipeline.sql",

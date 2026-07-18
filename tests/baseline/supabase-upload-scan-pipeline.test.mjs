@@ -45,13 +45,17 @@ test("private worker scans before structure validation, promotion, or conversion
   assert.match(worker, /timingSafeEqual/);
 });
 
-test("public deployment uses a private scale-to-zero Flycast worker", () => {
-  const workflow = read(".github/workflows/deploy-public-beta-ross.yml");
+test("deployments reach the private scale-to-zero worker through the Flycast service port", () => {
+  const privateWorkflow = read(".github/workflows/deploy-private-ross.yml");
+  const publicWorkflow = read(".github/workflows/deploy-public-beta-ross.yml");
   const fly = read("deploy/fly/file-worker.toml");
-  assert.match(workflow, /--flycast/);
-  assert.match(workflow, /\.flycast:3002/);
-  assert.match(workflow, /ROSS_UPLOAD_SCAN_REQUIRED=true/);
-  assert.match(workflow, /ROSS_SECURITY_ALERT_WEBHOOK_URL/);
+  for (const workflow of [privateWorkflow, publicWorkflow]) {
+    assert.match(workflow, /--flycast/);
+    assert.match(workflow, /WORKER_URL="http:\/\/\$\{WORKER_APP\}\.flycast"/);
+    assert.doesNotMatch(workflow, /\.flycast:3002/);
+    assert.match(workflow, /ROSS_UPLOAD_SCAN_REQUIRED=true/);
+    assert.match(workflow, /ROSS_SECURITY_ALERT_WEBHOOK_URL/);
+  }
   assert.match(fly, /primary_region = "yyz"/);
   assert.match(fly, /auto_stop_machines = "stop"/);
   assert.match(fly, /min_machines_running = 0/);

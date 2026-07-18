@@ -171,7 +171,7 @@ jobs:
           set -euo pipefail
           WEB_URL="https://${WEB_APP}.fly.dev"
           API_URL="https://${API_APP}.fly.dev"
-          WORKER_URL="http://${WORKER_APP}.flycast:3002"
+          WORKER_URL="http://${WORKER_APP}.flycast"
 
           flyctl secrets set --stage --app "$API_APP" \
             "SUPABASE_URL=${ROSS_SUPABASE_URL}" \
