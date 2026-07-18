@@ -11,24 +11,28 @@ test("private deployment is manual, Toronto-hosted, and owner-only", () => {
   const workflow = read(".github/workflows/deploy-private-ross.yml");
   const api = read("deploy/fly/api.toml");
   const frontend = read("deploy/fly/frontend.toml");
+  const worker = read("deploy/fly/file-worker.toml");
 
   assert.match(workflow, /workflow_dispatch:/);
   assert.doesNotMatch(workflow, /^\s*push:/m);
   assert.match(workflow, /NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=false/);
   assert.match(workflow, /ROSS_HOSTED_MODE=controlled-beta/);
   assert.match(workflow, /R2_BUCKET_NAME=ross-private-files/);
+  assert.match(workflow, /ROSS_UPLOAD_SCAN_REQUIRED=true/);
+  assert.match(workflow, /--flycast/);
   assert.match(api, /primary_region = "yyz"/);
   assert.match(frontend, /primary_region = "yyz"/);
+  assert.match(worker, /primary_region = "yyz"/);
 });
 
-test("private deployment rebuilds both application images from current source", () => {
+test("private deployment rebuilds all three application images from current source", () => {
   const workflow = read(".github/workflows/deploy-private-ross.yml");
 
   const deployCommands =
     workflow.match(
       /bash scripts\/fly-deploy-with-retry\.sh[\s\S]*?(?=\n\s+- name:|$)/g,
     ) ?? [];
-  assert.equal(deployCommands.length, 2);
+  assert.equal(deployCommands.length, 3);
   for (const command of deployCommands) {
     assert.match(command, /--no-cache/);
   }
@@ -83,6 +87,8 @@ test("private deployment credentials are supplied only through GitHub secrets", 
     "ROSS_S3_REGION",
     "ROSS_S3_ACCESS_KEY_ID",
     "ROSS_S3_SECRET_ACCESS_KEY",
+    "ROSS_SECURITY_ALERT_WEBHOOK_URL",
+    "ROSS_SECURITY_ALERT_WEBHOOK_SECRET",
   ]) {
     assert.match(workflow, new RegExp(`secrets\\.${name}`), name);
   }

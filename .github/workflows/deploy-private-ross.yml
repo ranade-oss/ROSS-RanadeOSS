@@ -18,6 +18,11 @@ on:
         required: true
         default: ross-ranadeoss-private
         type: string
+      file_worker_app_name:
+        description: Globally unique Fly.io name for the private malware scan and conversion worker
+        required: true
+        default: ross-ranadeoss-file-worker
+        type: string
 
 permissions:
   contents: read
@@ -40,10 +45,14 @@ jobs:
       ROSS_S3_REGION: ${{ secrets.ROSS_S3_REGION }}
       ROSS_S3_ACCESS_KEY_ID: ${{ secrets.ROSS_S3_ACCESS_KEY_ID }}
       ROSS_S3_SECRET_ACCESS_KEY: ${{ secrets.ROSS_S3_SECRET_ACCESS_KEY }}
+      ROSS_SECURITY_ALERT_WEBHOOK_URL: ${{ secrets.ROSS_SECURITY_ALERT_WEBHOOK_URL }}
+      ROSS_SECURITY_ALERT_WEBHOOK_SECRET: ${{ secrets.ROSS_SECURITY_ALERT_WEBHOOK_SECRET }}
       API_APP: ${{ inputs.api_app_name }}
       WEB_APP: ${{ inputs.web_app_name }}
+      WORKER_APP: ${{ inputs.file_worker_app_name }}
       FLY_ORG: ${{ inputs.fly_organization }}
       PUBLIC_WEBSITE_URL: https://ross-ontario.augustmaat.chatgpt.site
+      POLICY_VERSION: 2026-07-17-public-beta
     steps:
       - uses: actions/checkout@v4
 
@@ -59,20 +68,24 @@ jobs:
             ROSS_S3_ENDPOINT_URL \
             ROSS_S3_REGION \
             ROSS_S3_ACCESS_KEY_ID \
-            ROSS_S3_SECRET_ACCESS_KEY; do
+            ROSS_S3_SECRET_ACCESS_KEY \
+            ROSS_SECURITY_ALERT_WEBHOOK_URL \
+            ROSS_SECURITY_ALERT_WEBHOOK_SECRET; do
             if [ -z "${!name:-}" ]; then
               echo "Required GitHub Actions secret is missing: ${name}" >&2
               exit 1
             fi
           done
-          for value in "$API_APP" "$WEB_APP"; do
+          for value in "$API_APP" "$WEB_APP" "$WORKER_APP"; do
             if ! [[ "$value" =~ ^[a-z0-9][a-z0-9-]{2,61}[a-z0-9]$ ]]; then
               echo "Fly app names must use 4-63 lowercase letters, numbers, or hyphens." >&2
               exit 1
             fi
           done
-          if [ "$API_APP" = "$WEB_APP" ]; then
-            echo "The API and website app names must be different." >&2
+          if [ "$API_APP" = "$WEB_APP" ] || \
+             [ "$WORKER_APP" = "$API_APP" ] || \
+             [ "$WORKER_APP" = "$WEB_APP" ]; then
+            echo "The API, website, and private worker app names must be different." >&2
             exit 1
           fi
 
@@ -90,6 +103,31 @@ jobs:
           if ! flyctl status --app "$WEB_APP" >/dev/null 2>&1; then
             flyctl apps create "$WEB_APP" --org "$FLY_ORG"
           fi
+          if ! flyctl status --app "$WORKER_APP" >/dev/null 2>&1; then
+            flyctl apps create "$WORKER_APP" --org "$FLY_ORG"
+          fi
+
+      - name: Configure private file worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE_WORKER_SHARED_SECRET="$(openssl rand -hex 32)"
+          echo "::add-mask::${FILE_WORKER_SHARED_SECRET}"
+          echo "FILE_WORKER_SHARED_SECRET=${FILE_WORKER_SHARED_SECRET}" >> "$GITHUB_ENV"
+
+          flyctl secrets set --stage --app "$WORKER_APP" \
+            "FILE_WORKER_SHARED_SECRET=${FILE_WORKER_SHARED_SECRET}" \
+            "FILE_WORKER_STORAGE_ORIGINS=${ROSS_S3_ENDPOINT_URL}"
+
+      - name: Deploy private scan and conversion worker
+        run: >-
+          bash scripts/fly-deploy-with-retry.sh .
+          --config deploy/fly/file-worker.toml
+          --app "$WORKER_APP"
+          --remote-only
+          --no-cache
+          --flycast
+          --ha=false
 
       - name: Configure private API secrets
         shell: bash
@@ -97,6 +135,7 @@ jobs:
           set -euo pipefail
           WEB_URL="https://${WEB_APP}.fly.dev"
           API_URL="https://${API_APP}.fly.dev"
+          WORKER_URL="http://${WORKER_APP}.flycast:3002"
 
           flyctl secrets set --stage --app "$API_APP" \
             "SUPABASE_URL=${ROSS_SUPABASE_URL}" \
@@ -106,10 +145,15 @@ jobs:
             "R2_ACCESS_KEY_ID=${ROSS_S3_ACCESS_KEY_ID}" \
             "R2_SECRET_ACCESS_KEY=${ROSS_S3_SECRET_ACCESS_KEY}" \
             "R2_BUCKET_NAME=ross-private-files" \
+            "FILE_WORKER_URL=${WORKER_URL}" \
+            "FILE_WORKER_SHARED_SECRET=${FILE_WORKER_SHARED_SECRET}" \
+            "SECURITY_ALERT_WEBHOOK_URL=${ROSS_SECURITY_ALERT_WEBHOOK_URL}" \
+            "SECURITY_ALERT_WEBHOOK_SECRET=${ROSS_SECURITY_ALERT_WEBHOOK_SECRET}" \
+            "ROSS_UPLOAD_SCAN_REQUIRED=true" \
             "ROSS_ENV=staging" \
             "ROSS_HOSTED_MODE=controlled-beta" \
             "HOSTED_MODEL_PROVIDERS=openai" \
-            "ROSS_DATA_BOUNDARY_VERSION=2026-07-16" \
+            "ROSS_DATA_BOUNDARY_VERSION=${POLICY_VERSION}" \
             "CORS_ALLOWED_ORIGINS=${WEB_URL}" \
             "FRONTEND_URL=${WEB_URL}" \
             "API_PUBLIC_URL=${API_URL}"
@@ -155,7 +199,9 @@ jobs:
             --build-arg "NEXT_PUBLIC_ROSS_APP_URL=${WEB_URL}" \
             --build-arg "NEXT_PUBLIC_ROSS_WEBSITE_URL=${PUBLIC_WEBSITE_URL}" \
             --build-arg "NEXT_PUBLIC_ROSS_HOSTED_MODE=controlled-beta" \
-            --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=2026-07-16" \
+            --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=${POLICY_VERSION}" \
+            --build-arg "NEXT_PUBLIC_ROSS_TERMS_VERSION=${POLICY_VERSION}" \
+            --build-arg "NEXT_PUBLIC_ROSS_PRIVACY_VERSION=${POLICY_VERSION}" \
             --build-arg "NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=false"
 
       - name: Verify owner-only services
@@ -175,6 +221,8 @@ jobs:
             echo "- API health: ${API_URL}/health"
             echo "- Region: Toronto (yyz)"
             echo "- New sign-ups: disabled"
+            echo "- Authenticated uploads: quarantined and fail-closed pending private scanning"
+            echo "- File worker: Flycast private addressing"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify required Ontario legal sources
