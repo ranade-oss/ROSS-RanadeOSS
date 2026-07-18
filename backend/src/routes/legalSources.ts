@@ -108,6 +108,8 @@ legalSourcesRouter.get("/status", async (_req, res) => {
                 apiToken:
                     provider.descriptor.id === "courtlistener-us"
                         ? settings.api_keys.courtlistener
+                        : provider.descriptor.id === "canlii-licensed"
+                          ? settings.api_keys.canlii
                         : null,
             });
             return {
@@ -372,12 +374,16 @@ legalSourcesRouter.get(
 );
 
 async function providerContext(res: Response, providerId: string) {
-    if (providerId !== "courtlistener-us") return undefined;
+    if (providerId !== "courtlistener-us" && providerId !== "canlii-licensed")
+        return undefined;
     const settings = await getUserModelSettings(
         String(res.locals.userId ?? ""),
     );
     return {
-        apiToken: settings.api_keys.courtlistener,
+        apiToken:
+            providerId === "canlii-licensed"
+                ? settings.api_keys.canlii
+                : settings.api_keys.courtlistener,
         db: createServerSupabase(),
     };
 }

@@ -20,8 +20,8 @@ import {
   ALLOWED_DOCUMENT_TYPES,
   ALLOWED_DOCUMENT_TYPES_LABEL,
   contentTypeForDocumentType,
-  shouldConvertToPdf,
 } from "../lib/documentTypes";
+import { queueUploadedVersion } from "../lib/quarantinedUpload";
 import {
   findMissingUserEmails,
   loadProfileUsersByEmail,
@@ -62,7 +62,7 @@ async function deleteProjectDocumentsAndVersionFiles(
   if (documentIds.length === 0) return null;
   const { data: versions, error: versionsError } = await db
     .from("document_versions")
-    .select("storage_path, pdf_storage_path")
+    .select("storage_path, pdf_storage_path, quarantine_storage_path")
     .in("document_id", documentIds);
   if (versionsError) return versionsError;
 
@@ -73,6 +73,12 @@ async function deleteProjectDocumentsAndVersionFiles(
     }
     if (typeof v.pdf_storage_path === "string" && v.pdf_storage_path.length > 0) {
       paths.add(v.pdf_storage_path);
+    }
+    if (
+      typeof v.quarantine_storage_path === "string" &&
+      v.quarantine_storage_path.length > 0
+    ) {
+      paths.add(v.quarantine_storage_path);
     }
   }
   await Promise.all([...paths].map((p) => deleteFile(p).catch(() => {})));
@@ -495,9 +501,10 @@ projectsRouter.post(
       const { data: srcV } = await db
         .from("document_versions")
         .select(
-          "storage_path, pdf_storage_path, version_number, filename, source, file_type, size_bytes, page_count",
+          "storage_path, pdf_storage_path, version_number, filename, source, file_type, size_bytes, page_count, scan_status",
         )
         .eq("id", doc.current_version_id)
+        .eq("scan_status", "clean")
         .single();
       if (!srcV?.storage_path) {
         return void res
@@ -923,118 +930,30 @@ export async function handleDocumentUpload(
 
   try {
     const docId = doc.id as string;
-    const key = storageKey(userId, docId, filename);
     const contentType = contentTypeForDocumentType(suffix);
-    await uploadFile(
-      key,
-      content.buffer.slice(
-        content.byteOffset,
-        content.byteOffset + content.byteLength,
-      ) as ArrayBuffer,
+    const pending = await queueUploadedVersion({
+      db,
+      documentId: docId,
+      userId,
+      bytes: content,
+      originalFilename: filename,
+      displayFilename: filename,
+      fileType: suffix,
       contentType,
-    );
-
-    const rawBuf = content.buffer.slice(
-      content.byteOffset,
-      content.byteOffset + content.byteLength,
-    ) as ArrayBuffer;
-    const pageCount = suffix === "pdf" ? await countPdfPages(rawBuf) : null;
-
-    // Convert Office files → PDF for display. PDFs are their own rendition.
-    let pdfStoragePath: string | null = null;
-    if (shouldConvertToPdf(suffix)) {
-      try {
-        const pdfBuf = await docxToPdf(content);
-        const pdfKey = convertedPdfKey(userId, docId);
-        await uploadFile(
-          pdfKey,
-          pdfBuf.buffer.slice(
-            pdfBuf.byteOffset,
-            pdfBuf.byteOffset + pdfBuf.byteLength,
-          ) as ArrayBuffer,
-          "application/pdf",
-        );
-        pdfStoragePath = pdfKey;
-      } catch (err) {
-        console.error(
-          `[upload] Office→PDF conversion failed for ${filename}:`,
-          err,
-        );
-      }
-    } else if (suffix === "pdf") {
-      pdfStoragePath = key;
-    }
-
-    // Storage paths live on document_versions — create the V1 row and
-    // point documents.current_version_id at it.
-    const { data: versionRow, error: verErr } = await db
-      .from("document_versions")
-      .insert({
-        document_id: docId,
-        storage_path: key,
-        pdf_storage_path: pdfStoragePath,
-        source: "upload",
-        version_number: 1,
-        filename,
-        file_type: suffix,
-        size_bytes: content.byteLength,
-        page_count: pageCount,
-      })
-      .select("id")
-      .single();
-    if (verErr || !versionRow) {
-      throw new Error(
-        `Failed to record upload version: ${verErr?.message ?? "unknown"}`,
-      );
-    }
-
-    await db
-      .from("documents")
-      .update({
-        current_version_id: versionRow.id,
-        status: "ready",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", docId);
-
-    const { data: updated } = await db
-      .from("documents")
-      .select("*")
-      .eq("id", docId)
-      .single();
-    const responseDoc = updated
-        ? {
-            ...updated,
-            filename,
-            storage_path: key,
-            pdf_storage_path: pdfStoragePath,
-            file_type: suffix,
-            size_bytes: content.byteLength,
-            page_count: pageCount,
-            active_version_number: 1,
-        }
-      : updated;
-    return void res.status(201).json(responseDoc);
+      source: "upload",
+      versionNumber: 1,
+    });
+    return void res.status(pending.scan_status === "pending" ? 202 : 201).json({
+      ...doc,
+      current_version_id: pending.id,
+      status: "processing",
+      ...pending,
+      active_version_number: 1,
+    });
   } catch (e) {
     await db.from("documents").update({ status: "error" }).eq("id", doc.id);
     return void res
       .status(500)
       .json({ detail: `Document processing failed: ${String(e)}` });
-  }
-}
-
-async function countPdfPages(buf: ArrayBuffer): Promise<number | null> {
-  try {
-    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs" as string);
-    const pdf = await (
-      pdfjsLib as unknown as {
-        getDocument: (opts: unknown) => {
-          promise: Promise<{ numPages: number }>;
-        };
-      }
-    ).getDocument({ data: new Uint8Array(buf) }).promise;
-    return pdf.numPages;
-  } catch {
-    return null;
   }
 }

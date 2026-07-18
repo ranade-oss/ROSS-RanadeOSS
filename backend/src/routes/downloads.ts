@@ -35,6 +35,7 @@ downloadsRouter.get("/:token", requireAuth, async (req, res) => {
         .from("document_versions")
         .select("id, document_id")
         .eq("storage_path", info.path)
+        .eq("scan_status", "clean")
         .is("deleted_at", null)
         .maybeSingle();
     if (byStoragePath) {

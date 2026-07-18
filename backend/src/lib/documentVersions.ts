@@ -22,6 +22,7 @@ interface VersionPathRow extends DocRow {
     file_type?: string | null;
     size_bytes?: number | null;
     page_count?: number | null;
+    scan_status?: "pending" | "clean" | "infected" | "failed" | null;
 }
 
 export interface ActiveVersion {
@@ -34,6 +35,7 @@ export interface ActiveVersion {
     file_type: string | null;
     size_bytes: number | null;
     page_count: number | null;
+    scan_status: "clean";
 }
 
 /**
@@ -63,9 +65,10 @@ export async function loadActiveVersion(
     const { data: v } = await db
         .from("document_versions")
         .select(
-            "id, document_id, storage_path, pdf_storage_path, version_number, filename, source, file_type, size_bytes, page_count",
+            "id, document_id, storage_path, pdf_storage_path, version_number, filename, source, file_type, size_bytes, page_count, scan_status",
         )
         .eq("id", targetVersionId)
+        .eq("scan_status", "clean")
         .is("deleted_at", null)
         .single();
     if (!v || v.document_id !== documentId || !v.storage_path) return null;
@@ -79,6 +82,7 @@ export async function loadActiveVersion(
         file_type: (v.file_type as string | null) ?? null,
         size_bytes: (v.size_bytes as number | null) ?? null,
         page_count: (v.page_count as number | null) ?? null,
+        scan_status: "clean",
     };
 }
 
@@ -104,13 +108,14 @@ export async function attachActiveVersionPaths<T extends VersionPathRow>(
             d.file_type = null;
             d.size_bytes = null;
             d.page_count = null;
+            d.scan_status = null;
         }
         return docs;
     }
     const { data: rows } = await db
         .from("document_versions")
         .select(
-            "id, storage_path, pdf_storage_path, version_number, filename, file_type, size_bytes, page_count",
+            "id, storage_path, pdf_storage_path, version_number, filename, file_type, size_bytes, page_count, scan_status",
         )
         .in("id", versionIds)
         .is("deleted_at", null);
@@ -124,6 +129,7 @@ export async function attachActiveVersionPaths<T extends VersionPathRow>(
             file_type: string | null;
             size_bytes: number | null;
             page_count: number | null;
+            scan_status: "pending" | "clean" | "infected" | "failed";
         }
     >();
     for (const r of (rows ?? []) as {
@@ -135,15 +141,18 @@ export async function attachActiveVersionPaths<T extends VersionPathRow>(
         file_type: string | null;
         size_bytes: number | null;
         page_count: number | null;
+        scan_status: "pending" | "clean" | "infected" | "failed";
     }[]) {
         byId.set(r.id, {
-            storage_path: r.storage_path ?? null,
-            pdf_storage_path: r.pdf_storage_path ?? null,
+            storage_path: r.scan_status === "clean" ? r.storage_path ?? null : null,
+            pdf_storage_path:
+                r.scan_status === "clean" ? r.pdf_storage_path ?? null : null,
             version_number: r.version_number ?? null,
             filename: r.filename ?? null,
             file_type: r.file_type ?? null,
             size_bytes: r.size_bytes ?? null,
             page_count: r.page_count ?? null,
+            scan_status: r.scan_status,
         });
     }
     for (const d of docs) {
@@ -155,6 +164,7 @@ export async function attachActiveVersionPaths<T extends VersionPathRow>(
         d.file_type = v?.file_type ?? null;
         d.size_bytes = v?.size_bytes ?? null;
         d.page_count = v?.page_count ?? null;
+        d.scan_status = v?.scan_status ?? null;
     }
     return docs;
 }

@@ -455,7 +455,12 @@ function legalSourceProviderContext(
 ) {
   return {
     db,
-    apiToken: providerId === "courtlistener-us" ? apiKeys?.courtlistener : null,
+    apiToken:
+      providerId === "courtlistener-us"
+        ? apiKeys?.courtlistener
+        : providerId === "canlii-licensed"
+          ? apiKeys?.canlii
+          : null,
   };
 }
 

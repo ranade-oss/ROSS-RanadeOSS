@@ -8,7 +8,8 @@ export type ApiKeyProvider =
     | "gemini"
     | "openai"
     | "openrouter"
-    | "courtlistener";
+    | "courtlistener"
+    | "canlii";
 export type ApiKeySource = "user" | "env" | null;
 export type ApiKeyStatus = Record<ApiKeyProvider, boolean> & {
     sources: Record<ApiKeyProvider, ApiKeySource>;
@@ -27,6 +28,7 @@ const PROVIDERS: ApiKeyProvider[] = [
     "openai",
     "openrouter",
     "courtlistener",
+    "canlii",
 ];
 
 function envApiKey(provider: ApiKeyProvider): string | null {
@@ -45,6 +47,8 @@ function envApiKey(provider: ApiKeyProvider): string | null {
             return process.env.OPENROUTER_API_KEY?.trim() || null;
         case "courtlistener":
             return process.env.COURTLISTENER_API_TOKEN?.trim() || null;
+        case "canlii":
+            return process.env.CANLII_API_KEY?.trim() || null;
         default:
             return null;
     }
@@ -116,12 +120,14 @@ export async function getUserApiKeyStatus(
         openai: false,
         openrouter: false,
         courtlistener: false,
+        canlii: false,
         sources: {
             claude: null,
             gemini: null,
             openai: null,
             openrouter: null,
             courtlistener: null,
+            canlii: null,
         },
     };
 
@@ -159,6 +165,7 @@ export async function getUserApiKeys(
         openai: envApiKey("openai"),
         openrouter: envApiKey("openrouter"),
         courtlistener: envApiKey("courtlistener"),
+        canlii: envApiKey("canlii"),
     };
 
     const { data, error } = await db

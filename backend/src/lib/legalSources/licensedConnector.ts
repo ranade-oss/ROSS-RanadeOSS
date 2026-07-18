@@ -56,10 +56,10 @@ export class LicensedConnectorGate {
         return this.entitlement;
     }
 
-    status() {
+    status(credentialConfigured = this.entitlement.credentialConfigured) {
         const configured =
             this.entitlement.enabled &&
-            this.entitlement.credentialConfigured &&
+            credentialConfigured &&
             this.entitlement.transportConfigured &&
             Boolean(this.entitlement.contractId) &&
             Boolean(this.entitlement.organizationId);
@@ -111,8 +111,11 @@ export class CanLiiLicensedProvider implements LegalSourceProvider {
         );
     }
 
-    async health() {
-        const status = this.gate.status();
+    async health(context?: import("./types").LegalSourceContext) {
+        const status = this.gate.status(
+            this.gate.entitlement.credentialConfigured ||
+                Boolean(context?.apiToken?.trim()),
+        );
         if (!status.enabled)
             return {
                 ok: false,

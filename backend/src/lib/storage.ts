@@ -155,6 +155,27 @@ export async function getSignedUrl(
   }
 }
 
+export async function getSignedUploadUrl(
+  key: string,
+  contentType: string,
+  expiresIn = 900,
+): Promise<string | null> {
+  if (!storageEnabled) return null;
+  try {
+    return await awsGetSignedUrl(
+      getClient(),
+      new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: key,
+        ContentType: contentType,
+      }),
+      { expiresIn: Math.min(Math.max(expiresIn, 60), 900) },
+    );
+  } catch {
+    return null;
+  }
+}
+
 export function normalizeDownloadFilename(name: string): string {
   const trimmed = name.trim();
   const base = trimmed || "download";
@@ -217,6 +238,32 @@ export function versionStorageKey(
   filename: string,
 ): string {
   return `documents/${userId}/${docId}/versions/${versionSlug}${storageExtension(filename, ".bin")}`;
+}
+
+export function quarantineStorageKey(
+  userId: string,
+  docId: string,
+  versionId: string,
+  filename: string,
+): string {
+  return `quarantine/${userId}/${docId}/${versionId}${storageExtension(filename, ".bin")}`;
+}
+
+export function cleanStorageKey(
+  userId: string,
+  docId: string,
+  versionId: string,
+  filename: string,
+): string {
+  return `clean/${userId}/${docId}/${versionId}${storageExtension(filename, ".bin")}`;
+}
+
+export function derivedPdfStorageKey(
+  userId: string,
+  docId: string,
+  versionId: string,
+): string {
+  return `derived/${userId}/${docId}/${versionId}.pdf`;
 }
 
 function storageExtension(filename: string, fallback: string): string {

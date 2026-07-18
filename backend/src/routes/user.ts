@@ -892,6 +892,7 @@ userRouter.put(
       if (
         apiKey?.trim() &&
         provider !== "courtlistener" &&
+        provider !== "canlii" &&
         (provider === "openrouter" ||
           !approvedModelProviders().includes(provider))
       ) {

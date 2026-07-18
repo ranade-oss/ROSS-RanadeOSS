@@ -6,11 +6,10 @@ import {
   downloadFile,
   deleteFile,
   getSignedUrl,
-  storageKey,
   uploadFile,
   versionStorageKey,
 } from "../lib/storage";
-import { docxToPdf, convertedPdfKey } from "../lib/convert";
+import { docxToPdf } from "../lib/convert";
 import {
   extractTrackedChangeIds,
   resolveTrackedChange,
@@ -29,6 +28,7 @@ import {
   contentTypeForDocumentType,
   shouldConvertToPdf,
 } from "../lib/documentTypes";
+import { queueUploadedVersion } from "../lib/quarantinedUpload";
 
 export const documentsRouter = Router();
 const isDev = process.env.NODE_ENV !== "production";
@@ -44,11 +44,11 @@ async function deleteDocumentAndVersionFiles(
   // bytes (source + PDF rendition) before dropping the document row.
   const { data: versions } = await db
     .from("document_versions")
-    .select("storage_path, pdf_storage_path")
+    .select("storage_path, pdf_storage_path, quarantine_storage_path")
     .eq("document_id", documentId);
   await Promise.all(
     (versions ?? []).flatMap((v) =>
-      [v.storage_path, v.pdf_storage_path]
+      [v.storage_path, v.pdf_storage_path, v.quarantine_storage_path]
         .filter((p): p is string => typeof p === "string" && p.length > 0)
         .map((p) => deleteFile(p).catch(() => {})),
     ),
@@ -366,7 +366,7 @@ documentsRouter.get("/:documentId/versions", requireAuth, async (req, res) => {
   const { data: rows } = await db
     .from("document_versions")
     .select(
-      "id, version_number, source, created_at, filename, file_type, size_bytes, page_count, deleted_at, deleted_by",
+      "id, version_number, source, created_at, filename, file_type, size_bytes, page_count, scan_status, scan_result, scan_failure_code, deleted_at, deleted_by",
     )
     .eq("document_id", documentId)
     .order("created_at", { ascending: true });
@@ -604,66 +604,6 @@ documentsRouter.post(
       });
     }
 
-    // Peg the new version into a predictable /versions/:id path under the
-    // existing document folder so ops can spot the history in storage.
-    const versionSlug = crypto.randomUUID().replace(/-/g, "");
-    const key = versionStorageKey(
-      userId,
-      documentId,
-      versionSlug,
-      file.originalname,
-    );
-    const contentType = contentTypeForDocumentType(suffix);
-    try {
-      await uploadFile(
-        key,
-        file.buffer.buffer.slice(
-          file.buffer.byteOffset,
-          file.buffer.byteOffset + file.buffer.byteLength,
-        ) as ArrayBuffer,
-        contentType,
-      );
-    } catch (e) {
-      console.error("[versions/upload] storage write failed", e);
-      return void res
-        .status(500)
-        .json({ detail: "Failed to upload new version." });
-    }
-
-    // Render this version's bytes to PDF up front so /display can show
-    // historical versions without on-demand conversion. Same logic as the
-    // initial-upload pipeline; failures don't block the version row.
-    let pdfStoragePath: string | null = null;
-    if (shouldConvertToPdf(suffix)) {
-      try {
-        const pdfBuf = await docxToPdf(file.buffer);
-        const pdfKey = `converted-pdfs/${userId}/${documentId}/${versionSlug}.pdf`;
-        await uploadFile(
-          pdfKey,
-          pdfBuf.buffer.slice(
-            pdfBuf.byteOffset,
-            pdfBuf.byteOffset + pdfBuf.byteLength,
-          ) as ArrayBuffer,
-          "application/pdf",
-        );
-        pdfStoragePath = pdfKey;
-      } catch (err) {
-        console.error(
-          `[versions/upload] Office→PDF conversion failed for ${file.originalname}:`,
-          err,
-        );
-      }
-    } else if (suffix === "pdf") {
-      // For PDF uploads, the uploaded bytes are themselves the PDF rendition.
-      pdfStoragePath = key;
-    }
-
-    const rawBuf = file.buffer.buffer.slice(
-      file.buffer.byteOffset,
-      file.buffer.byteOffset + file.buffer.byteLength,
-    ) as ArrayBuffer;
-    const pageCount = suffix === "pdf" ? await countPdfPages(rawBuf) : null;
-
     // Per-document sequential version_number — the upload is V1 and
     // user_upload + assistant_edit count forward from there.
     const { data: maxRow } = await db
@@ -683,45 +623,26 @@ documentsRouter.post(
         ? req.body.filename.trim().slice(0, 200)
         : file.originalname;
 
-    const { data: versionRow, error: verErr } = await db
-      .from("document_versions")
-      .insert({
-        document_id: documentId,
-        storage_path: key,
-        pdf_storage_path: pdfStoragePath,
+    try {
+      const pending = await queueUploadedVersion({
+        db,
+        documentId,
+        userId,
+        bytes: file.buffer,
+        originalFilename: file.originalname,
+        displayFilename: requestedFilename,
+        fileType: suffix,
+        contentType: contentTypeForDocumentType(suffix),
         source: "user_upload",
-        version_number: nextVersionNumber,
-        filename: requestedFilename,
-        file_type: suffix,
-        size_bytes: file.buffer.byteLength,
-        page_count: pageCount,
-      })
-      .select("id, version_number, source, created_at, filename")
-      .single();
-    if (verErr || !versionRow) {
-      console.error("[versions/upload] insert failed", verErr);
-      return void res
-        .status(500)
-        .json({ detail: "Failed to record new version." });
+        versionNumber: nextVersionNumber,
+      });
+      return void res.status(pending.scan_status === "pending" ? 202 : 201).json(pending);
+    } catch (error) {
+      console.error("[versions/upload] quarantine failed", error);
+      return void res.status(500).json({
+        detail: "Failed to quarantine the new version for scanning.",
+      });
     }
-
-    const { error: updateDocErr } = await db
-      .from("documents")
-      .update({
-        current_version_id: versionRow.id,
-      })
-      .eq("id", documentId);
-    if (updateDocErr) {
-      console.error(
-        "[versions/upload] current version update failed",
-        updateDocErr,
-      );
-      return void res
-        .status(500)
-        .json({ detail: "Failed to update document current version." });
-    }
-
-    res.status(201).json(versionRow);
   },
 );
 
@@ -798,7 +719,9 @@ documentsRouter.put(
 
     const { data: target, error: targetErr } = await db
       .from("document_versions")
-      .select("id, storage_path, pdf_storage_path, file_type, deleted_at")
+      .select(
+        "id, storage_path, pdf_storage_path, file_type, filename, version_number, source, deleted_at",
+      )
       .eq("id", versionId)
       .eq("document_id", documentId)
       .single();
@@ -821,101 +744,32 @@ documentsRouter.put(
       });
     }
 
-    const versionSlug = crypto.randomUUID().replace(/-/g, "");
-    const key = versionStorageKey(
-      userId,
-      documentId,
-      versionSlug,
-      file.originalname,
-    );
-    const contentType = contentTypeForDocumentType(suffix);
-
-    try {
-      await uploadFile(
-        key,
-        file.buffer.buffer.slice(
-          file.buffer.byteOffset,
-          file.buffer.byteOffset + file.buffer.byteLength,
-        ) as ArrayBuffer,
-        contentType,
-      );
-    } catch (e) {
-      console.error("[versions/replace] storage write failed", e);
-      return void res
-        .status(500)
-        .json({ detail: "Failed to upload replacement version." });
-    }
-
-    let pdfStoragePath: string | null = null;
-    if (shouldConvertToPdf(suffix)) {
-      try {
-        const pdfBuf = await docxToPdf(file.buffer);
-        const pdfKey = `converted-pdfs/${userId}/${documentId}/${versionSlug}.pdf`;
-        await uploadFile(
-          pdfKey,
-          pdfBuf.buffer.slice(
-            pdfBuf.byteOffset,
-            pdfBuf.byteOffset + pdfBuf.byteLength,
-          ) as ArrayBuffer,
-          "application/pdf",
-        );
-        pdfStoragePath = pdfKey;
-      } catch (err) {
-        console.error(
-          `[versions/replace] Office→PDF conversion failed for ${file.originalname}:`,
-          err,
-        );
-      }
-    } else if (suffix === "pdf") {
-      pdfStoragePath = key;
-    }
-
-    const rawBuf = file.buffer.buffer.slice(
-      file.buffer.byteOffset,
-      file.buffer.byteOffset + file.buffer.byteLength,
-    ) as ArrayBuffer;
-    const pageCount = suffix === "pdf" ? await countPdfPages(rawBuf) : null;
     const requestedFilename =
       typeof req.body?.filename === "string" && req.body.filename.trim()
         ? req.body.filename.trim().slice(0, 200)
         : file.originalname;
-    const uploadedAt = new Date().toISOString();
-
-    const { data: updated, error: updateErr } = await db
-      .from("document_versions")
-      .update({
-        storage_path: key,
-        pdf_storage_path: pdfStoragePath,
-        filename: requestedFilename,
-        file_type: suffix,
-        size_bytes: file.buffer.byteLength,
-        page_count: pageCount,
-        created_at: uploadedAt,
-      })
-      .eq("id", versionId)
-      .eq("document_id", documentId)
-      .select(
-        "id, version_number, source, created_at, filename, file_type, size_bytes, page_count",
-      )
-      .single();
-    if (updateErr || !updated) {
-      await Promise.all(
-        [key, pdfStoragePath]
-          .filter((path): path is string => !!path)
-          .map((path) => deleteFile(path).catch(() => {})),
-      );
+    try {
+      const pending = await queueUploadedVersion({
+        db,
+        documentId,
+        userId,
+        bytes: file.buffer,
+        originalFilename: file.originalname,
+        displayFilename: requestedFilename,
+        fileType: suffix,
+        contentType: contentTypeForDocumentType(suffix),
+        source:
+          target.source === "upload" ? "upload" : "user_upload",
+        versionNumber: (target.version_number as number | null) ?? 1,
+        replaceVersionId: versionId,
+      });
+      return void res.status(pending.scan_status === "pending" ? 202 : 200).json(pending);
+    } catch (error) {
+      console.error("[versions/replace] quarantine failed", error);
       return void res.status(500).json({
-        detail: updateErr?.message ?? "Failed to replace version.",
+        detail: "Failed to quarantine the replacement for scanning.",
       });
     }
-
-    await Promise.all(
-      [target.storage_path, target.pdf_storage_path]
-        .filter((path): path is string => !!path)
-        .map((path) => deleteFile(path).catch(() => {})),
-    );
-
-    res.json(updated);
   },
 );
 
@@ -945,7 +799,7 @@ documentsRouter.delete(
     const { data: versions, error: versionsErr } = await db
       .from("document_versions")
       .select(
-        "id, storage_path, pdf_storage_path, version_number, created_at, deleted_at",
+        "id, storage_path, pdf_storage_path, quarantine_storage_path, version_number, created_at, deleted_at",
       )
       .eq("document_id", documentId)
       .is("deleted_at", null);
@@ -957,6 +811,7 @@ documentsRouter.delete(
       id: string;
       storage_path: string | null;
       pdf_storage_path: string | null;
+      quarantine_storage_path: string | null;
       version_number: number | null;
       created_at: string | null;
       deleted_at?: string | null;
@@ -1016,7 +871,7 @@ documentsRouter.delete(
     }
 
     await Promise.all(
-      [target.storage_path, target.pdf_storage_path]
+      [target.storage_path, target.pdf_storage_path, target.quarantine_storage_path]
         .filter((path): path is string => !!path)
         .map((path) => deleteFile(path).catch(() => {})),
     );
@@ -1330,120 +1185,30 @@ async function handleDocumentUpload(
 
   try {
     const docId = doc.id as string;
-    const key = storageKey(userId, docId, filename);
     const contentType = contentTypeForDocumentType(suffix);
-    await uploadFile(
-      key,
-      content.buffer.slice(
-        content.byteOffset,
-        content.byteOffset + content.byteLength,
-      ) as ArrayBuffer,
+    const pending = await queueUploadedVersion({
+      db,
+      documentId: docId,
+      userId,
+      bytes: content,
+      originalFilename: filename,
+      displayFilename: filename,
+      fileType: suffix,
       contentType,
-    );
-
-    const rawBuf = content.buffer.slice(
-      content.byteOffset,
-      content.byteOffset + content.byteLength,
-    ) as ArrayBuffer;
-    const pageCount = suffix === "pdf" ? await countPdfPages(rawBuf) : null;
-
-    // Convert Office files → PDF for display. PDFs are their own rendition.
-    let pdfStoragePath: string | null = null;
-    if (shouldConvertToPdf(suffix)) {
-      try {
-        const pdfBuf = await docxToPdf(content);
-        const pdfKey = convertedPdfKey(userId, docId);
-        await uploadFile(
-          pdfKey,
-          pdfBuf.buffer.slice(
-            pdfBuf.byteOffset,
-            pdfBuf.byteOffset + pdfBuf.byteLength,
-          ) as ArrayBuffer,
-          "application/pdf",
-        );
-        pdfStoragePath = pdfKey;
-      } catch (err) {
-        console.error(
-          `[upload] Office→PDF conversion failed for ${filename}:`,
-          err,
-        );
-      }
-    } else if (suffix === "pdf") {
-      pdfStoragePath = key;
-    }
-
-    // storage_path / pdf_storage_path live on document_versions now —
-    // create the V1 "upload" row and point documents.current_version_id
-    // at it.
-    const { data: versionRow, error: verErr } = await db
-      .from("document_versions")
-      .insert({
-        document_id: docId,
-        storage_path: key,
-        pdf_storage_path: pdfStoragePath,
-        source: "upload",
-        version_number: 1,
-        filename: filename,
-        file_type: suffix,
-        size_bytes: content.byteLength,
-        page_count: pageCount,
-      })
-      .select("id")
-      .single();
-    if (verErr || !versionRow) {
-      throw new Error(
-        `Failed to record upload version: ${verErr?.message ?? "unknown"}`,
-      );
-    }
-
-    await db
-      .from("documents")
-      .update({
-        current_version_id: versionRow.id,
-        status: "ready",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", docId);
-
-    const { data: updated } = await db
-      .from("documents")
-      .select("*")
-      .eq("id", docId)
-      .single();
-    // Surface storage paths to the caller for backward compatibility.
-    const responseDoc = updated
-      ? {
-          ...updated,
-          filename,
-          storage_path: key,
-          pdf_storage_path: pdfStoragePath,
-          file_type: suffix,
-          size_bytes: content.byteLength,
-          page_count: pageCount,
-          active_version_number: 1,
-        }
-      : updated;
-    return void res.status(201).json(responseDoc);
+      source: "upload",
+      versionNumber: 1,
+    });
+    return void res.status(pending.scan_status === "pending" ? 202 : 201).json({
+      ...doc,
+      current_version_id: pending.id,
+      status: "processing",
+      ...pending,
+      active_version_number: 1,
+    });
   } catch (e) {
     await db.from("documents").update({ status: "error" }).eq("id", doc.id);
     return void res
       .status(500)
       .json({ detail: `Document processing failed: ${String(e)}` });
-  }
-}
-
-async function countPdfPages(buf: ArrayBuffer): Promise<number | null> {
-  try {
-    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs" as string);
-    const pdf = await (
-      pdfjsLib as unknown as {
-        getDocument: (opts: unknown) => {
-          promise: Promise<{ numPages: number }>;
-        };
-      }
-    ).getDocument({ data: new Uint8Array(buf) }).promise;
-    return pdf.numPages;
-  } catch {
-    return null;
   }
 }

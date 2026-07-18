@@ -25,6 +25,21 @@ export class UploadValidationError extends Error {
 export async function validateUploadedDocument(
   file: Pick<Express.Multer.File, "buffer" | "originalname">,
 ) {
+  return validateDocument(file, process.env.ROSS_UPLOAD_SCAN_REQUIRED !== "true");
+}
+
+// Called only inside the isolated worker after ClamAV reports the object clean.
+// Hosted API processes deliberately avoid opening an unscanned Office archive.
+export async function validateScannedDocument(
+  file: Pick<Express.Multer.File, "buffer" | "originalname">,
+) {
+  return validateDocument(file, true);
+}
+
+async function validateDocument(
+  file: Pick<Express.Multer.File, "buffer" | "originalname">,
+  inspectOfficeArchive: boolean,
+) {
   const extension = fileExtension(file.originalname);
   if (!extension || !ALLOWED_DOCUMENT_TYPES.has(extension)) {
     throw new UploadValidationError(
@@ -54,6 +69,8 @@ export async function validateUploadedDocument(
   if (!ZIP_SIGNATURES.some((signature) => startsWith(file.buffer, signature))) {
     throw signatureMismatch(extension);
   }
+
+  if (!inspectOfficeArchive) return;
 
   let zip: JSZip;
   try {

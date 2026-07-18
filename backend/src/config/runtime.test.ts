@@ -21,6 +21,11 @@ const KEYS = [
     "R2_ACCESS_KEY_ID",
     "R2_SECRET_ACCESS_KEY",
     "R2_BUCKET_NAME",
+    "ROSS_UPLOAD_SCAN_REQUIRED",
+    "FILE_WORKER_URL",
+    "FILE_WORKER_SHARED_SECRET",
+    "SECURITY_ALERT_WEBHOOK_URL",
+    "SECURITY_ALERT_WEBHOOK_SECRET",
 ] as const;
 
 function withEnvironment(
@@ -105,6 +110,10 @@ test("non-local raw model logging and unapproved production fail closed", () => 
             R2_ACCESS_KEY_ID: "production-access-value",
             R2_SECRET_ACCESS_KEY: "production-storage-secret",
             R2_BUCKET_NAME: "ross-production",
+            FILE_WORKER_URL: "http://ross-file-worker.flycast:3002",
+            FILE_WORKER_SHARED_SECRET: "production-worker-secret-value",
+            SECURITY_ALERT_WEBHOOK_URL: "https://alerts.ross.test/document-scan",
+            SECURITY_ALERT_WEBHOOK_SECRET: "production-alert-secret-value",
             ROSS_RELEASE_ID: "ross-2026-07-16-rc1",
             ROSS_RELEASE_MANIFEST_SHA256:
                 "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
@@ -132,6 +141,10 @@ test("production requires a valid immutable release manifest identity", () => {
             R2_ACCESS_KEY_ID: "production-access-value",
             R2_SECRET_ACCESS_KEY: "production-storage-secret",
             R2_BUCKET_NAME: "ross-production",
+            FILE_WORKER_URL: "http://ross-file-worker.flycast:3002",
+            FILE_WORKER_SHARED_SECRET: "production-worker-secret-value",
+            SECURITY_ALERT_WEBHOOK_URL: "https://alerts.ross.test/document-scan",
+            SECURITY_ALERT_WEBHOOK_SECRET: "production-alert-secret-value",
             ROSS_RELEASE_ID: "ross-2026-07-16-rc1",
             ROSS_RELEASE_MANIFEST_SHA256: "not-a-digest",
             ROSS_PRODUCTION_CONTROLS_APPROVED: "true",
@@ -141,5 +154,28 @@ test("production requires a valid immutable release manifest identity", () => {
                 () => loadRuntimeConfig(),
                 /ROSS_RELEASE_MANIFEST_SHA256 must be a lowercase SHA-256/,
             ),
+    );
+});
+
+test("hosted upload scanning requires the private worker and operator alert", () => {
+    const base = {
+        ROSS_ENV: "staging",
+        ROSS_HOSTED_MODE: "controlled-beta",
+        HOSTED_MODEL_PROVIDERS: "openai",
+        CORS_ALLOWED_ORIGINS: "https://app.ross.test",
+        ROSS_UPLOAD_SCAN_REQUIRED: "true",
+    };
+    withEnvironment(base, () =>
+        assert.throws(() => loadRuntimeConfig(), /FILE_WORKER_URL/),
+    );
+    withEnvironment(
+        {
+            ...base,
+            FILE_WORKER_URL: "http://ross-file-worker.flycast:3002",
+            FILE_WORKER_SHARED_SECRET: "staging-worker-secret-value",
+            SECURITY_ALERT_WEBHOOK_URL: "https://alerts.ross.test/document-scan",
+            SECURITY_ALERT_WEBHOOK_SECRET: "staging-alert-secret-value",
+        },
+        () => assert.equal(loadRuntimeConfig().hostedMode, "controlled-beta"),
     );
 });

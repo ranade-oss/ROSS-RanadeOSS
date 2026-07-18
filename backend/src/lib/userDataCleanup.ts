@@ -82,7 +82,7 @@ async function deleteDocumentVersionFiles(db: Db, documentIds: string[]) {
     for (const batch of chunks(documentIds)) {
         const { data, error } = await db
             .from("document_versions")
-            .select("storage_path, pdf_storage_path")
+            .select("storage_path, pdf_storage_path, quarantine_storage_path")
             .in("document_id", batch);
         await throwIfError(error, "Failed to load document storage paths");
 
@@ -98,6 +98,12 @@ async function deleteDocumentVersionFiles(db: Db, documentIds: string[]) {
                 version.pdf_storage_path.length > 0
             ) {
                 paths.add(version.pdf_storage_path);
+            }
+            if (
+                typeof version.quarantine_storage_path === "string" &&
+                version.quarantine_storage_path.length > 0
+            ) {
+                paths.add(version.quarantine_storage_path);
             }
         }
     }

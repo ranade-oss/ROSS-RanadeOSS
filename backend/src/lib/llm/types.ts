@@ -50,6 +50,7 @@ export type UserApiKeys = {
   openai?: string | null;
   openrouter?: string | null;
   courtlistener?: string | null;
+  canlii?: string | null;
 };
 
 export type StreamChatParams = {

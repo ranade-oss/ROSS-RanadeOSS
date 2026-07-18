@@ -385,7 +385,8 @@ export type ApiKeyProvider =
   | "gemini"
   | "openai"
   | "openrouter"
-  | "courtlistener";
+  | "courtlistener"
+  | "canlii";
 export type ApiKeySource = "user" | "env" | null;
 export type ApiKeyState = Record<
   ApiKeyProvider,
@@ -702,6 +703,9 @@ export interface DocumentVersion {
   file_type?: string | null;
   size_bytes?: number | null;
   page_count?: number | null;
+  scan_status?: "pending" | "clean" | "infected" | "failed";
+  scan_result?: string | null;
+  scan_failure_code?: string | null;
   deleted_at?: string | null;
   deleted_by?: string | null;
 }

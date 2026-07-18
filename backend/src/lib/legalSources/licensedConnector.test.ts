@@ -72,3 +72,18 @@ test("complete licensed metadata configuration exposes no secret", async () => {
         /does not allow full-text-fetch/,
     );
 });
+
+test("a per-user encrypted CanLII key satisfies only the credential part of the gate", async () => {
+    const provider = new CanLiiLicensedProvider({
+        CANLII_CONNECTOR_ENABLED: "true",
+        CANLII_CONTRACT_ID: "synthetic-contract",
+        CANLII_ORGANIZATION_ID: "synthetic-org",
+        CANLII_API_BASE_URL: "https://api.canlii.org/v1",
+        CANLII_APPROVED_TRANSPORT: "contract-v1",
+        CANLII_ALLOWED_OPERATIONS: "metadata-search,citation-lookup",
+    });
+    assert.equal((await provider.health()).ok, false);
+    const health = await provider.health({ apiToken: "SYNTHETIC-USER-KEY" });
+    assert.equal(health.ok, true);
+    assert.doesNotMatch(JSON.stringify(health), /SYNTHETIC-USER-KEY/);
+});

@@ -3,17 +3,117 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-16T00:00:00.000Z",
   "algorithm": "sha256",
-  "artifactCount": 19,
+  "artifactCount": 45,
   "artifacts": [
     {
+      "path": ".github/workflows/deploy-public-beta-ross.yml",
+      "sha256": "dea1468771949e195d5b991c67e967fa7b850dbd13ae7a052a1600d7d90a73a9",
+      "sizeBytes": 12007
+    },
+    {
+      "path": "backend/migrations/20260718_01_document_scan_pipeline.sql",
+      "sha256": "9f0c6fb40922c8321b0d0e8df9571447099ee5263e68a6f8fb8bfe46cc7593a8",
+      "sizeBytes": 5788
+    },
+    {
+      "path": "backend/migrations/20260718_02_add_canlii_user_api_key_provider.sql",
+      "sha256": "7d1a9356042ce7783a0b6ea154794a72586e1dfa46aa9b739881f5b189a07c36",
+      "sizeBytes": 274
+    },
+    {
+      "path": "backend/package.json",
+      "sha256": "2afc7728ea77ecb27d0ba17b56dfb237424bb4cbd5491bafc1f2e8ff27a83823",
+      "sizeBytes": 1592
+    },
+    {
       "path": "backend/schema.sql",
-      "sha256": "ef0d9aa42c454444c72ec922832703e192c521112d567a42646aae921af63ab4",
-      "sizeBytes": 32480
+      "sha256": "9339ad19b195b104f4149123834eb9e791a45cac83a04ac88b05629e07bde766",
+      "sizeBytes": 35136
     },
     {
       "path": "backend/src/config/runtime.ts",
-      "sha256": "827e3b4b3fce29c7fb8061cd262cf185a6b461271ed22932a5200f9cc9c997a6",
-      "sizeBytes": 5988
+      "sha256": "8f2d769885c891160084767ef5dad30510dd5f72f68718db12de8e0a3f9ccdd6",
+      "sizeBytes": 6956
+    },
+    {
+      "path": "backend/src/fileWorker.ts",
+      "sha256": "974b5167ffafe32b261099743187916c2116529816eeeb75f8f82a06987076bb",
+      "sizeBytes": 9841
+    },
+    {
+      "path": "backend/src/lib/documentScanDispatcher.ts",
+      "sha256": "ea97a562b60ac4b78916b842c55bc6a3d92f070becaeb94bb5345af819a3cbd0",
+      "sizeBytes": 12767
+    },
+    {
+      "path": "backend/src/lib/documentScanTypes.ts",
+      "sha256": "c81b28e64f04acac5676aa35ccb5929594b01ca448bf38badaf85754e27cfa2f",
+      "sizeBytes": 909
+    },
+    {
+      "path": "backend/src/lib/documentVersions.ts",
+      "sha256": "70c1580038468a9d2fba62d81dfa6b98fa50c9ebfb5d1ef6f588691c2043d4b0",
+      "sizeBytes": 7412
+    },
+    {
+      "path": "backend/src/lib/legalSources/licensedConnector.ts",
+      "sha256": "459e950a112805c4cb17a82cca832f5c2e17cc79f7c364c4f4c590ce94e597d1",
+      "sizeBytes": 7602
+    },
+    {
+      "path": "backend/src/lib/llm/types.ts",
+      "sha256": "5b80c49dc58ec2eb6e96512feca55ac820c338b58703d44c6bec4fdadb230663",
+      "sizeBytes": 1984
+    },
+    {
+      "path": "backend/src/lib/quarantinedUpload.ts",
+      "sha256": "f7ee5f7e4d3c83343a99b94f8292f4fd76a2edf15f01c684550f04d00c05fe7a",
+      "sizeBytes": 10553
+    },
+    {
+      "path": "backend/src/lib/storage.ts",
+      "sha256": "954a84643d327db777565c0c1537638846ca55940bdf20edf34e1afa8447044a",
+      "sizeBytes": 7940
+    },
+    {
+      "path": "backend/src/lib/uploadValidation.ts",
+      "sha256": "89a0877f838fdf490d1b6d7a522c612a507b1d084d78cd1bb4120fda67027e3d",
+      "sizeBytes": 4176
+    },
+    {
+      "path": "backend/src/lib/userApiKeys.ts",
+      "sha256": "24e194ed968b418ba22ce8e7e03f1ad8f0dbae23716ac3535a17c26bdd49530e",
+      "sizeBytes": 6086
+    },
+    {
+      "path": "backend/src/lib/chat/tools/toolDispatcher.ts",
+      "sha256": "b8e1cdc5f8d083582299d81a82080f8c5c1ea48fdc751dbca12595ef980982a8",
+      "sizeBytes": 78933
+    },
+    {
+      "path": "backend/src/routes/documents.ts",
+      "sha256": "9b3cb844d4a866f9e1fe4bd38b1169485669d06ea1b1c4e7237557b19d544ba5",
+      "sizeBytes": 41332
+    },
+    {
+      "path": "backend/src/routes/downloads.ts",
+      "sha256": "977adae1cad0837c5e75c78f368a8bb6f3508d492fcbc7feb0e5c13a0ff100c3",
+      "sizeBytes": 2351
+    },
+    {
+      "path": "backend/src/routes/legalSources.ts",
+      "sha256": "c39807dea4dc53391310e9c801d14ffb8f2fa3bf19b4ea51f258c5807528822e",
+      "sizeBytes": 14486
+    },
+    {
+      "path": "backend/src/routes/projects.ts",
+      "sha256": "58684317f3a2e282dc31e87f1c9f3ddeac71e683007990a9beba6844a9f8b3a3",
+      "sizeBytes": 34005
+    },
+    {
+      "path": "backend/src/routes/user.ts",
+      "sha256": "758c53352f6232338940b64908f95ff7db297a07e3d9994f7eac60283af0fefa",
+      "sizeBytes": 41325
     },
     {
       "path": "config/legal-source-operations.v1.json",
@@ -54,6 +154,36 @@
       "path": "config/ross-brand.json",
       "sha256": "e30632ea79bcd19a6549d3f9806ae88d7469abd11ca8d8d219f17ddc4f26a468",
       "sizeBytes": 1993
+    },
+    {
+      "path": "deploy/fly/file-worker.Dockerfile",
+      "sha256": "8a04a7aa31164e2df30b96e0a8121508a625f72c9261a7aac29c6cb169f0e428",
+      "sizeBytes": 887
+    },
+    {
+      "path": "deploy/fly/file-worker.toml",
+      "sha256": "686049c3f534e6527bb1ce13e3df31ad21962ef16d65d29c39013a7e38f5de9e",
+      "sizeBytes": 608
+    },
+    {
+      "path": "frontend/src/app/components/projects/ProjectDocumentsView.tsx",
+      "sha256": "7d70b846b33926370aed0fe876c4419ccd240c1f972d604d7d8576b6b6ca2a7e",
+      "sizeBytes": 156554
+    },
+    {
+      "path": "frontend/src/app/(pages)/account/api-keys/page.tsx",
+      "sha256": "cd50825311e9910a0cecab12d16d626c1e7c705c302deb71495cc74747aec3a6",
+      "sizeBytes": 10898
+    },
+    {
+      "path": "frontend/src/app/contexts/UserProfileContext.tsx",
+      "sha256": "86657eec542c6e13610dd89a1f3ded068938d9acb50dac0a1bd543a796750d86",
+      "sizeBytes": 10488
+    },
+    {
+      "path": "frontend/src/app/lib/mikeApi.ts",
+      "sha256": "e29d7fca2f250e36511bd73b003e6a60902b1537e323e9924c1b8dbed5619a9e",
+      "sizeBytes": 39176
     },
     {
       "path": "reports/legal-source-health-v1.json",

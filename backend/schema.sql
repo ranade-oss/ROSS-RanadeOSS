@@ -100,7 +100,7 @@ create trigger on_auth_user_created
 create table if not exists public.user_api_keys (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  provider text not null check (provider in ('claude', 'gemini', 'openai', 'openrouter', 'courtlistener')),
+  provider text not null check (provider in ('claude', 'gemini', 'openai', 'openrouter', 'courtlistener', 'canlii')),
   encrypted_key text not null,
   iv text not null,
   auth_tag text not null,
@@ -280,6 +280,16 @@ create table if not exists public.document_versions (
   document_id uuid not null references public.documents(id) on delete cascade,
   storage_path text,
   pdf_storage_path text,
+  quarantine_storage_path text,
+  scan_status text not null default 'clean'
+    check (scan_status in ('pending', 'clean', 'infected', 'failed')),
+  scan_engine text,
+  scan_signature_version text,
+  scan_result text,
+  scan_sha256 text,
+  scan_started_at timestamptz,
+  scan_completed_at timestamptz,
+  scan_failure_code text,
   source text not null default 'upload',
   version_number integer,
   filename text,
@@ -328,6 +338,74 @@ $$;
 alter table public.documents
   add column if not exists current_version_id uuid
   references public.document_versions(id) on delete set null;
+
+create table if not exists public.document_scan_jobs (
+  id uuid primary key default gen_random_uuid(),
+  document_id uuid not null references public.documents(id) on delete cascade,
+  version_id uuid not null unique references public.document_versions(id) on delete cascade,
+  user_id text not null,
+  quarantine_storage_path text not null,
+  clean_storage_path text not null,
+  derived_storage_path text,
+  filename text not null,
+  file_type text not null,
+  size_bytes integer not null,
+  content_type text not null,
+  status text not null default 'queued'
+    check (status in ('queued', 'processing', 'clean', 'infected', 'failed')),
+  attempts integer not null default 0 check (attempts between 0 and 10),
+  available_at timestamptz not null default now(),
+  locked_at timestamptz,
+  completed_at timestamptz,
+  last_error_code text,
+  scan_engine text,
+  scan_signature_version text,
+  scan_result text,
+  scan_sha256 text,
+  previous_storage_path text,
+  previous_pdf_storage_path text,
+  previous_current_version_id uuid,
+  previous_scan_status text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists document_scan_jobs_claim_idx
+  on public.document_scan_jobs(status, available_at, created_at);
+
+create or replace function public.claim_document_scan_job()
+returns setof public.document_scan_jobs
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  return query
+  with candidate as (
+    select j.id
+    from public.document_scan_jobs j
+    where j.attempts < 3
+      and (
+        (j.status = 'queued' and j.available_at <= now())
+        or (j.status = 'processing' and j.locked_at < now() - interval '15 minutes')
+      )
+    order by j.created_at
+    for update skip locked
+    limit 1
+  )
+  update public.document_scan_jobs j
+  set status = 'processing',
+      attempts = j.attempts + 1,
+      locked_at = now(),
+      updated_at = now()
+  from candidate
+  where j.id = candidate.id
+  returning j.*;
+end;
+$$;
+
+revoke all on function public.claim_document_scan_job() from public, anon, authenticated;
+grant execute on function public.claim_document_scan_job() to service_role;
 
 create table if not exists public.document_edits (
   id uuid primary key default gen_random_uuid(),
@@ -927,6 +1005,7 @@ alter table public.projects enable row level security;
 alter table public.project_subfolders enable row level security;
 alter table public.documents enable row level security;
 alter table public.document_versions enable row level security;
+alter table public.document_scan_jobs enable row level security;
 alter table public.document_edits enable row level security;
 alter table public.workflows enable row level security;
 alter table public.hidden_workflows enable row level security;
@@ -947,6 +1026,7 @@ revoke all on public.projects from anon, authenticated;
 revoke all on public.project_subfolders from anon, authenticated;
 revoke all on public.documents from anon, authenticated;
 revoke all on public.document_versions from anon, authenticated;
+revoke all on public.document_scan_jobs from anon, authenticated;
 revoke all on public.document_edits from anon, authenticated;
 revoke all on public.workflows from anon, authenticated;
 revoke all on public.hidden_workflows from anon, authenticated;

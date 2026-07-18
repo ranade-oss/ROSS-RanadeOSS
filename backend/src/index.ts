@@ -15,6 +15,7 @@ import { legalSourcesRouter } from "./routes/legalSources";
 import { loadRuntimeConfig } from "./config/runtime";
 import { enforceHostedDataBoundary } from "./middleware/dataBoundary";
 import { corsPolicy, rejectDeniedCorsOrigin } from "./middleware/corsPolicy";
+import { startDocumentScanDispatcher } from "./lib/documentScanDispatcher";
 
 const app = express();
 const runtime = loadRuntimeConfig();
@@ -170,4 +171,5 @@ app.get("/health", (_req, res) =>
 
 app.listen(PORT, () => {
   console.log(`ROSS API running on port ${PORT} (${runtime.environment})`);
+  startDocumentScanDispatcher();
 });

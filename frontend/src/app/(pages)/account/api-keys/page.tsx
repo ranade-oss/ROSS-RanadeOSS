@@ -41,6 +41,13 @@ const MODEL_API_KEY_FIELDS = [
 
 const OTHER_API_KEY_FIELDS = [
     {
+        provider: "canlii",
+        label: "CanLII API Key",
+        placeholder: "CanLII API key",
+        description:
+            "Add the authorized CanLII REST API key issued to you. ROSS encrypts it in storage and sends it only from the backend. The operator must also enable the CanLII connector and its authorized metadata operations.",
+    },
+    {
         provider: "courtlistener",
         label: "CourtListener API Key",
         placeholder: "Token...",

@@ -156,6 +156,28 @@ export function loadRuntimeConfig(): RuntimeConfig {
             "Raw LLM stream logging is forbidden outside local development.",
         );
 
+    const hostedUploadScanRequired =
+        currentEnvironment === "production" ||
+        process.env.ROSS_UPLOAD_SCAN_REQUIRED === "true";
+    if (currentHostedMode !== "self-hosted" && hostedUploadScanRequired) {
+        for (const name of [
+            "FILE_WORKER_URL",
+            "FILE_WORKER_SHARED_SECRET",
+            "SECURITY_ALERT_WEBHOOK_URL",
+            "SECURITY_ALERT_WEBHOOK_SECRET",
+        ])
+            requiredProductionValue(name);
+        const workerUrl = cleanUrl(process.env.FILE_WORKER_URL!, "FILE_WORKER_URL");
+        const alertUrl = cleanUrl(
+            process.env.SECURITY_ALERT_WEBHOOK_URL!,
+            "SECURITY_ALERT_WEBHOOK_URL",
+        );
+        if (!workerUrl.startsWith("http://") && !workerUrl.startsWith("https://"))
+            throw new Error("FILE_WORKER_URL must use http or https.");
+        if (!alertUrl.startsWith("https://"))
+            throw new Error("SECURITY_ALERT_WEBHOOK_URL must use HTTPS.");
+    }
+
     if (
         currentHostedMode === "production" &&
         process.env.ROSS_PRODUCTION_CONTROLS_APPROVED !== "true"

@@ -45,6 +45,7 @@ export interface Document {
   page_count: number | null;
   structure_tree: StructureNode[] | null;
   status: "pending" | "processing" | "ready" | "error";
+  scan_status?: "pending" | "clean" | "infected" | "failed" | null;
   created_at: string | null;
   updated_at?: string | null;
   /** Version number of the document row pointed to by current_version_id. */

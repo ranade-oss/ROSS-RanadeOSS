@@ -1565,6 +1565,24 @@ export function ProjectDocumentsView({ projectId }: Props) {
                                                             {docName}
                                                         </span>
                                                     )}
+                                                    {doc.scan_status ===
+                                                        "pending" && (
+                                                        <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+                                                            Scanning
+                                                        </span>
+                                                    )}
+                                                    {doc.scan_status ===
+                                                        "infected" && (
+                                                        <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
+                                                            Blocked
+                                                        </span>
+                                                    )}
+                                                    {doc.scan_status ===
+                                                        "failed" && (
+                                                        <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
+                                                            Scan failed
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="ml-auto w-20 shrink-0 text-xs text-gray-500 uppercase truncate">
@@ -2521,6 +2539,24 @@ export function ProjectDocumentsView({ projectId }: Props) {
                                                                                 {
                                                                                     docName
                                                                                 }
+                                                                            </span>
+                                                                        )}
+                                                                        {doc.scan_status ===
+                                                                            "pending" && (
+                                                                            <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+                                                                                Scanning
+                                                                            </span>
+                                                                        )}
+                                                                        {doc.scan_status ===
+                                                                            "infected" && (
+                                                                            <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
+                                                                                Blocked
+                                                                            </span>
+                                                                        )}
+                                                                        {doc.scan_status ===
+                                                                            "failed" && (
+                                                                            <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
+                                                                                Scan failed
                                                                             </span>
                                                                         )}
                                                                     </div>

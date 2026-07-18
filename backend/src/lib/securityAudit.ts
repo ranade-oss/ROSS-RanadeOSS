@@ -5,6 +5,8 @@ const ALLOWED_METADATA_KEYS = new Set([
     "hostedMode",
     "provider",
     "result",
+    "failureCode",
+    "sha256",
     "scope",
     "count",
 ]);
