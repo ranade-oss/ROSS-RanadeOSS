@@ -162,7 +162,7 @@
     },
     {
       "path": "deploy/fly/file-worker.toml",
-      "sha256": "686049c3f534e6527bb1ce13e3df31ad21962ef16d65d29c39013a7e38f5de9e",
+      "sha256": "8a6033467b85245c9483f58fb3ca4f15924a67976ca6481ed10c374180b68050",
       "sizeBytes": 608
     },
     {
