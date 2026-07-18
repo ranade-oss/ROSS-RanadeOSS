@@ -67,6 +67,28 @@ interface Props {
     projectId: string;
 }
 
+const SCAN_STATUS_POLL_INTERVAL_MS = 3_000;
+const SCAN_STATUS_MAX_ATTEMPTS = 40;
+const SCAN_STATUS_MAX_FAILURES = 3;
+
+function scanStatusMessage(
+    previous: Document["scan_status"],
+    current: Document["scan_status"],
+    filename: string,
+) {
+    if (previous !== "pending" || current === "pending") return null;
+    if (current === "clean") {
+        return `Scan complete for ${filename}. The document is ready.`;
+    }
+    if (current === "infected") {
+        return `Threat detected in ${filename}. The document remains blocked.`;
+    }
+    if (current === "failed") {
+        return `Scan failed for ${filename}. Opening and download remain blocked.`;
+    }
+    return null;
+}
+
 function apiErrorDetail(error: unknown): string | null {
     if (!(error instanceof Error)) return null;
     try {
@@ -162,6 +184,89 @@ export function ProjectDocumentsView({ projectId }: Props) {
         label: string;
     } | null>(null);
     const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
+    const [scanStatusAnnouncement, setScanStatusAnnouncement] = useState("");
+    const latestProjectRef = useRef(project);
+    latestProjectRef.current = project;
+    const pendingScanKey = (project?.documents ?? [])
+        .filter((doc) => doc.scan_status === "pending")
+        .map((doc) => doc.id)
+        .sort()
+        .join(",");
+
+    useEffect(() => {
+        if (!pendingScanKey) return;
+
+        let cancelled = false;
+        let timer: number | undefined;
+        let attempts = 0;
+        let failures = 0;
+
+        const schedule = (delay: number) => {
+            timer = window.setTimeout(poll, delay);
+        };
+
+        const poll = async () => {
+            attempts += 1;
+            try {
+                const updated = await getProject(projectId);
+                if (cancelled) return;
+
+                failures = 0;
+                const previousById = new Map(
+                    (latestProjectRef.current?.documents ?? []).map((doc) => [
+                        doc.id,
+                        doc.scan_status,
+                    ]),
+                );
+                const announcements = (updated.documents ?? [])
+                    .map((doc) =>
+                        scanStatusMessage(
+                            previousById.get(doc.id),
+                            doc.scan_status,
+                            doc.filename,
+                        ),
+                    )
+                    .filter((message): message is string => message !== null);
+
+                latestProjectRef.current = updated;
+                setProject(updated);
+                if (announcements.length > 0) {
+                    setScanStatusAnnouncement(announcements.join(" "));
+                }
+
+                const stillPending = (updated.documents ?? []).some(
+                    (doc) => doc.scan_status === "pending",
+                );
+                if (stillPending && attempts < SCAN_STATUS_MAX_ATTEMPTS) {
+                    schedule(SCAN_STATUS_POLL_INTERVAL_MS);
+                } else if (stillPending) {
+                    setScanStatusAnnouncement(
+                        "Scanning is taking longer than expected. Refresh the page to check again.",
+                    );
+                }
+            } catch (error) {
+                if (cancelled) return;
+                failures += 1;
+                console.error("document scan status refresh failed", error);
+                if (
+                    failures < SCAN_STATUS_MAX_FAILURES &&
+                    attempts < SCAN_STATUS_MAX_ATTEMPTS
+                ) {
+                    schedule(SCAN_STATUS_POLL_INTERVAL_MS * failures);
+                } else {
+                    setScanStatusAnnouncement(
+                        "Automatic scan status updates paused. Refresh the page to check again.",
+                    );
+                }
+            }
+        };
+
+        schedule(SCAN_STATUS_POLL_INTERVAL_MS);
+        return () => {
+            cancelled = true;
+            if (timer !== undefined) window.clearTimeout(timer);
+        };
+    }, [pendingScanKey, projectId, setProject]);
 
     useEffect(() => {
         if (!loading) prefetchProjectSections();
@@ -1652,6 +1757,7 @@ export function ProjectDocumentsView({ projectId }: Props) {
                                             <div className="w-8 shrink-0 flex justify-end">
                                                 {!isProcessing && (
                                                     <RowActions
+                                                        ariaLabel={`Actions for ${docName}`}
                                                         onRename={() => {
                                                             setRenameDocumentValue(
                                                                 docName,
@@ -1876,6 +1982,7 @@ export function ProjectDocumentsView({ projectId }: Props) {
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <RowActions
+                                        ariaLabel={`Actions for folder ${folder.name}`}
                                         onRename={() => {
                                             setRenameFolderValue(folder.name);
                                             setRenamingFolderId(folder.id);
@@ -2070,6 +2177,14 @@ export function ProjectDocumentsView({ projectId }: Props) {
 
     return (
         <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+            <p
+                className="sr-only"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+            >
+                {scanStatusAnnouncement}
+            </p>
             <input
                 ref={versionUploadInputRef}
                 type="file"
@@ -2639,6 +2754,7 @@ export function ProjectDocumentsView({ projectId }: Props) {
                                                                 <div className="w-8 shrink-0 flex justify-end">
                                                                     {!isProcessing && (
                                                                         <RowActions
+                                                                            ariaLabel={`Actions for ${docName}`}
                                                                             onRename={() => {
                                                                                 setRenameDocumentValue(
                                                                                     docName,

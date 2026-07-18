@@ -69,6 +69,30 @@ test("upload status is visible to the user", () => {
   assert.match(view, /Scan failed/);
 });
 
+test("pending upload scans refresh automatically and announce terminal status", () => {
+  const view = read("frontend/src/app/components/projects/ProjectDocumentsView.tsx");
+  assert.match(view, /SCAN_STATUS_POLL_INTERVAL_MS = 3_000/);
+  assert.match(view, /SCAN_STATUS_MAX_ATTEMPTS = 40/);
+  assert.match(view, /SCAN_STATUS_MAX_FAILURES = 3/);
+  assert.match(view, /const updated = await getProject\(projectId\)/);
+  assert.match(view, /previous !== "pending"/);
+  assert.match(view, /current === "clean"/);
+  assert.match(view, /current === "infected"/);
+  assert.match(view, /current === "failed"/);
+  assert.match(view, /cancelled = true/);
+  assert.match(view, /window\.clearTimeout\(timer\)/);
+  assert.match(view, /aria-live="polite"/);
+  assert.match(view, /role="status"/);
+});
+
+test("visible row action buttons have explicit accessible names", () => {
+  const actions = read("frontend/src/app/components/shared/RowActions.tsx");
+  const view = read("frontend/src/app/components/projects/ProjectDocumentsView.tsx");
+  assert.match(actions, /aria-label=\{props\.ariaLabel \?\? "More actions"\}/);
+  assert.match(actions, /aria-expanded=\{open\}/);
+  assert.match(view, /ariaLabel=\{`Actions for \$\{docName\}`\}/);
+});
+
 test("CanLII keys use the encrypted per-user credential path", () => {
   const schema = read("backend/schema.sql");
   const keys = read("backend/src/lib/userApiKeys.ts");

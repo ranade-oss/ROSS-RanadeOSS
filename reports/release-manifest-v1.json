@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-16T00:00:00.000Z",
   "algorithm": "sha256",
-  "artifactCount": 45,
+  "artifactCount": 47,
   "artifacts": [
     {
       "path": ".github/workflows/deploy-public-beta-ross.yml",
@@ -127,8 +127,8 @@
     },
     {
       "path": "config/launch-readiness.v1.json",
-      "sha256": "d355bab2af569a09b85c54c59306b554461ae303a5a5a52c087cba1ffde674cc",
-      "sizeBytes": 957
+      "sha256": "50ec1887cd5accd31f77d8dd9e02b664fbe851ae8a1801e27d59cd1609eca3d1",
+      "sizeBytes": 1157
     },
     {
       "path": "config/operations-readiness.v1.json",
@@ -147,8 +147,8 @@
     },
     {
       "path": "config/release-approvals.v1.json",
-      "sha256": "cd2710c47bab5e98e9e52adea10992efd611219c4881ba8a648e658288e73f7a",
-      "sizeBytes": 758
+      "sha256": "1b09dc28c65da7a5572bbcc106736b8045614a9949325e51ba8088fd4a2c51aa",
+      "sizeBytes": 1292
     },
     {
       "path": "config/ross-brand.json",
@@ -166,9 +166,19 @@
       "sizeBytes": 608
     },
     {
+      "path": "docs/release-evidence/controlled-beta-owner-approval-2026-07-18.md",
+      "sha256": "aa0df9eb784dfc2113198791995cb2e9e3572307bb0918469c1b23cd5c88378f",
+      "sizeBytes": 2088
+    },
+    {
       "path": "frontend/src/app/components/projects/ProjectDocumentsView.tsx",
-      "sha256": "7d70b846b33926370aed0fe876c4419ccd240c1f972d604d7d8576b6b6ca2a7e",
-      "sizeBytes": 156554
+      "sha256": "abfe65146aa653a8952f9bffa43d8ba73773f3e1e4e0bdd560a1782d9aa443c9",
+      "sizeBytes": 160868
+    },
+    {
+      "path": "frontend/src/app/components/shared/RowActions.tsx",
+      "sha256": "a078acd0277fe3fcea1eaf25c0c889c46a690422a738d0e42cb676ecefcc5b01",
+      "sizeBytes": 8613
     },
     {
       "path": "frontend/src/app/(pages)/account/api-keys/page.tsx",
@@ -192,8 +202,8 @@
     },
     {
       "path": "reports/final-completion-dossier.md",
-      "sha256": "71167e1c25bc58f5e6401fba9cf101dda102b67a5e7976fe6261adbc075f95c1",
-      "sizeBytes": 2253
+      "sha256": "3b84ccdb65c30e1f29057fea177f9fc21d0ca895495d49df775773b770695248",
+      "sizeBytes": 2159
     },
     {
       "path": "reports/ontario-evaluation-v1.json",

@@ -254,11 +254,10 @@ test("Ontario evaluation is versioned, lawyer-reviewed, and production still fai
   assert.match(evaluator, /promptInjectionResistance/);
   assert.match(releaseGate, /legalContent/);
   assert.match(releaseGate, /accessibility/);
-  assert.ok(
-    Object.values(approvals.approvals).every(
-      (approval) => approval.status === "pending",
-    ),
-  );
+  assert.equal(approvals.approvals.privacy.status, "pending");
+  assert.equal(approvals.approvals.security.status, "approved");
+  assert.equal(approvals.approvals.accessibility.status, "approved");
+  assert.match(approvals.status, /^blocked-/);
   assert.match(packageJson.scripts.test, /test:evaluation/);
   assert.match(packageJson.scripts.check, /test:website/);
 });

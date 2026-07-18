@@ -25,6 +25,7 @@ export function closeRowActionMenus() {
 }
 
 interface Props {
+    ariaLabel?: string;
     onDelete?: () => void;
     onHide?: () => void;
     onUnhide?: () => void;
@@ -222,8 +223,12 @@ export function RowActions(props: Props) {
     return (
         <>
             <button
+                type="button"
                 ref={btnRef}
                 onClick={handleToggle}
+                aria-label={props.ariaLabel ?? "More actions"}
+                aria-expanded={open}
+                title={props.ariaLabel ?? "More actions"}
                 className="flex items-center justify-center w-6 h-6 rounded text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors leading-none"
             >
                 <span className="tracking-widest text-xs">···</span>

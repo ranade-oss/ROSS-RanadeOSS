@@ -22,7 +22,7 @@ test("passing automated gates permit development while external review stays pen
   assert.equal(result.mode, "automated-development");
 });
 
-test("production release fails closed while the remaining independent approvals are pending", () => {
+test("production release preserves recorded approvals and fails closed on the remaining evidence", () => {
   const result = evaluateReleaseReadiness(report, approvals, true, {
     operations,
     launch,
@@ -34,12 +34,12 @@ test("production release fails closed while the remaining independent approvals 
     professionalValidation: { ready: false },
   });
   assert.equal(result.ready, false);
-  for (const name of result.requiredApprovals) {
+  assert.ok(result.blockers.some((blocker) => blocker.includes("privacy")));
+  for (const name of ["legalContent", "security", "accessibility", "productOwner"])
     assert.ok(
-      result.blockers.some((blocker) => blocker.includes(name)),
+      !result.blockers.some((blocker) => blocker.includes(`${name} approval`)),
       name,
     );
-  }
   assert.ok(!result.blockers.some((blocker) => /Ontario lawyer/.test(blocker)));
   assert.ok(result.blockers.some((blocker) => /Operational readiness/.test(blocker)));
   assert.ok(result.blockers.some((blocker) => /Launch readiness/.test(blocker)));

@@ -29,11 +29,7 @@ Generated from governed records. This report is evidence inventory, not approval
 
 ## Pending release approvals
 
-- legalContent
 - privacy
-- security
-- accessibility
-- productOwner
 
 ## Pending operational evidence
 
@@ -50,13 +46,11 @@ Generated from governed records. This report is evidence inventory, not approval
 ## Pending launch decisions
 
 - legalOperator
-- accountableOwners
 - productionDomains
 - vendorsAndResidency
 - effectiveLegalNotices
 - supportAndPrivacyChannels
 - betaCohortAndTerms
-- goLiveDecision
 
 ## Stop condition
 
