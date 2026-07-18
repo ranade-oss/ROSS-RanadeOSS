@@ -1,16 +1,16 @@
 {
-  "version": "1.0.0-draft",
+  "version": "1.2.0-approved",
   "releaseId": "ross-public-beta-20260717-rc1",
-  "status": "blocked-awaiting-operational-evidence",
+  "status": "approved-for-release",
   "evidence": {
-    "ci": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "stagingJourney": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "migrationDryRun": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "backupRestore": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "rollbackExercise": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "observability": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "sourceHealth": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "dependencyReview": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "incidentExercise": { "status": "pending", "approver": null, "date": null, "evidence": null }
+    "ci": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "docs/release-evidence/operational-readiness-session-2026-07-18.md#evidence-already-observed" },
+    "stagingJourney": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "docs/release-evidence/operational-readiness-session-2026-07-18.md#final-candidate-authenticated-staging-journey" },
+    "migrationDryRun": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "docs/release-evidence/operational-readiness-session-2026-07-18.md#evidence-already-observed" },
+    "backupRestore": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "reports/backup-restore-exercise-2026-07-18.json" },
+    "rollbackExercise": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "docs/release-evidence/operational-readiness-session-2026-07-18.md#rollback-and-incident-recovery-exercise" },
+    "observability": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "docs/release-evidence/operational-readiness-session-2026-07-18.md#evidence-already-observed" },
+    "sourceHealth": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "docs/release-evidence/operational-readiness-session-2026-07-18.md#evidence-already-observed" },
+    "dependencyReview": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "docs/release-evidence/operational-readiness-session-2026-07-18.md#evidence-already-observed" },
+    "incidentExercise": { "status": "approved", "approver": "Abhi Ranade (AR)", "date": "2026-07-18", "evidence": "docs/release-evidence/operational-readiness-session-2026-07-18.md#rollback-and-incident-recovery-exercise" }
   }
 }

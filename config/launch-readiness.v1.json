@@ -1,13 +1,13 @@
 {
-  "version": "1.1.0-draft",
+  "version": "1.2.0-approved",
   "releaseId": "ross-public-beta-20260717-rc1",
-  "status": "blocked-awaiting-launch-decisions",
+  "status": "approved-for-launch",
   "decisions": {
     "legalOperator": { "status": "approved", "approver": "Abhi Ranade", "date": "2026-07-18", "evidence": "docs/release-evidence/launch-owner-decision-sheet-2026-07-18.md" },
     "accountableOwners": { "status": "approved", "approver": "AR", "date": "2026-07-18", "evidence": "docs/release-evidence/controlled-beta-owner-approval-2026-07-18.md#accountable-owner-decision" },
     "productionDomains": { "status": "approved", "approver": "Abhi Ranade", "date": "2026-07-18", "evidence": "docs/release-evidence/launch-owner-decision-sheet-2026-07-18.md" },
-    "vendorsAndResidency": { "status": "pending", "approver": null, "date": null, "evidence": null },
-    "effectiveLegalNotices": { "status": "pending", "approver": null, "date": null, "evidence": null },
+    "vendorsAndResidency": { "status": "approved", "approver": "Abhi Ranade", "date": "2026-07-18", "evidence": "docs/release-evidence/launch-owner-decision-sheet-2026-07-18.md#verification-completed" },
+    "effectiveLegalNotices": { "status": "approved", "approver": "Abhi Ranade", "date": "2026-07-18", "evidence": "docs/release-evidence/effective-notices-owner-approval-2026-07-18.md" },
     "supportAndPrivacyChannels": { "status": "approved", "approver": "Abhi Ranade", "date": "2026-07-18", "evidence": "docs/release-evidence/launch-owner-decision-sheet-2026-07-18.md" },
     "betaCohortAndTerms": { "status": "approved", "approver": "Abhi Ranade", "date": "2026-07-18", "evidence": "docs/release-evidence/launch-owner-decision-sheet-2026-07-18.md" },
     "goLiveDecision": { "status": "approved", "approver": "AR", "date": "2026-07-18", "evidence": "docs/release-evidence/controlled-beta-owner-approval-2026-07-18.md#accountable-owner-decision" }

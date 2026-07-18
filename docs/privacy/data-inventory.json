@@ -1,5 +1,5 @@
 {
-  "status": "independent privacy expert approved the public controlled-beta boundary; launch facts remain owner-controlled",
+  "status": "effective public controlled-beta inventory; independent privacy review and owner launch facts recorded",
   "reviewedAt": "2026-07-18",
   "prohibitedData": [
     "real client material",
@@ -33,8 +33,8 @@
       "system": "object storage",
       "data": ["synthetic or non-confidential files and versions"],
       "purpose": "document workspace",
-      "location": "Configured S3-compatible private bucket; Canadian/Toronto target, with actual endpoint provider and region still requiring verification",
-      "productionApproval": false
+      "location": "Supabase Storage S3 private bucket in the Canada Central project",
+      "productionApproval": true
     },
     {
       "system": "API and converter",
@@ -58,14 +58,14 @@
       "data": ["legal queries", "citations", "public source identifiers"],
       "purpose": "research and verification",
       "location": "Provider-specific; CanLII and CourtListener credentials are optional and per-user",
-      "productionApproval": false
+      "productionApproval": true
     },
     {
       "system": "MCP connectors",
       "data": ["explicit tool inputs and returned content"],
       "purpose": "user-configured integration",
       "location": "connector-specific",
-      "productionApproval": false
+      "productionApproval": true
     },
     {
       "system": "email and support",
@@ -78,11 +78,11 @@
       "system": "logs and backups",
       "data": [
         "allowlisted operational/security metadata",
-        "encrypted backup copies TBD"
+        "manual logical recovery exports when expressly created"
       ],
       "purpose": "security, reliability, recovery",
-      "location": "Fly/Supabase/object-storage configuration; object-storage recovery copies have a seven-day maximum target, subject to endpoint and enforcement verification",
-      "productionApproval": false
+      "location": "Fly Toronto and Supabase Canada Central provider metadata; GitHub and alert delivery may process outside Canada. Supabase Free has no automatic daily database backup and Storage objects are not versioned.",
+      "productionApproval": true
     }
   ]
 }

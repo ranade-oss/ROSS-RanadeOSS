@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "exercise": "isolated-backup-restore",
+  "exerciseId": "ross-restore-20260718-67661f17effb",
+  "startedAtUtc": "2026-07-18T14:52:01Z",
+  "completedAtUtc": "2026-07-18T15:04:34Z",
+  "provider": "Supabase Free; Canada Central",
+  "sourceDataBoundary": "synthetic or affirmatively non-confidential controlled-beta data",
+  "database": {
+    "backupFiles": [
+      { "name": "roles.sql", "sha256": "25873cec56a2cc6514e204f420231777f85c03da818caa7090cdcdfa89776ecd" },
+      { "name": "schema.sql", "sha256": "8169d4be4fda8ebefa18e207619ce467e7a61cab87f2266e74f2f82a7bc28e21" },
+      { "name": "data.sql", "sha256": "d05b8bc336f0879ae2436c874d17ba622bc0e9f391cff4b8163a7873c8934553" }
+    ],
+    "publicTableCount": 26,
+    "publicRowCount": 224,
+    "sourceFingerprintSha256": "d513423341b94ef947932e997fe5682ca55b7391a5f4e6125318790361271247",
+    "targetFingerprintSha256": "d513423341b94ef947932e997fe5682ca55b7391a5f4e6125318790361271247",
+    "allPublicTableFingerprintsMatched": true
+  },
+  "tenantBoundaryChecks": {
+    "userProfilesWithoutAuth": 0,
+    "documentsWithMismatchedProjectOwner": 0,
+    "foldersWithMismatchedProjectOwner": 0,
+    "orphanDocumentVersions": 0
+  },
+  "storage": {
+    "provider": "Supabase Storage S3",
+    "bucket": "ross-private-files",
+    "objectCount": 7,
+    "totalBytes": 292661,
+    "manifestSha256": "b0d26c1c19fadf0d36181791b06d76cbb51ced88203f7554aa66c86645f212c7",
+    "seedSha256": "3a40612b4cfeeb44ecd4bce66cf1f40b8a041dc6f884c7f7bbd839d121380907",
+    "seedVerified": true,
+    "allObjectHashesMatched": true
+  },
+  "authenticationRecovery": {
+    "targetSyntheticUserCreated": true,
+    "recoveryLinkGenerated": true,
+    "productionPasswordOrSessionCopied": false,
+    "emailSent": false
+  },
+  "recoveryPointObservation": "2026-07-18T14:52:01Z",
+  "recoveryCompletedObservation": "2026-07-18T15:04:34Z",
+  "recoveryDurationSeconds": 753,
+  "secretsWrittenToReport": false,
+  "sourceS3CredentialHandling": "Existing live credential was entered through a non-echoing prompt, was not written to the report or backup, and was unset at exercise completion.",
+  "targetEnvironmentDestroyed": true,
+  "targetEnvironmentDestructionConfirmedAtUtc": "2026-07-18T15:13:02Z",
+  "decision": "passed"
+}

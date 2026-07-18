@@ -9,8 +9,8 @@ export const PUBLIC_BRAND_CONFIG = {
     "betaLabel": "Public beta — verified account required; synthetic or non-confidential materials only",
     "legalOperator": "Abhi Ranade",
     "productOwner": "Abhi Ranade",
-    "technicalOwner": "TBD",
-    "legalContentOwner": "TBD"
+    "technicalOwner": "AR",
+    "legalContentOwner": "AR"
   },
   "urls": {
     "website": "https://ross-ontario.augustmaat.chatgpt.site",

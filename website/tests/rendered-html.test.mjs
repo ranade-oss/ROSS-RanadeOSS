@@ -121,20 +121,20 @@ test("the product demonstration is fictional, captioned, and text-equivalent", a
   assert.match(html, /Treatment unavailable/);
 });
 
-test("legal notices are complete drafts with explicit non-effective governance", async () => {
+test("legal notices are effective with dated owner and independent governance", async () => {
   for (const route of ["/terms", "/acceptable-use"]) {
     const { response, html } = await render(route);
     assert.equal(response.status, 200, route);
-    assert.match(html, /independent-review-required/, route);
-    assert.match(html, /Not effective/, route);
-    assert.match(html, /Reviewer[\s\S]*Not assigned/, route);
+    assert.match(html, /owner-approved/, route);
+    assert.match(html, /Effective<\/dt><dd>2026-07-18/, route);
+    assert.match(html, /Abhi Ranade/, route);
     assert.doesNotMatch(html, /title>[^<]*placeholder/i, route);
   }
   const privacy = await render("/privacy");
   assert.equal(privacy.response.status, 200);
   assert.match(privacy.html, /independent-reviewed/);
   assert.match(privacy.html, /Independent privacy expert/);
-  assert.match(privacy.html, /Not effective/);
+  assert.match(privacy.html, /Effective<\/dt><dd>2026-07-18/);
 });
 
 test("the first dated update and governed metadata render", async () => {
@@ -145,20 +145,21 @@ test("the first dated update and governed metadata render", async () => {
   assert.equal(update.response.status, 200);
   assert.match(normalized, /Published 2026-07-16/);
   assert.match(update.html, /What remains blocked/);
-  assert.match(update.html, /benchmark, workflows, and privacy decision are approved/);
+  assert.match(update.html, /effective notices, and operational exercises are recorded/);
 });
 
-test("production readiness remains candid and indexing fails closed", async () => {
+test("production readiness records completed gates while indexing still fails closed before promotion", async () => {
   const readiness = await render("/readiness");
   assert.equal(readiness.response.status, 200);
-  assert.match(readiness.html, /Live-environment exercises and final vendor verification remain pending/i);
+  assert.match(readiness.html, /completed live-environment exercises/i);
+  assert.match(readiness.html, /Ready for immutable-candidate generation/i);
   assert.match(
     readiness.html,
     /No confidential or privileged client-material launch/i,
   );
   const update = await render("/updates/release-controls");
   assert.equal(update.response.status, 200);
-  assert.match(update.html, /launch remains blocked/i);
+  assert.match(update.html, /operational and launch gates completed/i);
   const robots = await render("/robots.txt");
   assert.match(robots.html, /Disallow: \/$/m);
 });

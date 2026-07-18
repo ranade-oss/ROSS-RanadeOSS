@@ -2,10 +2,10 @@
 
 Generated from governed records. This report is evidence inventory, not approval.
 
-- Version: 1.1.0-limited-source-beta
+- Version: 1.2.0-controlled-beta-approved
 - As of: 2026-07-18
 - Release ID: ross-public-beta-20260717-rc1
-- Status: blocked-awaiting-external-completion
+- Status: completed-approved-for-controlled-beta
 - Data boundary: synthetic-or-non-confidential-only
 
 ## Workstreams
@@ -16,16 +16,16 @@ Generated from governed records. This report is evidence inventory, not approval
 | lawyer-authored-benchmark | Ontario lawyer and independent adjudicator | completed-with-evidence | `config/professional-validation.v1.json#benchmarkReview` |
 | five-workflow-reviews | Ontario lawyer with suitable subject-matter experience | completed-with-evidence | `config/professional-validation.v1.json#workflowReviews` |
 | privacy-security-accessibility | independent privacy, security, and accessibility reviewers | completed-with-evidence | `config/release-approvals.v1.json#approvals` |
-| operational-exercises | release and operations owners | pending | `config/operations-readiness.v1.json#evidence` |
-| accountable-launch-decisions | legal operator and product owner | pending | `config/launch-readiness.v1.json#decisions` |
-| immutable-release-candidate | release owner | pending | `reports/release-manifest-v1.json` |
+| operational-exercises | release and operations owners | completed-with-evidence | `config/operations-readiness.v1.json#evidence` |
+| accountable-launch-decisions | legal operator and product owner | completed-with-evidence | `config/launch-readiness.v1.json#decisions` |
+| immutable-release-candidate | release owner | completed-with-evidence | `reports/release-manifest-v1.json and .github/workflows/release-candidate.yml` |
 
 ## Provider decision
 
 - Status: approved-limited-source-beta
 - Selected provider: Optional user-authorized CanLII and CourtListener connectors; no platform-supplied case-law credential
 - CanLII website automation: prohibited
-- Current source-health status: pre-production-not-observed
+- Current source-health status: degraded
 
 ## Pending release approvals
 
@@ -33,20 +33,11 @@ Generated from governed records. This report is evidence inventory, not approval
 
 ## Pending operational evidence
 
-- ci
-- stagingJourney
-- migrationDryRun
-- backupRestore
-- rollbackExercise
-- observability
-- sourceHealth
-- dependencyReview
-- incidentExercise
+
 
 ## Pending launch decisions
 
-- vendorsAndResidency
-- effectiveLegalNotices
+
 
 ## Stop condition
 

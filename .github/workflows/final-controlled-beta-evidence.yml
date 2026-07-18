@@ -52,11 +52,13 @@ jobs:
             reports/final-completion-dossier.md
             reports/ontario-evaluation-v1.json
             reports/legal-source-health-v1.json
+            reports/backup-restore-exercise-2026-07-18.json
             reports/release-manifest-v1.json
             config/final-completion.v1.json
             config/professional-validation.v1.json
             config/release-approvals.v1.json
             config/operations-readiness.v1.json
             config/launch-readiness.v1.json
+            docs/release-evidence/effective-notices-owner-approval-2026-07-18.md
 
 # Evidence only. Deployment remains a separate, human-approved action.

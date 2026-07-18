@@ -36,8 +36,8 @@ export function evaluateFinalCompletion(
   }
 
   if (!production) {
-    if (plan.status !== "blocked-awaiting-external-completion")
-      blockers.push("Development completion plan must remain explicitly blocked.");
+    if (!["blocked-awaiting-external-completion", "completed-approved-for-controlled-beta"].includes(plan.status))
+      blockers.push("Completion plan has an invalid development status.");
     for (const id of requiredWorkstreams) {
       const status = byId.get(id)?.status;
       if (status === "pending")
@@ -47,6 +47,8 @@ export function evaluateFinalCompletion(
           `Development workstream ${id} must be pending or completed-with-evidence.`,
         );
     }
+    if (plan.status === "completed-approved-for-controlled-beta" && pending.length)
+      blockers.push("Approved completion plan still contains pending workstreams.");
     return { mode: "development", ready: blockers.length === 0, blockers, pending };
   }
 

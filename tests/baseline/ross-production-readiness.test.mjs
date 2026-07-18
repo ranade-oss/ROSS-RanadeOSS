@@ -8,13 +8,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
-test("production records preserve completed approvals and remain blocked on missing evidence", () => {
+test("production records preserve completed approvals for release and launch", () => {
   const approvals = json("config/release-approvals.v1.json");
   const operations = json("config/operations-readiness.v1.json");
   const launch = json("config/launch-readiness.v1.json");
   assert.equal(approvals.status, "approved-for-release");
-  assert.match(operations.status, /^blocked-/);
-  assert.match(launch.status, /^blocked-/);
+  assert.equal(operations.status, "approved-for-release");
+  assert.equal(launch.status, "approved-for-launch");
 
   for (const name of ["legalContent", "privacy", "security", "accessibility", "productOwner"]) {
     const item = approvals.approvals[name];
@@ -40,23 +40,17 @@ test("production records preserve completed approvals and remain blocked on miss
   }
 
   for (const item of Object.values(operations.evidence)) {
-    assert.equal(item.status, "pending");
-    assert.equal(item.approver, null);
-    assert.equal(item.evidence, null);
+    assert.equal(item.status, "approved");
+    assert.equal(item.date, "2026-07-18");
+    assert.ok(item.approver);
+    assert.ok(item.evidence);
   }
 
-  for (const [name, item] of Object.entries(launch.decisions)) {
-    if ([
-      "legalOperator",
-      "accountableOwners",
-      "productionDomains",
-      "supportAndPrivacyChannels",
-      "betaCohortAndTerms",
-      "goLiveDecision",
-    ].includes(name)) continue;
-    assert.equal(item.status, "pending");
-    assert.equal(item.approver, null);
-    assert.equal(item.evidence, null);
+  for (const item of Object.values(launch.decisions)) {
+    assert.equal(item.status, "approved");
+    assert.equal(item.date, "2026-07-18");
+    assert.ok(item.approver);
+    assert.ok(item.evidence);
   }
 });
 

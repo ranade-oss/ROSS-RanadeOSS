@@ -1,14 +1,24 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "releaseId": "ross-public-beta-20260717-rc1",
-  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "generatedAt": "2026-07-18T15:13:02.000Z",
   "algorithm": "sha256",
-  "artifactCount": 61,
+  "artifactCount": 67,
   "artifacts": [
     {
       "path": ".github/workflows/deploy-public-beta-ross.yml",
       "sha256": "7bf7210816ef33714d2d00349da43fc45b4e8f99b6fb8f39d57410378a7438bc",
       "sizeBytes": 12002
+    },
+    {
+      "path": ".github/workflows/final-controlled-beta-evidence.yml",
+      "sha256": "a943889c47a8b7da13fea00470b50e46fcca345168e5635e99671da7e7cdb33b",
+      "sizeBytes": 1947
+    },
+    {
+      "path": ".github/workflows/release-candidate.yml",
+      "sha256": "32ac7aa202f2abe2d02acbd1443dfb825fbc580823b0beed42f40a55e88f1178",
+      "sizeBytes": 3217
     },
     {
       "path": "backend/migrations/20260718_01_document_scan_pipeline.sql",
@@ -24,6 +34,11 @@
       "path": "backend/package.json",
       "sha256": "2afc7728ea77ecb27d0ba17b56dfb237424bb4cbd5491bafc1f2e8ff27a83823",
       "sizeBytes": 1592
+    },
+    {
+      "path": "backend/scripts/restore-storage-exercise.mjs",
+      "sha256": "fa40ef12674c5ec326ceae6ef62220f9b0cfef0124ebf6e719045ee752b00c73",
+      "sizeBytes": 6549
     },
     {
       "path": "backend/schema.sql",
@@ -117,23 +132,23 @@
     },
     {
       "path": "config/legal-source-operations.v1.json",
-      "sha256": "ae74d9bc6cb411cf8aec077d70354605efb3444be24c98d49506da28e5efffb1",
-      "sizeBytes": 1003
+      "sha256": "4f60247cd3e92896bb747afdf53473a95389471602f226122694eb07fd588aad",
+      "sizeBytes": 1011
     },
     {
       "path": "config/final-completion.v1.json",
-      "sha256": "9f2aa8599219723a2f734e06d55a1d4aba8ac975d51bbe0e590fdccd56854364",
-      "sizeBytes": 3268
+      "sha256": "2095404de0cde5b8de7beeeb20948309b50e713394fae8a1ccad46465db01f4a",
+      "sizeBytes": 3367
     },
     {
       "path": "config/launch-readiness.v1.json",
-      "sha256": "9b9de6fac4ecd4d9b282a819bde94e4fefc15e9302ba11e46287b218d3348f8f",
-      "sizeBytes": 1473
+      "sha256": "5c0e874c67d30c61e7c706deda08475591d5f1adb906770f0da49b842bca1ba1",
+      "sizeBytes": 1648
     },
     {
       "path": "config/operations-readiness.v1.json",
-      "sha256": "e6a953ba666bc3f2f762658371961437c839cb3bb1a8928218646d77c2e58dbe",
-      "sizeBytes": 1016
+      "sha256": "c8ab1055bfeb22a8be768344fba377ab8a0a895c14f4c9dedbb3016906bef016",
+      "sizeBytes": 2014
     },
     {
       "path": "config/professional-validation.v1.json",
@@ -152,8 +167,8 @@
     },
     {
       "path": "config/ross-brand.json",
-      "sha256": "29677873814c14a8cd778ea7ae9c5472c5663e93c281c6b37027fea10ccb1b41",
-      "sizeBytes": 2058
+      "sha256": "c512203410bfb7dcbbd64558eb0764c6dfc6a7d507ffe1f9ebd5cae8dc9da9b0",
+      "sizeBytes": 2056
     },
     {
       "path": "config/ross-brand.schema.json",
@@ -176,19 +191,24 @@
       "sizeBytes": 2088
     },
     {
+      "path": "docs/release-evidence/effective-notices-owner-approval-2026-07-18.md",
+      "sha256": "eab10bdadad4cd7d34d2c96cbde0f154d4a013d842bf6da00e35f1f92586d3df",
+      "sizeBytes": 1882
+    },
+    {
       "path": "docs/release-evidence/limited-source-beta-decision-2026-07-18.md",
       "sha256": "d03449a96a2e578d4ca4db8e9eccbf77497c7d17f6215f64409cb6f43a065a31",
       "sizeBytes": 2334
     },
     {
       "path": "docs/release-evidence/launch-owner-decision-sheet-2026-07-18.md",
-      "sha256": "0cec618e79eacdebb25ad561aace0b9f96d5479d2e74fe08a4f24d60f68be61c",
-      "sizeBytes": 3082
+      "sha256": "94b9d602c9e24400ae6f1c6b3f1b6dfaf4c58d73d84b538ea53f8d2324bc442a",
+      "sizeBytes": 3039
     },
     {
       "path": "docs/release-evidence/operational-readiness-session-2026-07-18.md",
-      "sha256": "2eaa0a970d5cce6ea79673b88c756681d37125cb1cf0baabb452f693ab1cb7bf",
-      "sizeBytes": 2496
+      "sha256": "24f15bdd191e0a87f00f0edf864a6e84008fb3a3e2145907c2b4becf779b1ce0",
+      "sizeBytes": 7029
     },
     {
       "path": "docs/release-evidence/privacy-review-approval-sheet-2026-07-18.md",
@@ -207,23 +227,23 @@
     },
     {
       "path": "docs/privacy/data-inventory.json",
-      "sha256": "ebcbf9f5288d0b4523d22233eac07927196f116547e329c09fc7cb16f1dd4971",
-      "sizeBytes": 3278
+      "sha256": "616d9b61f683f0dae75d8bc8cb1e09a8949bc3c60128eb675fe68263e006a02e",
+      "sizeBytes": 3272
     },
     {
       "path": "docs/privacy/privacy-impact-assessment-draft.md",
-      "sha256": "2f2a0c0a2d4d3fb6287c2110649875a68e4275b6495c3731480e6e839faed09f",
-      "sizeBytes": 4962
+      "sha256": "ebf10ae780e577978f58614edd7c356edec238025bb8cd699b66411f9ca67086",
+      "sizeBytes": 4973
     },
     {
       "path": "docs/privacy/retention-schedule.json",
-      "sha256": "576c778a7721ec8737a8604048e4577a6017aa0ccf919688de27e58963dd759e",
-      "sizeBytes": 2318
+      "sha256": "5d9bd5ce72e9eb7718633ed87f96b3f384b24be9894ae61a64a7e0b6b767fd84",
+      "sizeBytes": 2628
     },
     {
       "path": "docs/privacy/subprocessor-inventory.json",
-      "sha256": "7a1b5d4dc5941f5e4ea0196a7f9d3447bdf11c6b72e39b3faf3f4474cd32464f",
-      "sizeBytes": 2797
+      "sha256": "119eef14ec372c2074781b57eb90aaefdc4cdcc681f1827b6a91ccf09c5fbdad",
+      "sizeBytes": 3875
     },
     {
       "path": "docs/evaluation/capability-limitations-v1.md",
@@ -257,13 +277,18 @@
     },
     {
       "path": "reports/legal-source-health-v1.json",
-      "sha256": "b347e4ddb627fcbc4f67392a1e71cd84d01b52c01b97c8d6abeb7d011e63ab80",
-      "sizeBytes": 1025
+      "sha256": "c730d0458499ae7c5f2abe33db5b940fca6bb01155287cbab8bbc0a2e42e1063",
+      "sizeBytes": 1492
+    },
+    {
+      "path": "reports/backup-restore-exercise-2026-07-18.json",
+      "sha256": "82ad0c37c7d3b42a2ebe256975fef6c4ebf760906aa1cfa77e76a5975c6726fc",
+      "sizeBytes": 2265
     },
     {
       "path": "reports/final-completion-dossier.md",
-      "sha256": "072ec6d0647f3241977cac1c728ac2544ebcf1b4f86fde055c9d8a54724601b9",
-      "sizeBytes": 2192
+      "sha256": "fb40876504aeaf170438dd4a0fe5830f3e103a6c58778ab4864971a140179a21",
+      "sizeBytes": 2084
     },
     {
       "path": "reports/ontario-evaluation-v1.json",
@@ -274,6 +299,11 @@
       "path": "scripts/lib/release-readiness.mjs",
       "sha256": "4e974889a02a2502db80024e24b26ea9bf7113596cec4405359b0bc2c1eb3da5",
       "sizeBytes": 3092
+    },
+    {
+      "path": "scripts/run-backup-restore-exercise.sh",
+      "sha256": "f2d0ee4cb495214f03db3e479ba3ff58de499d999abed62f72cf5c84bafd0a63",
+      "sizeBytes": 10932
     },
     {
       "path": "scripts/lib/professional-validation.mjs",
@@ -287,8 +317,8 @@
     },
     {
       "path": "scripts/lib/final-completion.mjs",
-      "sha256": "e30e3567f9e07287293de158e33dabd65af680ec13f07ca11608274fd6cff68b",
-      "sizeBytes": 3101
+      "sha256": "8f1cd40e89bc9c7551a2e464da29e452052eaa040cbaa3d2c9dece6621d5fef0",
+      "sizeBytes": 3312
     },
     {
       "path": "website/app/site-config.ts",
@@ -297,13 +327,13 @@
     },
     {
       "path": "website/app/page-content.ts",
-      "sha256": "4a5a4945842e93b0b367bd28bf40c9d2d538d377bee481d9d63a5075ec687a87",
-      "sizeBytes": 29511
+      "sha256": "e40f811d708f899da2e025934edadc876f932fc089431a91df4c574eaa370425",
+      "sizeBytes": 31845
     },
     {
       "path": "website/app/generated-brand-config.ts",
-      "sha256": "8c83326ea2bddf6654f5afcdb4aa9bf734429df086796a7819b2d66e4148bf3d",
-      "sizeBytes": 1652
+      "sha256": "c8d6ddbb256b3ac6a6af85134b93c9f90df0e1885f2b09dbd37ec27fdc6476a1",
+      "sizeBytes": 1650
     },
     {
       "path": "workflows/ontario/catalogue.json",

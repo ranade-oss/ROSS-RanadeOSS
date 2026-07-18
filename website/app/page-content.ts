@@ -10,6 +10,7 @@ export type PublicPage = {
     reviewStatus:
       | "engineering-reviewed"
       | "independent-reviewed"
+      | "owner-approved"
       | "independent-review-required";
     effectiveDate: string | null;
     lastReviewedDate: string | null;
@@ -49,14 +50,11 @@ const independentlyReviewed = (
   nextReviewDate: "2026-08-16",
 });
 
-const independentlyReviewedPendingEffect = (
-  owner: string,
-  reviewer: string,
-): PublicPage["governance"] => ({
+const ownerApproved = (owner: string): PublicPage["governance"] => ({
   owner,
-  reviewer,
-  reviewStatus: "independent-reviewed",
-  effectiveDate: null,
+  reviewer: "Abhi Ranade — legal operator",
+  reviewStatus: "owner-approved",
+  effectiveDate: "2026-07-18",
   lastReviewedDate: "2026-07-18",
   nextReviewDate: "2026-08-16",
 });
@@ -199,7 +197,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Architecture direction",
-        body: "The hosted route uses a Supabase Free project in ca-central, Fly application/API/worker services in Toronto, a separately configured private S3-compatible object store, user-supplied OpenAI keys, conversion, and account email. The object-store endpoint and remaining provider terms still require verification.",
+        body: "The hosted route uses Supabase Free in Canada Central for authentication, database, Storage S3, and account email; Fly application/API/worker services in Toronto; user-directed OpenAI API access; and provider-native operational services. The public beta makes no confidential-data, comprehensive-source, or continuous-backup claim.",
       },
       {
         title: "Report safely",
@@ -208,85 +206,81 @@ export const publicPages: Record<string, PublicPage> = {
     ],
   },
   privacy: {
-    title: "Privacy notice — controlled-beta draft",
-    eyebrow: "Independent privacy review completed",
+    title: "Privacy notice — public controlled beta",
+    eyebrow: "Effective 2026-07-18",
     summary:
-      "The public site does not intentionally collect form submissions, run product analytics, authenticate visitors, or load application data; hosting-level request records may still be processed.",
+      "Abhi Ranade operates ROSS. This notice describes the verified-account public controlled beta and the public website; neither is approved for privileged, confidential, regulated, proprietary, or real client material.",
     status:
-      "Independent privacy review is approved. Abhi Ranade is the operator and abhi@soundmarklaw.com is the privacy contact. Final storage-provider verification and complete vendor disclosures are still required before this notice can take effect.",
-    governance: independentlyReviewedPendingEffect(
+      "Effective 2026-07-18 following independent privacy review and owner approval. Privacy questions, access or deletion requests, and complaints may be sent to abhi@soundmarklaw.com without including client information.",
+    governance: independentlyReviewed(
       "Legal operator — Abhi Ranade; privacy evidence retained by AR",
       "Independent privacy expert; evidence retained by AR",
     ),
     sections: [
       {
         title: "Public website",
-        body: "The site serves public content only and has no first-party form or analytics integration. Its hosting service may process network identifiers, request metadata, security events, and necessary cookies or tokens; the effective notice must publish the actual hosting terms, purposes, locations, access, and retention.",
+        body: "The public site serves public content and has no first-party submission form or product-analytics integration. OpenAI ChatGPT Sites may process network identifiers, request and security metadata, and necessary service data under its terms. The site does not load ROSS application records.",
       },
       {
         title: "Hosted application",
-        body: "The public-registration hosted application is restricted to verified individual accounts and synthetic or affirmatively non-confidential material. It may process account, configuration, project, prompt, file, generated-content, source-query, connector, security, and support data as described in the engineering inventory. No real client or privileged material is approved.",
+        body: "The hosted application processes account and authentication data, settings, user-supplied provider keys, projects, prompts, uploaded files, generated content, source queries, connector data, security metadata, and support communications to provide, secure, troubleshoot, and improve the service. Use is restricted to verified accounts and synthetic or affirmatively non-confidential material.",
       },
       {
-        title: "Choices, access, and deletion",
-        body: "The application includes account export, content deletion, and account deletion surfaces. Privacy questions, complaints, and deletion requests may be sent to abhi@soundmarklaw.com. Applicable legal rights, verification steps, response periods, and appeals remain subject to the effective notice and governing law.",
+        title: "Providers and processing locations",
+        body: "Supabase Free provides authentication, database, Storage S3, and account email in a Canada Central project; Fly.io runs the application, API, and worker in Toronto. OpenAI API model processing, legal-source providers, and connectors are directed by users through their own credentials and may process data outside Canada. GitHub, public-site hosting, email delivery, security reporting, and provider support may also involve cross-border processing under provider terms.",
       },
       {
-        title: "Retention and disclosure",
-        body: "The approved target removes active and quarantine document objects within 24 hours of deletion or terminal scan failure and expires encrypted recovery copies within seven days. The actual object-store endpoint, enforcement, provider retention, lawful disclosure, cross-border processing, and contract terms still require verification before the notice becomes effective.",
+        title: "Retention, access, and deletion",
+        body: "Account and active application records remain until the user deletes them or the account. Active and quarantine objects are removed through the Storage API within 24 hours of an applicable deletion or terminal scan failure. Supabase Storage has no S3 versioning and deletion is permanent. Supabase Free has no automatic daily database backup; manual recovery exports are not continuous and, if created, are removed within seven days. Users must retain local copies. The application provides export and deletion controls; verified requests and complaints may be sent to the privacy contact. Information may be disclosed where required by law or needed to protect the service and its users.",
       },
     ],
   },
   terms: {
-    title: "Hosted-service terms — legal draft",
-    eyebrow: "Legal review required",
+    title: "Hosted-service terms — public controlled beta",
+    eyebrow: "Effective 2026-07-18",
     summary:
-      "No hosted-service terms have been approved and this page does not create a production service offering.",
+      "These terms govern the ROSS service operated by Abhi Ranade. Creating an account or using the hosted service means accepting these terms and the effective acceptable-use and privacy notices.",
     status:
-      "Operator, service scope, jurisdiction, support, suspension, liability, and change terms remain open.",
-    governance: independentReviewRequired(
-      "Legal operator and legal reviewer — unassigned",
-    ),
+      "Public controlled beta: verified account required; synthetic or affirmatively non-confidential material only; no service-level or data-recovery commitment.",
+    governance: ownerApproved("Legal operator — Abhi Ranade"),
     sections: [
       {
-        title: "Current effect",
-        body: "The repository is available under its open-source licence. Separate terms will be required for any operator-hosted service.",
+        title: "Service and eligibility",
+        body: "ROSS is an evolving public beta for lawful professional use. Users must provide accurate account information, protect credentials, remain responsible for their provider accounts and charges, and use only synthetic or affirmatively non-confidential material. The operator may change, limit, suspend, or discontinue beta functions and may suspend accounts to protect users, providers, sources, or the service.",
       },
       {
         title: "Professional responsibility",
-        body: "Future terms must preserve the user’s responsibility to verify sources, protect information, supervise work, and exercise independent professional judgment.",
+        body: "Users must verify sources, passages, currency, treatment, calculations, deadlines, and generated work; protect information; supervise every use; and exercise independent professional judgment. ROSS output is not legal advice and must not be presented as official, comprehensive, current, or human-reviewed unless independently verified.",
       },
       {
         title: "No legal service or authority guarantee",
-        body: "ROSS is software, not a lawyer, law firm, court, government service, comprehensive citator, or substitute for professional judgment. A hosted agreement must define service availability, source limits, beta changes, support, suspension, termination, warranties, liability, and dispute terms before it can bind anyone.",
+        body: "ROSS is software, not a lawyer, law firm, court, government service, comprehensive citator, or substitute for professional judgment. To the extent permitted by law, the beta is provided as available without warranties of availability, accuracy, fitness, source completeness, backup, or recovery. Users must retain local copies. Nothing excludes liability that applicable law does not permit to be excluded. Ontario law governs these hosted-service terms, and disputes are subject to the courts of Ontario, Canada.",
       },
       {
         title: "Open-source code",
-        body: "Repository use is governed by AGPL-3.0 and applicable notices. A hosted-service agreement cannot remove recipients’ rights under the code licence or replace the corresponding-source obligation for a network deployment.",
+        body: "Repository use is governed by AGPL-3.0 and applicable notices. These hosted-service terms do not remove recipients’ code-licence rights. Support, privacy, accessibility, and non-security complaints may be sent to abhi@soundmarklaw.com; security-sensitive details belong in private GitHub vulnerability reporting.",
       },
     ],
   },
   "acceptable-use": {
-    title: "Acceptable use — controlled-beta draft",
-    eyebrow: "Controlled beta",
+    title: "Acceptable use — public controlled beta",
+    eyebrow: "Effective 2026-07-18",
     summary:
       "ROSS is intended for lawful professional work by registered beta participants using synthetic or non-confidential materials.",
-    status: "Enforcement controls and final policy remain open.",
-    governance: independentReviewRequired(
-      "Operator, security, and legal reviewers — unassigned",
-    ),
+    status: "Compliance is a condition of access; the operator may restrict or suspend use to protect users, providers, sources, or the service.",
+    governance: ownerApproved("Legal operator and security owner — Abhi Ranade (AR)"),
     sections: [
       {
         title: "Prohibited during beta",
-        body: "Do not submit privileged, confidential, regulated, proprietary, or real client material; attempt unauthorized access; misrepresent output as verified authority; or use the service for consumer legal advice.",
+        body: "Do not submit privileged, confidential, regulated, proprietary, or real client material; facilitate unlawful conduct; provide unsupervised consumer legal advice; impersonate another person; violate intellectual-property, privacy, court, professional, source-provider, or contractual duties; or misrepresent output as verified authority.",
       },
       {
         title: "Report concerns",
-        body: "Security issues belong in private vulnerability reporting. Other concerns will use the contact workflow after it is implemented.",
+        body: "Security issues belong in private GitHub vulnerability reporting. Support, privacy, accessibility, and other concerns may be sent to abhi@soundmarklaw.com without including client information, confidential facts, or credentials.",
       },
       {
         title: "Source and system integrity",
-        body: "Do not bypass access controls, probe another user’s matter, upload malware, abuse source providers, scrape prohibited services, inject instructions intended to exfiltrate secrets, or represent unverified output as an official or human-reviewed source.",
+        body: "Do not bypass access controls, probe another user’s matter, upload malware except in an expressly authorized security exercise, disrupt the service, evade limits, abuse or scrape source providers contrary to their terms, inject instructions intended to exfiltrate secrets, or use credentials or data without authorization. Automated testing requires prior written authorization.",
       },
     ],
   },
@@ -319,9 +313,7 @@ export const publicPages: Record<string, PublicPage> = {
       "Security-sensitive reports use private GitHub vulnerability reporting. Support, privacy, accessibility, and complaints use abhi@soundmarklaw.com.",
     status:
       "Do not send client information, privileged material, credentials, or confidential facts through email or a public issue.",
-    governance: independentReviewRequired(
-      "Legal operator and support owner — Abhi Ranade",
-    ),
+    governance: ownerApproved("Legal operator and support owner — Abhi Ranade"),
     sections: [
       {
         title: "Security",
@@ -362,7 +354,7 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "Architecture decisions, product boundaries, verification reports, and contributor guidance live with the source code.",
     status:
-      "Release, restore, rollback, source-health, monitoring, and launch procedures are documented; live operational evidence remains pending.",
+      "Release, restore, rollback, source-health, monitoring, incident, and launch procedures are documented; the live operational exercises passed on 2026-07-18.",
     governance: engineeringReviewed("ROSS technical maintainers"),
     sections: [
       {
@@ -390,10 +382,10 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Service status",
     eyebrow: "Public status location",
     summary:
-      "The public website is an engineering checkpoint. The verified-account public beta remains blocked until the recorded launch gates pass; no client-material service is approved.",
+      "The verified-account public beta has completed its recorded review, operational, vendor, and notice gates. Public promotion still requires an immutable release candidate and successful deployment workflow; no client-material service is approved.",
     status:
-      "This /status page is the approved public status location for launch; application, API, legal-source health, and monitoring evidence remain pre-production.",
-    governance: independentReviewRequired("Operations owner — AR"),
+      "This /status page is the approved public status location. Until public promotion, the application remains an owner-controlled deployment and no public availability commitment applies.",
+    governance: ownerApproved("Operations owner — AR"),
     sections: [
       {
         title: "Status reporting",
@@ -409,20 +401,18 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Launch readiness",
     eyebrow: "Fail-closed release status",
     summary:
-      "ROSS has executable engineering gates, recorded independent reviews, named ownership, approved public domains and contacts, and operational runbooks. Live-environment exercises and final vendor verification remain pending.",
+      "ROSS has executable engineering gates, recorded independent reviews, named ownership, approved public domains and contacts, completed live-environment exercises, verified launch vendors, and effective notices.",
     status:
-      "Blocked: the object-store endpoint/provider and retention enforcement, effective notices, final-candidate source observation, staging, restore, rollback, monitoring, and other operational evidence are not yet approved.",
-    governance: independentReviewRequired(
-      "Release owner — AR; product owner — Abhi Ranade",
-    ),
+      "Ready for immutable-candidate generation and final controlled-beta evidence. Public deployment has not yet been performed, and the synthetic/non-confidential boundary remains binding.",
+    governance: ownerApproved("Release owner — AR; product owner — Abhi Ranade"),
     sections: [
       {
         title: "What the code enforces",
         body: "The candidate gate binds the Ontario evaluation, legal and product approvals, operational exercises, launch decisions, source health, and governed artifact hashes to a production decision. Missing evidence blocks release.",
       },
       {
-        title: "What people must still do",
-        body: "Operator, domains, contacts, controlled-beta terms, privacy, security, accessibility, legal content, and product decisions are recorded. Remaining work is operational verification, final vendor disclosure, effective notices, and immutable-candidate evidence.",
+        title: "What remains",
+        body: "The reviews, operational exercises, vendor disclosure, effective notices, source observation, and owner decisions are recorded. The remaining release sequence is to commit the evidence closure, run the complete candidate gate, create immutable evidence, run the final controlled-beta evidence workflow, and deploy the approved tag.",
       },
       {
         title: "Current safe boundary",
@@ -438,21 +428,21 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Subprocessors",
     eyebrow: "Launch vendor inventory",
     summary:
-      "The owner selected Supabase Free in ca-central, Fly services in Toronto, user-supplied OpenAI keys, the public site, and public contact channels. ROSS does not intentionally add product analytics at launch.",
+      "Effective 2026-07-18. The owner selected Supabase Free in Canada Central for authentication, database, Storage S3, and account email; Fly.io in Toronto; user-directed OpenAI API keys; OpenAI ChatGPT Sites; GitHub; and provider-native operational services. ROSS does not intentionally add product analytics at launch.",
     status:
-      "The separately configured S3-compatible object-store provider/region, retention enforcement, and remaining provider terms still require verification before this list can take effect.",
-    governance: independentlyReviewedPendingEffect(
+      "The inventory is effective for the synthetic/non-confidential public controlled beta. User-directed providers and some website, email, source, support, and security processing may occur outside Canada under provider terms.",
+    governance: independentlyReviewed(
       "Legal operator — Abhi Ranade; privacy evidence retained by AR",
       "Independent privacy expert; evidence retained by AR",
     ),
     sections: [
       {
-        title: "Required disclosure",
-        body: "The effective inventory must identify purpose, data categories, product/tier, region, retention, access, contractual basis, and review date for each service. User-selected model and connector providers must also be disclosed as user-directed processing.",
+        title: "Supabase and Fly.io",
+        body: "Supabase Free supplies authentication, database, Storage S3, and account email in a Canada Central project. Fly.io runs the application, API, and scan/conversion worker in Toronto. Supabase Free has no automatic daily database backup; Storage has no object versioning and deletion is permanent. The manual logical export, object copy, isolated restore, and authentication-recovery method was tested on 2026-07-18 without creating a service-level commitment.",
       },
       {
-        title: "Candidate categories",
-        body: "Recorded launch categories include Supabase authentication/database and account email, private S3-compatible object storage, user-supplied OpenAI access, Fly hosting and private worker, public-site hosting, logging, monitoring, backups, and support. Fly application hosting does not identify the separate object-store provider.",
+        title: "User-directed and public services",
+        body: "Users direct OpenAI API processing through their own keys and may separately authorize legal-source or connector providers; those relationships follow the user's provider terms. OpenAI ChatGPT Sites hosts the public website. GitHub hosts source, private vulnerability reporting, Actions, and release evidence. Provider-native request, email, security, support, and operational records follow applicable provider terms and may involve cross-border processing.",
       },
     ],
   },
@@ -462,7 +452,7 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "Model output is not authority. ROSS is designed to connect propositions to inspectable sources and make uncertainty visible.",
     status:
-      "Automated thresholds, Ontario-lawyer benchmark review, and independent adjudication are complete; source gaps and the remaining launch gates stay explicit.",
+      "Automated thresholds, Ontario-lawyer benchmark review, independent adjudication, operational evidence, and launch approvals are complete; source gaps remain explicit.",
     governance: independentlyReviewed(
       "Legal-content and evaluation owner — AR",
       "Independent Ontario lawyer; evidence retained by AR",
@@ -478,7 +468,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Release boundary",
-        body: "A passing benchmark does not make model output legal advice or prove comprehensive source coverage. The benchmark, legal-content, security, accessibility, and product reviews are recorded; privacy and operational launch evidence remain fail-closed.",
+        body: "A passing benchmark does not make model output legal advice or prove comprehensive source coverage. The benchmark, legal-content, privacy, security, accessibility, product, operational, and launch evidence are recorded and remain fail-closed for future releases.",
       },
     ],
   },
@@ -526,13 +516,13 @@ export const publicUpdates = [
       "Added an 11-case synthetic Ontario evaluation seed, generated report, accessibility/performance contracts, and independent-approval gate.",
     ],
     limitations:
-      "The operator, public domains and contacts are recorded, and the benchmark, workflows, and privacy decision are approved. Exact storage-provider verification, effective vendor notices, confidential-data mode, comprehensive citator, and final operational launch evidence remain unapproved.",
+      "The operator, public domains, contacts, reviews, exact Supabase Storage provider, effective notices, and operational exercises are recorded. Confidential-data mode and comprehensive citator coverage remain unapproved; immutable-candidate and final deployment evidence remain to be generated.",
   },
   {
     slug: "release-controls",
     title: "Production-readiness controls remain fail-closed",
     publishedAt: "2026-07-16",
-    status: "Engineering update — launch remains blocked",
+    status: "Engineering update — operational and launch gates completed",
     summary:
       "ROSS adds governed release artifacts, source quarantine, operational evidence, launch decisions, and indexing safeguards without claiming that external reviews or live exercises have occurred.",
     changes: [
@@ -542,6 +532,6 @@ export const publicUpdates = [
       "Added a public readiness page and a launch flag that cannot enable indexing while the operator, reviewed limited-source posture, or domain remains a placeholder.",
     ],
     limitations:
-      "The legal operator, domains, contacts, go-live owner decision, privacy approval, penetration retest, accessibility review, and Ontario-lawyer review are recorded. Storage-provider verification, effective notices, final-candidate source observation, isolated restore, and staging rollback evidence remain open.",
+      "The legal operator, domains, contacts, go-live decision, independent reviews, source observation, isolated restore, rollback/recovery, monitoring, and effective notices are recorded. Immutable-candidate generation, final evidence, and public deployment remain open.",
   },
 ] as const;

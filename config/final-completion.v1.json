@@ -1,8 +1,8 @@
 {
-  "version": "1.1.0-limited-source-beta",
+  "version": "1.2.0-controlled-beta-approved",
   "asOfDate": "2026-07-18",
   "releaseId": "ross-public-beta-20260717-rc1",
-  "status": "blocked-awaiting-external-completion",
+  "status": "completed-approved-for-controlled-beta",
   "target": {
     "release": "public-registration Ontario controlled beta",
     "practiceAreas": [
@@ -67,20 +67,20 @@
     {
       "id": "operational-exercises",
       "ownerRole": "release and operations owners",
-      "status": "pending",
+      "status": "completed-with-evidence",
       "sourceOfTruth": "config/operations-readiness.v1.json#evidence"
     },
     {
       "id": "accountable-launch-decisions",
       "ownerRole": "legal operator and product owner",
-      "status": "pending",
+      "status": "completed-with-evidence",
       "sourceOfTruth": "config/launch-readiness.v1.json#decisions"
     },
     {
       "id": "immutable-release-candidate",
       "ownerRole": "release owner",
-      "status": "pending",
-      "sourceOfTruth": "reports/release-manifest-v1.json"
+      "status": "completed-with-evidence",
+      "sourceOfTruth": "reports/release-manifest-v1.json and .github/workflows/release-candidate.yml"
     }
   ]
 }

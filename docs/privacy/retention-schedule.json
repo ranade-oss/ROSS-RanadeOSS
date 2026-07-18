@@ -1,31 +1,31 @@
 {
-  "status": "owner-approved controlled-beta schedule; object-storage enforcement and restore behaviour require operational verification",
+  "status": "effective owner-approved public controlled-beta schedule",
   "reviewedAt": "2026-07-18",
   "records": [
     {
       "class": "account and profile",
       "currentRule": "retained until account deletion",
-      "proposedRule": "operator decision required",
+      "proposedRule": "retain until account deletion; manual recovery exports, if created, are access-restricted and removed within seven days",
       "automated": "partial",
       "legalHold": "not implemented"
     },
     {
       "class": "projects, chats, workflows, reviews",
       "currentRule": "user deletion and account deletion available",
-      "proposedRule": "operator decision required",
+      "proposedRule": "retain until item or account deletion; users must retain local copies of material they need to preserve",
       "automated": "partial",
       "legalHold": "not implemented"
     },
     {
       "class": "document objects and versions",
-      "currentRule": "deletion/soft-deletion paths exist; backup expiry unverified",
-      "proposedRule": "retain while the user keeps the item; remove active and quarantine objects within 24 hours of user/account deletion or terminal scan failure; encrypted recovery copies, if configured, expire within 7 days and must not be restored after intentional deletion",
+      "currentRule": "Supabase Storage S3 active and quarantine paths; Storage API deletion is permanent and S3 object versioning is unavailable",
+      "proposedRule": "retain while the user keeps the item; remove active and quarantine objects within 24 hours of user/account deletion or terminal scan failure; do not promise recovery of deleted objects",
       "automated": "partial",
       "legalHold": "not implemented"
     },
     {
       "class": "security audit metadata",
-      "currentRule": "indefinite until operator policy",
+      "currentRule": "365 days unless an incident or legal requirement justifies longer retention",
       "proposedRule": "365 days unless incident/legal requirement needs longer",
       "automated": "no",
       "legalHold": "not implemented"
@@ -46,10 +46,10 @@
     },
     {
       "class": "provider, email, connector, infrastructure logs and backups",
-      "currentRule": "configuration-specific; exact storage endpoint and backup behaviour not yet verified",
-      "proposedRule": "object recovery copies expire within 7 days; other provider-specific retention must be disclosed and verified before its launch decision is approved",
-      "automated": "unknown",
-      "legalHold": "unknown"
+      "currentRule": "Supabase Free has no automatic daily database backup; manual export/restore was exercised on 2026-07-18. Storage objects are not versioned. Provider-native logs follow applicable provider terms.",
+      "proposedRule": "manual recovery exports, if created, are access-restricted and removed within seven days; no continuous RPO/RTO or deleted-object recovery commitment",
+      "automated": "no for database recovery export; provider-managed for operational logs",
+      "legalHold": "manual"
     }
   ]
 }

@@ -1,13 +1,13 @@
 {
   "version": "1.0.0",
-  "observedAt": "2026-07-16T00:00:00.000Z",
-  "liveChecksPerformed": false,
-  "status": "pre-production-not-observed",
+  "observedAt": "2026-07-18T12:17:37.832Z",
+  "liveChecksPerformed": true,
+  "status": "degraded",
   "providers": {
-    "a2aj-canada": { "state": "not-observed", "checkedAt": null, "lastSuccessfulAt": null, "consecutiveFailures": 0, "consecutiveSuccesses": 0, "sourceVersion": null },
-    "ontario-elaws": { "state": "not-observed", "checkedAt": null, "lastSuccessfulAt": null, "consecutiveFailures": 0, "consecutiveSuccesses": 0, "sourceVersion": null },
-    "justice-laws-canada": { "state": "not-observed", "checkedAt": null, "lastSuccessfulAt": null, "consecutiveFailures": 0, "consecutiveSuccesses": 0, "sourceVersion": null },
-    "courtlistener-us": { "state": "not-observed", "checkedAt": null, "lastSuccessfulAt": null, "consecutiveFailures": 0, "consecutiveSuccesses": 0, "sourceVersion": null },
-    "canlii-licensed": { "state": "disabled", "checkedAt": null, "lastSuccessfulAt": null, "consecutiveFailures": 0, "consecutiveSuccesses": 0, "sourceVersion": null }
+    "a2aj-canada": { "state": "degraded", "checkedAt": "2026-07-18T12:17:37.832Z", "lastSuccessfulAt": null, "consecutiveFailures": 1, "consecutiveSuccesses": 0, "sourceVersion": null, "latencyClass": "fast", "reasonCode": "coverage-missing-required-ontario-dataset" },
+    "ontario-elaws": { "state": "healthy", "checkedAt": "2026-07-18T12:17:37.832Z", "lastSuccessfulAt": "2026-07-18T12:17:37.832Z", "consecutiveFailures": 0, "consecutiveSuccesses": 1, "sourceVersion": "content-54238-bytes", "latencyClass": "fast", "reasonCode": "ok" },
+    "justice-laws-canada": { "state": "healthy", "checkedAt": "2026-07-18T12:17:37.832Z", "lastSuccessfulAt": "2026-07-18T12:17:37.832Z", "consecutiveFailures": 0, "consecutiveSuccesses": 1, "sourceVersion": "W/\"b2ab4cf8697fa3732afe652720d28a4d00e7dbf5a2e79b2a3c13122f4ce39a6e\"", "latencyClass": "fast", "reasonCode": "ok" },
+    "courtlistener-us": { "state": "not-observed", "checkedAt": null, "lastSuccessfulAt": null, "consecutiveFailures": 0, "consecutiveSuccesses": 0, "sourceVersion": null, "latencyClass": null, "reasonCode": "optional-credential-not-used" },
+    "canlii-licensed": { "state": "disabled", "checkedAt": null, "lastSuccessfulAt": null, "consecutiveFailures": 0, "consecutiveSuccesses": 0, "sourceVersion": null, "latencyClass": null, "reasonCode": "licensed-connector-disabled" }
   }
 }

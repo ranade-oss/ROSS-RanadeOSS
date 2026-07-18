@@ -8,20 +8,15 @@ import { evaluateFinalCompletion } from "../../scripts/lib/final-completion.mjs"
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const plan = JSON.parse(readFileSync(resolve(root, "config/final-completion.v1.json"), "utf8"));
 
-test("partially completed final plan passes development integrity without claiming launch readiness", () => {
+test("completed final plan passes development integrity with no pending workstream", () => {
   const result = evaluateFinalCompletion(plan, {}, {}, {}, {}, false);
   assert.equal(result.ready, true);
-  assert.equal(result.pending.length, 3);
+  assert.equal(result.pending.length, 0);
   assert.deepEqual(
     plan.workstreams
       .filter((item) => item.status === "completed-with-evidence")
       .map((item) => item.id),
-    [
-      "authorized-ontario-case-law",
-      "lawyer-authored-benchmark",
-      "five-workflow-reviews",
-      "privacy-security-accessibility",
-    ],
+    plan.workstreams.map((item) => item.id),
   );
 });
 
@@ -35,7 +30,7 @@ test("development integrity rejects expanded data or CanLII automation", () => {
   assert.ok(result.blockers.some((item) => /CanLII/.test(item)));
 });
 
-test("production final gate accepts the reserved ID but fails closed while external work is pending", () => {
+test("production final gate accepts the reserved ID but fails closed when dependent gates fail", () => {
   const result = evaluateFinalCompletion(plan, { ready: false }, { ready: false }, { ready: false }, {}, true);
   assert.equal(result.ready, false);
   assert.notEqual(plan.releaseId, "unassigned");
@@ -48,9 +43,7 @@ test("production final gate accepts the reserved ID but fails closed while exter
     false,
   );
   assert.ok(result.blockers.some((item) => /professional validation/i.test(item)));
-  assert.ok(
-    result.blockers.some((item) => /operational-exercises/i.test(item)),
-  );
+  assert.equal(result.blockers.some((item) => /operational-exercises/i.test(item)), false);
 });
 
 test("a coherent evidence-complete controlled-beta record can pass", () => {

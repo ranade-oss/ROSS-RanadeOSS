@@ -1,5 +1,5 @@
 {
-  "status": "privacy-reviewed launch inventory; object-storage endpoint verification and remaining provider terms pending",
+  "status": "effective owner-approved public controlled-beta inventory",
   "reviewedAt": "2026-07-18",
   "entries": [
     {
@@ -7,70 +7,70 @@
       "candidate": "Supabase project used for authentication and database",
       "productTier": "Free",
       "region": "ca-central",
-      "retention": "Account and application records persist until user deletion; Free-tier backup and recovery capability must be treated as unverified until exercised",
+      "retention": "Account and application records persist until user deletion. The Free tier has no automatic daily database backup; the operator-tested manual logical export and isolated restore method makes no continuous recovery commitment.",
       "trainingUse": null,
       "contract": null,
       "approved": true
     },
     {
       "category": "object storage",
-      "candidate": "Private S3-compatible object storage configured through ROSS_S3_ENDPOINT_URL; owner initially described the provider as Fly.io, but endpoint verification is required",
-      "productTier": null,
-      "region": "Target: Toronto/Canada; verify against the configured endpoint",
-      "retention": "Active objects until user/account deletion; active and quarantine copies removed within 24 hours; encrypted recovery copies, if configured, expire within 7 days and are not restored after intentional deletion",
+      "candidate": "Supabase Storage using its S3-compatible endpoint",
+      "productTier": "Free",
+      "region": "Canada Central (ca-central-1 endpoint verified during the isolated restore exercise)",
+      "retention": "Active objects remain until user/account deletion. Active and quarantine objects are removed through the Storage API within 24 hours of an applicable deletion or terminal scan failure. S3 versioning is unavailable; deleted objects are permanent and cannot be restored.",
       "trainingUse": null,
-      "contract": null,
-      "approved": false
+      "contract": "Supabase standard Free-tier terms and privacy/subprocessor terms",
+      "approved": true
     },
     {
       "category": "model provider",
-      "candidate": "OpenAI API using a user-supplied API key; only hosted model provider allowlisted at launch",
+      "candidate": "OpenAI API selected and authorized by each user through a user-supplied API key; only hosted model provider allowlisted at launch",
       "productTier": null,
       "region": null,
-      "retention": null,
-      "trainingUse": null,
-      "contract": null,
+      "retention": "Controlled by the user's provider account and applicable OpenAI API terms; ROSS makes no separate provider-retention promise",
+      "trainingUse": "Controlled by the user's provider account and applicable OpenAI API terms",
+      "contract": "User-directed provider relationship",
       "approved": true
     },
     {
       "category": "email",
-      "candidate": "Supabase Auth account-email delivery; exact downstream email service requires owner confirmation",
-      "productTier": null,
-      "region": null,
-      "retention": null,
+      "candidate": "Supabase Auth account-email delivery and its disclosed subprocessors",
+      "productTier": "Included with Supabase Free",
+      "region": "Provider-managed delivery may involve processing outside Canada",
+      "retention": "Provider operational and delivery records follow Supabase terms",
       "trainingUse": null,
-      "contract": null,
-      "approved": false
+      "contract": "Supabase standard Free-tier terms and subprocessor disclosures",
+      "approved": true
     },
     {
       "category": "application hosting and private worker",
       "candidate": "Fly.io",
       "productTier": null,
       "region": "Toronto (yyz)",
-      "retention": null,
+      "retention": "Provider-native operational logs follow Fly.io terms; application content logging is prohibited in hosted mode",
       "trainingUse": "not applicable",
-      "contract": null,
+      "contract": "Fly.io standard terms",
       "approved": true
     },
     {
       "category": "public website hosting",
-      "candidate": "ChatGPT Sites deployment at ross-ontario.augustmaat.chatgpt.site",
+      "candidate": "OpenAI ChatGPT Sites deployment at ross-ontario.augustmaat.chatgpt.site",
       "productTier": null,
       "region": null,
-      "retention": null,
+      "retention": "Provider-native website request, security, and necessary service records follow OpenAI terms",
       "trainingUse": null,
-      "contract": null,
+      "contract": "OpenAI workspace/service terms",
       "approved": true
     },
     {
       "category": "logging/monitoring/backups/support",
-      "candidate": "Provider-native operational metadata and configured alert webhook; exact services require owner confirmation",
-      "productTier": null,
-      "region": null,
-      "retention": null,
+      "candidate": "Fly.io and Supabase provider-native operational metadata, GitHub Actions/repository evidence, and the configured operator alert channel",
+      "productTier": "Provider standard tiers",
+      "region": "Fly workloads in Toronto; Supabase project in Canada Central; GitHub and alert delivery may process outside Canada",
+      "retention": "Provider terms apply; security audit metadata is retained under the operator schedule and content-bearing raw model streams are prohibited",
       "trainingUse": null,
-      "contract": null,
-      "approved": false
+      "contract": "Applicable provider standard terms",
+      "approved": true
     }
   ]
 }

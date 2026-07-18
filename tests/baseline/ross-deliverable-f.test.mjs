@@ -11,7 +11,11 @@ const json = (path) => JSON.parse(read(path));
 test("Deliverable F consolidates every remaining completion workstream", () => {
   const plan = json("config/final-completion.v1.json");
   assert.equal(plan.workstreams.length, 7);
-  assert.equal(plan.status, "blocked-awaiting-external-completion");
+  assert.equal(plan.status, "completed-approved-for-controlled-beta");
+  assert.equal(
+    plan.workstreams.every((item) => item.status === "completed-with-evidence"),
+    true,
+  );
   assert.deepEqual(plan.target.practiceAreas, [
     "Ontario civil litigation and appeals",
     "Ontario Small Claims Court",

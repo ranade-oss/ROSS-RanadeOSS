@@ -10,11 +10,21 @@ const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), "utf8"))
 const policy = readJson("config/legal-source-operations.v1.json");
 const report = readJson("reports/legal-source-health-v1.json");
 
-test("pre-production source report is explicit and fails the production gate", () => {
-  const result = evaluateSourceOperations(policy, report, new Date("2026-07-16T01:00:00Z"));
+test("the candidate observation permits the disclosed optional A2AJ gap", () => {
+  const result = evaluateSourceOperations(policy, report, new Date("2026-07-18T13:00:00Z"));
+  assert.equal(result.ready, true);
+  assert.equal(result.providers["a2aj-canada"].required, false);
+  assert.equal(result.providers["a2aj-canada"].ready, false);
+  assert.equal(result.providers["ontario-elaws"].ready, true);
+  assert.equal(result.providers["justice-laws-canada"].ready, true);
+});
+
+test("missing live checks still fail the production gate", () => {
+  const candidate = structuredClone(report);
+  candidate.liveChecksPerformed = false;
+  const result = evaluateSourceOperations(policy, candidate, new Date("2026-07-18T13:00:00Z"));
   assert.equal(result.ready, false);
   assert.match(result.blockers.join("\n"), /Live legal-source checks/);
-  assert.match(result.blockers.join("\n"), /a2aj-canada/);
 });
 
 test("fresh healthy observations satisfy required-provider policy", () => {
