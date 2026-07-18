@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { SiteLogo } from "@/app/components/site-logo";
@@ -32,10 +32,14 @@ export default function VerifyMfaPage() {
     const [loading, setLoading] = useState(true);
     const [verifying, setVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const errorRef = useRef<HTMLParagraphElement>(null);
 
     const nextPath = safeNextPath(searchParams.get("next"));
     const canVerify =
-        !loading && !verifying && !!selectedFactorId && code.trim().length === 6;
+        !loading &&
+        !verifying &&
+        !!selectedFactorId &&
+        code.trim().length === 6;
 
     useEffect(() => {
         if (authLoading) return;
@@ -89,6 +93,10 @@ export default function VerifyMfaPage() {
             cancelled = true;
         };
     }, [authLoading, nextPath, router, user]);
+
+    useEffect(() => {
+        if (error) errorRef.current?.focus();
+    }, [error]);
 
     async function verify() {
         if (!canVerify) return;
@@ -148,11 +156,16 @@ export default function VerifyMfaPage() {
                         <>
                             {factors.length > 1 && (
                                 <select
+                                    aria-label="Authenticator"
+                                    aria-describedby={
+                                        error ? "mfa-page-error" : undefined
+                                    }
+                                    aria-invalid={Boolean(error)}
                                     value={selectedFactorId}
                                     onChange={(event) =>
                                         setSelectedFactorId(event.target.value)
                                     }
-                                    className="h-9 w-full rounded-lg border border-transparent bg-gray-100 px-3 text-sm text-gray-900 shadow-none outline-none focus-visible:border-gray-200 focus-visible:ring-2 focus-visible:ring-gray-300/45"
+                                    className="h-9 w-full rounded-lg border border-transparent bg-gray-100 px-3 text-sm text-gray-900 shadow-none outline-none focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
                                 >
                                     {factors.map((factor) => (
                                         <option
@@ -172,18 +185,30 @@ export default function VerifyMfaPage() {
                                 autoFocus={!loading}
                                 canSubmit={canVerify}
                                 onSubmit={() => void verify()}
+                                errorId={error ? "mfa-page-error" : undefined}
                             />
                         </>
                     )}
 
-                    {error && <p className="text-sm text-red-600">{error}</p>}
+                    {error && (
+                        <p
+                            ref={errorRef}
+                            id="mfa-page-error"
+                            role="alert"
+                            aria-live="assertive"
+                            tabIndex={-1}
+                            className="rounded bg-red-50 p-3 text-sm text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+                        >
+                            {error}
+                        </p>
+                    )}
 
                     <div className="flex items-center justify-end gap-2 pt-4">
                         <button
                             type="button"
                             onClick={() => void cancel()}
                             disabled={verifying}
-                            className="px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-950 disabled:cursor-not-allowed disabled:text-gray-400"
+                            className="rounded px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:text-gray-400"
                         >
                             Cancel
                         </button>

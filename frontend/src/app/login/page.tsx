@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 import { Button } from "@/app/components/ui/button";
@@ -12,13 +12,13 @@ import { useAuth } from "@/app/contexts/AuthContext";
 const authGlassCardClassName =
     "rounded-2xl border border-white/70 bg-white/72 p-8 shadow-[0_4px_14px_rgba(15,23,42,0.045),inset_0_1px_0_rgba(255,255,255,0.86),inset_0_-8px_18px_rgba(255,255,255,0.12)] backdrop-blur-2xl";
 const authInputClassName =
-    "rounded-lg border border-transparent bg-gray-100 px-3 shadow-none focus-visible:border-gray-200 focus-visible:ring-2 focus-visible:ring-gray-300/45";
+    "rounded-lg border border-transparent bg-gray-100 px-3 shadow-none focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2";
 const authToggleClassName =
     "flex gap-1 rounded-full bg-gray-200 p-1 text-xs font-medium";
 const authToggleActiveClassName =
     "inline-flex h-6 items-center rounded-full border border-white/80 bg-white/86 px-3 text-gray-900 shadow-[0_2px_7px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-3px_7px_rgba(229,231,235,0.32)] backdrop-blur-xl";
 const authToggleInactiveClassName =
-    "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900";
+    "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2";
 
 export default function LoginPage() {
     const signupsEnabled =
@@ -29,12 +29,17 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const errorRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!authLoading && isAuthenticated) {
             router.replace("/assistant");
         }
     }, [authLoading, isAuthenticated, router]);
+
+    useEffect(() => {
+        if (error) errorRef.current?.focus();
+    }, [error]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -98,10 +103,15 @@ export default function LoginPage() {
                             <Input
                                 id="email"
                                 type="email"
+                                autoComplete="username"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
                                 required
+                                aria-invalid={Boolean(error)}
+                                aria-describedby={
+                                    error ? "login-error" : undefined
+                                }
                                 className={`w-full ${authInputClassName}`}
                             />
                         </div>
@@ -116,16 +126,28 @@ export default function LoginPage() {
                             <Input
                                 id="password"
                                 type="password"
+                                autoComplete="current-password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Enter your password"
                                 required
+                                aria-invalid={Boolean(error)}
+                                aria-describedby={
+                                    error ? "login-error" : undefined
+                                }
                                 className={`w-full ${authInputClassName}`}
                             />
                         </div>
 
                         {error && (
-                            <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
+                            <div
+                                ref={errorRef}
+                                id="login-error"
+                                role="alert"
+                                aria-live="assertive"
+                                tabIndex={-1}
+                                className="rounded bg-red-50 p-3 text-sm text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+                            >
                                 {error}
                             </div>
                         )}
@@ -133,7 +155,7 @@ export default function LoginPage() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full mt-5 bg-black hover:bg-gray-900 text-white"
+                            className="w-full mt-5 bg-black hover:bg-gray-900 text-white focus-visible:ring-blue-700 focus-visible:ring-offset-2"
                         >
                             {loading ? "Logging in..." : "Log in"}
                         </Button>

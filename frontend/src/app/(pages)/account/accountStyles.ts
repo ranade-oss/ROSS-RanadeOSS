@@ -3,7 +3,7 @@ import { cn } from "@/app/lib/utils";
 export const accountGlassInputClassName = cn(
     "rounded-lg px-3 text-gray-900 placeholder:text-gray-400",
     "border border-gray-200 bg-gray-50 shadow-none",
-    "focus-visible:border-gray-200 focus-visible:ring-2 focus-visible:ring-gray-300/45",
+    "focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2",
     "disabled:cursor-not-allowed disabled:text-gray-700 disabled:opacity-100 disabled:placeholder:text-gray-600",
 );
 

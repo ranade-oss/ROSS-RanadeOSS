@@ -137,7 +137,7 @@ function VerificationCodeInput({
                     }
                     onPaste={handlePaste}
                     onKeyDown={(event) => handleKeyDown(event, index)}
-                    className="h-11 w-10 rounded-lg border border-transparent bg-gray-100 text-center text-lg font-medium text-gray-950 shadow-none outline-none transition-colors focus:border-gray-200 focus:ring-2 focus:ring-gray-300/45 disabled:cursor-not-allowed disabled:opacity-45"
+                    className="h-11 w-10 rounded-lg border border-transparent bg-gray-100 text-center text-lg font-medium text-gray-950 shadow-none outline-none transition-colors focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45"
                     aria-label={`Verification code digit ${index + 1}`}
                     maxLength={1}
                 />

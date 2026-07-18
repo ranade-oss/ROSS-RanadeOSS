@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
     JusticeLawsProvider,
+    normalizeLegislationDate,
     OntarioELawsProvider,
 } from "./officialLegislation";
 
@@ -26,6 +27,17 @@ const syntheticOntarioDocument = JSON.stringify({
     content: syntheticOntarioHtml,
     state: "current",
     dateFrom: "2026-07-01T04:00:00.000Z",
+});
+
+test("legislation calendar dates do not shift with the host timezone", () => {
+    assert.equal(normalizeLegislationDate("July 10, 2026"), "2026-07-10");
+    assert.equal(normalizeLegislationDate("10 July 2026"), "2026-07-10");
+    assert.equal(
+        normalizeLegislationDate("2026-07-10T23:30:00-04:00"),
+        "2026-07-10",
+    );
+    assert.equal(normalizeLegislationDate("February 30, 2026"), null);
+    assert.equal(normalizeLegislationDate("not a date"), null);
 });
 
 test("Justice Laws provider parses official XML metadata and a requested section", async () => {

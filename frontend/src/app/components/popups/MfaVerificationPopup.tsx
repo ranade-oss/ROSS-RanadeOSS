@@ -50,6 +50,7 @@ export function MfaVerificationPopup({
     const [loading, setLoading] = useState(false);
     const [verifying, setVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const errorRef = useRef<HTMLParagraphElement>(null);
     const canVerify =
         !verifying &&
         !loading &&
@@ -92,6 +93,10 @@ export function MfaVerificationPopup({
             cancelled = true;
         };
     }, [open]);
+
+    useEffect(() => {
+        if (error) errorRef.current?.focus();
+    }, [error]);
 
     async function verify() {
         if (!canVerify) return;
@@ -162,11 +167,16 @@ export function MfaVerificationPopup({
                     <div className="space-y-4">
                         {factors.length > 1 && (
                             <select
+                                aria-label="Authenticator"
+                                aria-describedby={
+                                    error ? "mfa-popup-error" : undefined
+                                }
+                                aria-invalid={Boolean(error)}
                                 value={selectedFactorId}
                                 onChange={(event) =>
                                     setSelectedFactorId(event.target.value)
                                 }
-                                className="h-9 w-full rounded-lg bg-gray-100 px-3 text-sm text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-gray-300/45"
+                                className="h-9 w-full rounded-lg bg-gray-100 px-3 text-sm text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
                             >
                                 {factors.map((factor) => (
                                     <option key={factor.id} value={factor.id}>
@@ -183,10 +193,22 @@ export function MfaVerificationPopup({
                             autoFocus={open && !loading}
                             onSubmit={() => void verify()}
                             canSubmit={canVerify}
+                            errorId={error ? "mfa-popup-error" : undefined}
                         />
                     </div>
                 )}
-                {error && <p className="text-xs text-red-600">{error}</p>}
+                {error && (
+                    <p
+                        ref={errorRef}
+                        id="mfa-popup-error"
+                        role="alert"
+                        aria-live="assertive"
+                        tabIndex={-1}
+                        className="rounded bg-red-50 p-3 text-xs text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+                    >
+                        {error}
+                    </p>
+                )}
             </div>
         </Modal>
     );
@@ -199,6 +221,7 @@ export function VerificationCodeInput({
     autoFocus,
     onSubmit,
     canSubmit,
+    errorId,
 }: {
     value: string;
     onChange: (value: string) => void;
@@ -206,6 +229,7 @@ export function VerificationCodeInput({
     autoFocus?: boolean;
     onSubmit?: () => void;
     canSubmit?: boolean;
+    errorId?: string;
 }) {
     const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const digits = Array.from({ length: 6 }, (_, index) => value[index] ?? "");
@@ -284,8 +308,10 @@ export function VerificationCodeInput({
                     onChange={(event) => updateDigit(index, event.target.value)}
                     onPaste={handlePaste}
                     onKeyDown={(event) => handleKeyDown(event, index)}
-                    className="h-13 w-12 rounded-lg border border-gray-300 bg-gray-50 text-center text-2xl font-medium font-serif text-gray-950 shadow-none outline-none transition-colors focus:border-gray-400 focus:ring-2 focus:ring-gray-300/45 disabled:cursor-not-allowed disabled:opacity-45"
+                    className="h-13 w-12 rounded-lg border border-gray-300 bg-gray-50 text-center text-2xl font-medium font-serif text-gray-950 shadow-none outline-none transition-colors focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45"
                     aria-label={`Verification code digit ${index + 1}`}
+                    aria-describedby={errorId}
+                    aria-invalid={Boolean(errorId)}
                     maxLength={1}
                 />
             ))}

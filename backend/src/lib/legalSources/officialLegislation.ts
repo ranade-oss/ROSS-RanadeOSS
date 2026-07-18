@@ -212,7 +212,7 @@ export class OntarioELawsProvider implements LegalSourceProvider {
             ? filterSection(allSections, input.section)
             : allSections;
         const summary = legislationSummary(item, this.descriptor.id, language, {
-            currentToDate: normalizedDate(rawCurrencyDate.trim()),
+            currentToDate: normalizeLegislationDate(rawCurrencyDate.trim()),
             lastAmendedDate: null,
             verification: "verified",
         });
@@ -223,7 +223,7 @@ export class OntarioELawsProvider implements LegalSourceProvider {
             state: typeof payload.state === "string" ? payload.state : null,
             consolidationStart:
                 typeof payload.dateFrom === "string"
-                    ? normalizedDate(payload.dateFrom)
+                    ? normalizeLegislationDate(payload.dateFrom)
                     : null,
         });
     }
@@ -327,8 +327,12 @@ export function parseJusticeXml(
             : item.canonicalUrl,
     );
     return {
-        currentToDate: normalizedDate(text(root["@lims:current-date"])),
-        lastAmendedDate: normalizedDate(text(root["@lims:lastAmendedDate"])),
+        currentToDate: normalizeLegislationDate(
+            text(root["@lims:current-date"]),
+        ),
+        lastAmendedDate: normalizeLegislationDate(
+            text(root["@lims:lastAmendedDate"]),
+        ),
         fullText: nodeText(root),
         sections,
     };
@@ -383,10 +387,10 @@ function collectJusticeSections(
                 heading: nodeText(section.MarginalNote) || null,
                 text: nodeText(section),
                 sourceUrl: stableSectionUrl(sourceUrl, label),
-                inForceFrom: normalizedDate(
+                inForceFrom: normalizeLegislationDate(
                     text(section["@lims:inforce-start-date"]),
                 ),
-                lastAmendedDate: normalizedDate(
+                lastAmendedDate: normalizeLegislationDate(
                     text(section["@lims:lastAmendedDate"]),
                 ),
             });
@@ -645,14 +649,73 @@ function decodeHtml(value: string) {
     });
 }
 
-function normalizedDate(value: string | null) {
+const MONTHS = new Map(
+    [
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december",
+    ].map((month, index) => [month, index + 1]),
+);
+
+function calendarDate(year: number, month: number, day: number) {
+    const probe = new Date(Date.UTC(year, month - 1, day));
+    if (
+        probe.getUTCFullYear() !== year ||
+        probe.getUTCMonth() + 1 !== month ||
+        probe.getUTCDate() !== day
+    ) {
+        return null;
+    }
+    return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+export function normalizeLegislationDate(value: string | null) {
     if (!value) return null;
     const iso = value.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
     if (iso) return iso;
+
+    const monthFirst = value
+        .trim()
+        .match(/^([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})$/i);
+    if (monthFirst) {
+        const month = MONTHS.get(monthFirst[1].toLowerCase());
+        if (month)
+            return calendarDate(
+                Number(monthFirst[3]),
+                month,
+                Number(monthFirst[2]),
+            );
+    }
+
+    const dayFirst = value
+        .trim()
+        .match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+),?\s+(\d{4})$/i);
+    if (dayFirst) {
+        const month = MONTHS.get(dayFirst[2].toLowerCase());
+        if (month)
+            return calendarDate(
+                Number(dayFirst[3]),
+                month,
+                Number(dayFirst[1]),
+            );
+    }
+
     const parsed = new Date(value);
-    return Number.isNaN(parsed.valueOf())
-        ? null
-        : parsed.toISOString().slice(0, 10);
+    if (Number.isNaN(parsed.valueOf())) return null;
+    return calendarDate(
+        parsed.getFullYear(),
+        parsed.getMonth() + 1,
+        parsed.getDate(),
+    );
 }
 
 function nodeText(value: unknown): string {

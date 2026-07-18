@@ -26,10 +26,13 @@ test("website, app, and API URLs are environment configurable", () => {
 test("the API validates its environment and exact CORS origins", () => {
   const runtime = read("backend/src/config/runtime.ts");
   const server = read("backend/src/index.ts");
+  const cors = read("backend/src/middleware/corsPolicy.ts");
   assert.match(runtime, /ROSS_ENV/);
   assert.match(runtime, /CORS_ALLOWED_ORIGINS/);
   assert.match(runtime, /Production CORS origins cannot use localhost/);
-  assert.match(server, /runtime\.allowedOrigins\.includes\(origin\)/);
+  assert.match(server, /corsPolicy\(runtime\.allowedOrigins\)/);
+  assert.match(cors, /allowedOrigins\.includes\(origin\)/);
+  assert.match(cors, /res\.status\(403\)/);
   assert.doesNotMatch(server, /origin: process\.env\.FRONTEND_URL/);
 });
 

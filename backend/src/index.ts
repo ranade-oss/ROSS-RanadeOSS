@@ -1,6 +1,5 @@
 import "dotenv/config";
 import express from "express";
-import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { chatRouter } from "./routes/chat";
@@ -15,6 +14,7 @@ import { caseLawRouter } from "./routes/caseLaw";
 import { legalSourcesRouter } from "./routes/legalSources";
 import { loadRuntimeConfig } from "./config/runtime";
 import { enforceHostedDataBoundary } from "./middleware/dataBoundary";
+import { corsPolicy, rejectDeniedCorsOrigin } from "./middleware/corsPolicy";
 
 const app = express();
 const runtime = loadRuntimeConfig();
@@ -115,18 +115,8 @@ app.use(
   }),
 );
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || runtime.allowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(new Error("Origin is not allowed by ROSS CORS policy."));
-    },
-    credentials: true,
-  }),
-);
+app.use(corsPolicy(runtime.allowedOrigins));
+app.use(rejectDeniedCorsOrigin);
 
 app.use(generalLimiter);
 app.use(enforceHostedDataBoundary(runtime));

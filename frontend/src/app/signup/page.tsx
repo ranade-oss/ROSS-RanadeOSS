@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 import { Button } from "@/app/components/ui/button";
@@ -15,13 +15,13 @@ import { rossBrand } from "@/app/lib/rossBrand";
 const authGlassCardClassName =
     "rounded-2xl border border-white/70 bg-white/72 p-8 shadow-[0_4px_14px_rgba(15,23,42,0.045),inset_0_1px_0_rgba(255,255,255,0.86),inset_0_-8px_18px_rgba(255,255,255,0.12)] backdrop-blur-2xl";
 const authInputClassName =
-    "rounded-lg border border-transparent bg-gray-100 px-3 shadow-none focus-visible:border-gray-200 focus-visible:ring-2 focus-visible:ring-gray-300/45";
+    "rounded-lg border border-transparent bg-gray-100 px-3 shadow-none focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2";
 const authToggleClassName =
     "flex gap-1 rounded-full bg-gray-200 p-1 text-xs font-medium";
 const authToggleActiveClassName =
     "inline-flex h-6 items-center rounded-full border border-white/80 bg-white/86 px-3 text-gray-900 shadow-[0_2px_7px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-3px_7px_rgba(229,231,235,0.32)] backdrop-blur-xl";
 const authToggleInactiveClassName =
-    "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900";
+    "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2";
 const termsVersion =
     process.env.NEXT_PUBLIC_ROSS_TERMS_VERSION ?? "2026-07-17-public-beta";
 const privacyVersion =
@@ -42,12 +42,17 @@ export default function SignupPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const errorRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!authLoading && isAuthenticated && !success) {
             router.replace("/assistant");
         }
     }, [authLoading, isAuthenticated, router, success]);
+
+    useEffect(() => {
+        if (error) errorRef.current?.focus();
+    }, [error]);
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -89,8 +94,7 @@ export default function SignupPage() {
                         ross_terms_accepted: true,
                         ross_privacy_version: privacyVersion,
                         ross_privacy_acknowledged: true,
-                        ross_data_boundary:
-                            "synthetic-or-non-confidential",
+                        ross_data_boundary: "synthetic-or-non-confidential",
                     },
                 },
             });
@@ -225,6 +229,7 @@ export default function SignupPage() {
                             <Input
                                 id="name"
                                 type="text"
+                                autoComplete="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Your name"
@@ -245,6 +250,7 @@ export default function SignupPage() {
                             <Input
                                 id="organisation"
                                 type="text"
+                                autoComplete="organization"
                                 value={organisation}
                                 onChange={(e) =>
                                     setOrganisation(e.target.value)
@@ -264,6 +270,7 @@ export default function SignupPage() {
                             <Input
                                 id="email"
                                 type="email"
+                                autoComplete="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
@@ -282,6 +289,7 @@ export default function SignupPage() {
                             <Input
                                 id="password"
                                 type="password"
+                                autoComplete="new-password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Create a password (min. 12 characters)"
@@ -299,7 +307,7 @@ export default function SignupPage() {
                                     setAcceptedPolicies(event.target.checked)
                                 }
                                 required
-                                className="mt-1 h-4 w-4"
+                                className="mt-1 h-4 w-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
                             />
                             <span>
                                 I agree to the{" "}
@@ -332,7 +340,7 @@ export default function SignupPage() {
                                     setAcceptedBoundary(event.target.checked)
                                 }
                                 required
-                                className="mt-1 h-4 w-4"
+                                className="mt-1 h-4 w-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
                             />
                             <span>
                                 I will use the hosted beta only with synthetic
@@ -352,6 +360,7 @@ export default function SignupPage() {
                             <Input
                                 id="confirmPassword"
                                 type="password"
+                                autoComplete="new-password"
                                 value={confirmPassword}
                                 onChange={(e) =>
                                     setConfirmPassword(e.target.value)
@@ -363,7 +372,14 @@ export default function SignupPage() {
                         </div>
 
                         {error && (
-                            <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
+                            <div
+                                ref={errorRef}
+                                id="signup-error"
+                                role="alert"
+                                aria-live="assertive"
+                                tabIndex={-1}
+                                className="rounded bg-red-50 p-3 text-sm text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+                            >
                                 {error}
                             </div>
                         )}
@@ -375,12 +391,11 @@ export default function SignupPage() {
                                 !acceptedPolicies ||
                                 !acceptedBoundary
                             }
-                            className="w-full bg-black hover:bg-gray-900 text-white"
+                            className="w-full bg-black hover:bg-gray-900 text-white focus-visible:ring-blue-700 focus-visible:ring-offset-2"
                         >
                             {loading ? "Creating account..." : "Sign up"}
                         </Button>
                     </form>
-
                 </div>
             </div>
         </div>
