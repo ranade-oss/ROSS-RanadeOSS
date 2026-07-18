@@ -117,12 +117,20 @@ export default function LoginPage() {
                         </div>
 
                         <div>
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                            >
-                                Password
-                            </label>
+                            <div className="mb-2 flex items-center justify-between gap-4">
+                                <label
+                                    htmlFor="password"
+                                    className="block text-sm font-medium text-gray-700"
+                                >
+                                    Password
+                                </label>
+                                <Link
+                                    href="/forgot-password"
+                                    className="text-sm font-medium text-blue-700 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+                                >
+                                    Forgot password?
+                                </Link>
+                            </div>
                             <Input
                                 id="password"
                                 type="password"

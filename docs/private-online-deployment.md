@@ -24,7 +24,7 @@ following repository secrets:
 | Secret                          | Source                                    |
 | ------------------------------- | ----------------------------------------- |
 | `FLY_API_TOKEN`                 | Fly.io user access token                  |
-| `ROSS_SUPABASE_URL`             | Supabase project URL                      |
+| `ROSS_SUPABASE_URL`             | Supabase project origin (no API path)     |
 | `ROSS_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key                  |
 | `ROSS_SUPABASE_SECRET_KEY`      | Supabase secret/service-role key          |
 | `ROSS_S3_ENDPOINT_URL`          | Supabase Storage S3 endpoint              |
@@ -57,7 +57,7 @@ After the first successful deploy, copy the website URL from the GitHub Actions
 summary. In Supabase **Authentication → URL Configuration**:
 
 1. Set **Site URL** to the Fly website URL.
-2. Add `<Fly website URL>/**` to **Redirect URLs**.
+2. Add `<Fly website URL>/reset-password` to **Redirect URLs**.
 3. Confirm new user sign-ups remain disabled.
 
 ## First login verification

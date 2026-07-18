@@ -89,6 +89,42 @@ jobs:
             exit 1
           fi
 
+          node - "$ROSS_SUPABASE_URL" <<'NODE'
+          const value = process.argv[2];
+          let parsed;
+          try {
+            parsed = new URL(value);
+          } catch {
+            console.error("ROSS_SUPABASE_URL must be a valid absolute URL.");
+            process.exit(1);
+          }
+          if (
+            parsed.protocol !== "https:" ||
+            (parsed.pathname !== "/" && parsed.pathname !== "") ||
+            parsed.search ||
+            parsed.hash ||
+            parsed.username ||
+            parsed.password
+          ) {
+            console.error(
+              "ROSS_SUPABASE_URL must be the HTTPS project origin without an API path, query, fragment, or credentials.",
+            );
+            process.exit(1);
+          }
+          NODE
+
+          SUPABASE_BASE="${ROSS_SUPABASE_URL%/}"
+          for key_name in \
+            ROSS_SUPABASE_PUBLISHABLE_KEY \
+            ROSS_SUPABASE_SECRET_KEY; do
+            if ! curl --fail --silent --show-error --output /dev/null \
+              "${SUPABASE_BASE}/auth/v1/settings" \
+              -H "apikey: ${!key_name}"; then
+              echo "${key_name} does not authenticate against ROSS_SUPABASE_URL." >&2
+              exit 1
+            fi
+          done
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
         with:
           version: 0.4.49
