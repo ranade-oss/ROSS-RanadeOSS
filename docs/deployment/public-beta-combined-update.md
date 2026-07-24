@@ -37,8 +37,10 @@ GitHub or Fly. Each user continues to save their own key in
 1. Open GitHub Actions.
 2. Select **Verify and deploy public ROSS beta**.
 3. Click **Run workflow** on `main`.
-4. Keep the default release ID and Fly app names, check the single deployment
-   confirmation, and run it.
+4. Keep the default `ross-public-beta-20260724-rc1` release ID and Fly app
+   names, check the single deployment confirmation, and run it. Release IDs
+   must always use `ross-public-beta-YYYYMMDD-rcN`; descriptive suffixes are
+   not permitted.
 5. Approve the existing `public-beta` environment when GitHub requests approval.
 
 The workflow runs the tests and build, creates the immutable release tag,
@@ -46,7 +48,7 @@ deploys that exact tag, checks the API and signup URL, runs deployed E2E tests,
 observes the live A2AJ catalogue, and uploads one final evidence artifact.
 
 Do not run the older standalone hotfix or the separate release-candidate,
-final-evidence, and public-deployment workflows for this update.
+final-evidence, and legacy public-deployment workflows for this update.
 
 ## CanLII boundary
 

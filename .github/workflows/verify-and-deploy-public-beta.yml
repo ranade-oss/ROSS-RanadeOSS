@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_id:
-        description: New immutable release identifier
+        description: New immutable ID using ross-public-beta-YYYYMMDD-rcN
         required: true
-        default: ross-public-beta-20260724-a2aj-canlii-v1
+        default: ross-public-beta-20260724-rc1
         type: string
       fly_organization:
         description: Fly.io organization slug
@@ -65,14 +65,7 @@ jobs:
             echo "The deployment confirmation must be checked." >&2
             exit 1
           fi
-          if ! [[ "$ROSS_RELEASE_ID" =~ ^ross-public-beta-[a-z0-9][a-z0-9-]{5,80}$ ]]; then
-            echo "Use a lowercase immutable release ID beginning with ross-public-beta-." >&2
-            exit 1
-          fi
-          if [ "$ROSS_RELEASE_ID" = "ross-public-beta-20260717-rc1" ]; then
-            echo "The existing immutable release tag cannot be reused or moved." >&2
-            exit 1
-          fi
+          node scripts/validate-release-id.mjs "$ROSS_RELEASE_ID"
 
       - name: Set up Node
         uses: actions/setup-node@v4

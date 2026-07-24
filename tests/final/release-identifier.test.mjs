@@ -10,11 +10,19 @@ test("accepts a reserved public-beta release identifier", () => {
     validateReleaseId("ross-public-beta-20260717-rc1"),
     "ross-public-beta-20260717-rc1",
   );
+  assert.equal(
+    validateReleaseId("ross-public-beta-20260724-rc1"),
+    "ross-public-beta-20260724-rc1",
+  );
 });
 
 test("rejects unassigned and malformed release identifiers", () => {
   assert.throws(() => validateReleaseId("unassigned"), /must use/);
   assert.throws(() => validateReleaseId("ross-rc-20260717-deadbeef"), /must use/);
+  assert.throws(
+    () => validateReleaseId("ross-public-beta-20260724-a2aj-canlii-v1"),
+    /must use/,
+  );
 });
 
 test("immutable tag must point to the checked-out commit", () => {

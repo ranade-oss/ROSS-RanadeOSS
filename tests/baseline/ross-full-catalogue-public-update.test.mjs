@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { validateReleaseId } from "../../scripts/lib/release-identifier.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -45,6 +46,15 @@ test("the existing per-user CanLII field activates backend metadata, citation, a
 test("the consolidated workflow fixes signup verification and replaces the three manual release workflows", () => {
   const workflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
   assert.match(workflow, /name: Verify and deploy public ROSS beta/);
+  const defaultReleaseId = workflow.match(
+    /default: (ross-public-beta-[^\s]+)/,
+  )?.[1];
+  assert.equal(
+    validateReleaseId(defaultReleaseId),
+    "ross-public-beta-20260724-rc1",
+  );
+  assert.match(workflow, /node scripts\/validate-release-id\.mjs/);
+  assert.doesNotMatch(workflow, /a2aj-canlii-v1/);
   assert.match(workflow, /Run repository and full-catalogue tests/);
   assert.match(workflow, /Create or confirm the immutable tag/);
   assert.match(workflow, /environment: public-beta/);
@@ -52,6 +62,15 @@ test("the consolidated workflow fixes signup verification and replaces the three
   assert.match(workflow, /--output \/dev\/null/);
   assert.doesNotMatch(workflow, /grep -q "Create Account"/);
   assert.match(workflow, /final-combined-evidence/);
+});
+
+test("the older public deployment workflow is clearly legacy and preflights governed releases before approval", () => {
+  const workflow = read(".github/workflows/deploy-public-beta-ross.yml");
+  assert.match(workflow, /name: "Legacy: deploy previously governed public beta"/);
+  assert.match(workflow, /preflight:/);
+  assert.match(workflow, /node scripts\/validate-release-id\.mjs/);
+  assert.match(workflow, /node scripts\/verify-final-release-id\.mjs/);
+  assert.match(workflow, /needs: preflight/);
 });
 
 test("the combined public update expressly excludes the private-only defect set", () => {

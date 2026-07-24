@@ -1,10 +1,10 @@
-name: Deploy public ROSS beta
+name: "Legacy: deploy previously governed public beta"
 
 on:
   workflow_dispatch:
     inputs:
       release_id:
-        description: Approved immutable release identifier
+        description: Legacy governed ID using ross-public-beta-YYYYMMDD-rcN
         required: true
         type: string
       fly_organization:
@@ -51,8 +51,27 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  preflight:
+    name: Validate legacy governed release before approval
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      INPUT_RELEASE_ID: ${{ inputs.release_id }}
+      VERIFY_RELEASE_TAG: "true"
+    steps:
+      - name: Check out approved candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate identifier, governed records, and immutable tag
+        run: |
+          node scripts/validate-release-id.mjs "$INPUT_RELEASE_ID"
+          node scripts/verify-final-release-id.mjs
+
   deploy:
     name: Deploy verified-account ROSS beta to Toronto
+    needs: preflight
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: public-beta
