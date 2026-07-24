@@ -12,6 +12,8 @@ import { userRouter } from "./routes/user";
 import { downloadsRouter } from "./routes/downloads";
 import { caseLawRouter } from "./routes/caseLaw";
 import { legalSourcesRouter } from "./routes/legalSources";
+import { a2ajCatalogueRouter } from "./routes/a2ajCatalogue";
+import { canLiiRouter } from "./routes/canlii";
 import { loadRuntimeConfig } from "./config/runtime";
 import { enforceHostedDataBoundary } from "./middleware/dataBoundary";
 import { corsPolicy, rejectDeniedCorsOrigin } from "./middleware/corsPolicy";
@@ -49,8 +51,7 @@ function makeLimiter(options: {
     legacyHeaders: false,
     skip: (req) => req.method === "OPTIONS",
     message: {
-      detail:
-        options.message ?? "Too many requests. Please try again later.",
+      detail: options.message ?? "Too many requests. Please try again later.",
     },
   });
 }
@@ -157,6 +158,8 @@ app.use("/user", userRouter);
 app.use("/users", userRouter);
 app.use("/download", downloadsRouter);
 app.use("/case-law", caseLawRouter);
+app.use("/legal-sources/a2aj", a2ajCatalogueRouter);
+app.use("/legal-sources/canlii", canLiiRouter);
 app.use("/legal-sources", legalSourcesRouter);
 
 app.get("/health", (_req, res) =>

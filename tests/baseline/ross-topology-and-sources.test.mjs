@@ -96,17 +96,21 @@ test("official legislation providers retain authority, currency, and reproductio
   assert.match(route, /legislation\/:providerId\/:sourceId/);
 });
 
-test("licensed CanLII access is disabled, entitlement-gated, and non-scraping", () => {
-  const connector = read("backend/src/lib/legalSources/licensedConnector.ts");
-  const environment = read("backend/.env.example");
+test("CanLII runtime access is per-user, REST metadata-only, and non-scraping", () => {
+  const connector = read("backend/src/lib/legalSources/canliiProvider.ts");
+  const client = read("backend/src/lib/legalSources/canliiClient.ts");
+  const registry = read("backend/src/lib/legalSources/index.ts");
+  const field = read("frontend/src/app/(pages)/account/api-keys/page.tsx");
   assert.match(connector, /id: "canlii-licensed"/);
   assert.match(connector, /enabledByDefault: false/);
-  assert.match(connector, /does not scrape CanLII/);
-  assert.match(connector, /LicensedConnectorGate/);
-  assert.match(connector, /CANLII_FULL_TEXT_ENTITLED/);
-  assert.match(connector, /url\.hostname === "api\.canlii\.org"/);
-  assert.doesNotMatch(connector, /fetch\(/);
-  assert.match(environment, /CANLII_CONNECTOR_ENABLED=false/);
+  assert.match(connector, /fullTextStatus: "metadata-only"/);
+  assert.match(connector, /context\?\.apiToken/);
+  assert.match(connector, /getCitator/);
+  assert.match(client, /https:\/\/api\.canlii\.org\/v1/);
+  assert.match(client, /api_key/);
+  assert.match(registry, /new CanLiiMetadataProvider/);
+  assert.match(field, /CanLII REST API key issued directly to you/);
+  assert.doesNotMatch(connector, /CANLII_API_KEY/);
 });
 
 test("Canadian citations separate parsing from provider-backed verification", () => {
