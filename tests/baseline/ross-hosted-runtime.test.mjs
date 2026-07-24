@@ -109,8 +109,16 @@ test("hosted uploads are bounded and validated against their file containers", (
 
 test("release checks reject high dependency advisories and deployments retry transient Fly failures", () => {
   const rootPackage = JSON.parse(read("package.json"));
-  assert.match(rootPackage.scripts["audit:high"], /--audit-level=high/);
+  assert.equal(rootPackage.scripts["audit:high"], "node scripts/audit-workspaces.mjs");
   assert.match(rootPackage.scripts.check, /npm run audit:high/);
+
+  const audit = read("scripts/audit-workspaces.mjs");
+  assert.match(audit, /--audit-level=high/);
+  for (const workspace of ["backend", "frontend", "website"]) {
+    assert.match(audit, new RegExp(`["']${workspace}["']`));
+  }
+  assert.doesNotMatch(audit, /&&/);
+  assert.match(audit, /failures\.length > 0/);
 
   const retry = read("scripts/fly-deploy-with-retry.sh");
   assert.match(retry, /FLY_DEPLOY_ATTEMPTS:-3/);
