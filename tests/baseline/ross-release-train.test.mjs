@@ -19,18 +19,12 @@ import {
   nextPublicReleaseId,
   validateDigestImageRef,
 } from "../../scripts/lib/release-train.mjs";
+import { deployedReleaseTrainProbe } from "../../scripts/lib/release-train-probe.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const image = (app, character) =>
   `registry.fly.io/${app}@sha256:${character.repeat(64)}`;
-const deployedProbeSource = () => {
-  const match = read("scripts/fly-release-train.mjs").match(
-    /const deployedProbe = `([\s\S]*?)`;\n\nfunction runRemoteProbe/,
-  );
-  assert.ok(match, "The exact embedded deployment probe must be extractable.");
-  return Function(`"use strict"; return \`${match[1]}\`;`)();
-};
 
 test("release IDs are generated from the Toronto date and never reused", () => {
   assert.equal(
@@ -178,6 +172,7 @@ test("the frontend uses public runtime configuration for staging parity", () => 
 
 test("rehearsal is private, read-only, and cannot dispatch production jobs", () => {
   const train = read("scripts/fly-release-train.mjs");
+  const probe = deployedReleaseTrainProbe;
   const rehearsalApi = read("deploy/fly/rehearsal-api.toml");
   const rehearsalWeb = read("deploy/fly/rehearsal-frontend.toml");
   const rehearsalWorker = read(
@@ -198,9 +193,9 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
     ),
     /\.internal/,
   );
-  assert.match(train, /AbortSignal\.timeout\(10000\)/);
-  assert.match(train, /after 12 attempts/);
-  assert.match(train, /retryableStatus = new Set\(\[408, 425, 429, 500, 502, 503, 504\]\)/);
+  assert.match(probe, /AbortSignal\.timeout\(10000\)/);
+  assert.match(probe, /after 12 attempts/);
+  assert.match(probe, /retryableStatus = new Set\(\[408, 425, 429, 500, 502, 503, 504\]\)/);
   assert.match(rehearsalApi, /force_https = false/);
   assert.match(rehearsalWeb, /force_https = false/);
   for (const config of [rehearsalApi, rehearsalWeb, rehearsalWorker]) {
@@ -212,12 +207,12 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   assert.match(train, /"--machine",\s+machineId/);
   assert.match(train, /ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER: "true"/);
   assert.match(
-    train,
+    probe,
     /"X-ROSS-Data-Boundary": "synthetic-or-non-confidential"/,
   );
-  assert.match(train, /expectStatus\(protectedUpload, 401/);
-  assert.match(train, /expected HTTP " \+ expected \+ " but received HTTP "/);
-  assert.match(train, /workerAuth\.status === 400/);
+  assert.match(probe, /expectStatus\(protectedUpload, 401/);
+  assert.match(probe, /expected HTTP " \+ expected \+ " but received HTTP "/);
+  assert.match(probe, /workerAuth\.status === 400/);
   assert.match(train, /observe-legal-sources\.mjs/);
   assert.match(train, /verifyProductionSecrets\(\)/);
   assert.match(train, /class ExpectedRehearsalFailure extends Error/);
@@ -236,7 +231,7 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   );
 });
 
-test("the exact embedded full probe executes every read-only contract", async () => {
+test("the exact shared full probe executes every read-only contract", async () => {
   const apiNetwork = "http://ross-ranadeoss-api-rehearsal.flycast";
   const webNetwork = "http://ross-ranadeoss-web-rehearsal.flycast";
   const workerNetwork = "http://ross-ranadeoss-worker-rehearsal.flycast";
@@ -304,7 +299,7 @@ test("the exact embedded full probe executes every read-only contract", async ()
     throw new Error(`Unexpected probe request: ${url}`);
   };
 
-  await runInNewContext(deployedProbeSource(), {
+  await runInNewContext(deployedReleaseTrainProbe, {
     AbortSignal,
     Error,
     Promise,

@@ -27,6 +27,14 @@ export function assertIsolatedStaging({ apps, productionApps = [], resources }) 
         const value = resources[name];
         if (!String(value ?? "").trim()) throw new Error(`Missing isolated staging resource: ${name}.`);
     }
+    for (const name of ["productionSupabaseUrl", "productionStorageEndpoint"]) {
+        if (!String(resources[name] ?? "").trim()) {
+            throw new Error(`Missing production comparison identifier: ${name}.`);
+        }
+    }
+    if (productionApps.length !== 3 || productionApps.some((app) => !String(app).trim())) {
+        throw new Error("All production app comparison identifiers are required.");
+    }
     if ((resources.productionSupabaseUrl && resources.supabaseUrl === resources.productionSupabaseUrl) ||
         (resources.productionStorageEndpoint && resources.storageEndpoint === resources.productionStorageEndpoint)) {
         throw new Error("Staging data resources must not equal production resources.");

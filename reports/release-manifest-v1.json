@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 119,
+  "artifactCount": 126,
   "artifacts": [
     {
       "path": ".github/actions/setup-ross-node/action.yml",
@@ -39,6 +39,11 @@
       "path": ".github/workflows/release-candidate.yml",
       "sha256": "b155ce7cc7a54f884e20f6a164929d8851652793725db8e2e0df18bbc7cf0511",
       "sizeBytes": 3027
+    },
+    {
+      "path": ".github/workflows/staging-debug-release-train.yml",
+      "sha256": "57224d82cd3a095b1ecf1048e1cf28ecdb8d5dce65366b38a21ce1c87ea36f0b",
+      "sizeBytes": 10651
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
@@ -341,6 +346,11 @@
       "sizeBytes": 5556
     },
     {
+      "path": "docs/staging-debug-release-train.md",
+      "sha256": "dff475f33b4255cc07853a6ea26063bd5990a1317e02c164bdd73456d42bc300",
+      "sizeBytes": 1892
+    },
+    {
       "path": "frontend/package-lock.json",
       "sha256": "78c5149b7d30f1d3e39e545a995e8bf537a1368b302fd8ca452ddaffbe811fef",
       "sizeBytes": 533845
@@ -496,9 +506,19 @@
       "sizeBytes": 4775
     },
     {
+      "path": "scripts/lib/release-train-probe.mjs",
+      "sha256": "a9a238424999ea97a1f2fbd1d9b04ee8fe044da053403e6c2d46f94e0ce1f4a0",
+      "sizeBytes": 5182
+    },
+    {
+      "path": "scripts/lib/staging-debug.mjs",
+      "sha256": "a3bf56de870458f1142eaf1b843f47bfa78dbcd9b3fe75372c663fbf2f8c93b4",
+      "sizeBytes": 2022
+    },
+    {
       "path": "scripts/build-release-train-images.sh",
-      "sha256": "6a3c18fd86d91861b0062c39e9206fd82cbf367e56952bcb4b7327cfb19fec57",
-      "sizeBytes": 4760
+      "sha256": "777328e5428fa2c580854a957d1c64c46eb82164636e077ccb87e7d5c716bd02",
+      "sizeBytes": 5794
     },
     {
       "path": "scripts/fly-deploy-with-retry.sh",
@@ -507,8 +527,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "731807a55f5e21267502071b679dc3a30f56c9c7fde0781efc4e68af0b37b2ff",
-      "sizeBytes": 32016
+      "sha256": "71338c98da92f12dfc244c3eb49d74b00cde169e5b8cdfbe5597ec75954199d0",
+      "sizeBytes": 26940
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
@@ -524,6 +544,11 @@
       "path": "scripts/release-train-image-ref.mjs",
       "sha256": "17cef8f7cf2b22e4bcaf19c0766fbbfef916941e654ad1156a87ab7047e92b2e",
       "sizeBytes": 1896
+    },
+    {
+      "path": "scripts/run-staging-debug-probe.mjs",
+      "sha256": "c49dee35e02aea23f421f2a0244703edef7f9a6632932a40e7261a97b9eee2d3",
+      "sizeBytes": 2207
     },
     {
       "path": "scripts/run-backup-restore-exercise.sh",
@@ -551,6 +576,11 @@
       "sizeBytes": 301
     },
     {
+      "path": "scripts/validate-staging-debug.mjs",
+      "sha256": "48b0646e15b8b173718943cf1ce961b2404fe765818e2cb533e3ed1c477dea6e",
+      "sizeBytes": 1000
+    },
+    {
       "path": "tests/baseline/ross-ci-toolchain.test.mjs",
       "sha256": "31a3b311d6d68099452a3c4d6d7c35aadd7f2c6300a28fb1d4752ffbadc97ed6",
       "sizeBytes": 3245
@@ -567,8 +597,13 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "012ab7b4d6b7b1513a0362d300c2333a477142564cb5a8acc6ea912e6779b4b4",
-      "sizeBytes": 27789
+      "sha256": "2406c9046010025257a3bd9586f7821010a8e1b35717a66f7c4fbd12ed712720",
+      "sizeBytes": 27604
+    },
+    {
+      "path": "tests/baseline/ross-staging-debug.test.mjs",
+      "sha256": "807796a1bcfc66609a301c8c4160a68b17bfe593a4b408571d18a6160603f9a2",
+      "sizeBytes": 3704
     },
     {
       "path": "website/package-lock.json",
