@@ -112,6 +112,7 @@
     "scripts/preflight-fly-images.sh",
     "scripts/release-train-image-ref.mjs",
     "scripts/run-staging-debug-probe.mjs",
+    "scripts/staging-debug-lifecycle.sh",
     "scripts/run-backup-restore-exercise.sh",
     "scripts/lib/professional-validation.mjs",
     "scripts/lib/release-identifier.mjs",

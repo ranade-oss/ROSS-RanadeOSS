@@ -105,26 +105,7 @@ jobs:
 
       - name: Inject a genuine deployment failure and restore baseline
         shell: bash
-        run: |
-          set -euo pipefail
-          baseline_version="$(flyctl releases --app "$WEB_APP" --json | tee artifacts/staging-debug/diagnostics/web-releases-before-failure.json | jq -er '.[0].Version // .[0].version')"
-          printf '%s\n' "$baseline_version" > artifacts/staging-debug/diagnostics/web-rollback-target.txt
-
-          failure_config=deploy/fly/staging-debug-forced-failure.toml
-          trap 'rm -f "$failure_config"' EXIT
-          cp deploy/fly/rehearsal-frontend.toml "$failure_config"
-          sed -i 's/internal_port = 3000/internal_port = 9/' "$failure_config"
-          cp "$failure_config" artifacts/staging-debug/diagnostics/forced-failure.toml
-          if flyctl deploy . --config "$failure_config" --app "$WEB_APP" --image "$CANDIDATE_WEB_IMAGE" --ha=false --yes --flycast --no-public-ips > artifacts/staging-debug/commands/web-forced-failure.log 2>&1; then
-            echo "The deliberately invalid deployment unexpectedly succeeded." >&2
-            exit 1
-          fi
-          echo '{"expectedDeploymentFailureObserved":true}' > artifacts/staging-debug/diagnostics/forced-failure-result.json
-          flyctl status --app "$WEB_APP" --json > artifacts/staging-debug/diagnostics/web-after-failed-deploy-status.json 2>&1 || true
-          flyctl logs --app "$WEB_APP" --no-tail > artifacts/staging-debug/diagnostics/web-after-failed-deploy.log 2>&1 || true
-
-          flyctl releases rollback "$baseline_version" --app "$WEB_APP" --yes 2>&1 | tee artifacts/staging-debug/commands/web-rollback.log
-          flyctl releases --app "$WEB_APP" --json > artifacts/staging-debug/diagnostics/web-releases-after-rollback.json
+        run: bash scripts/staging-debug-lifecycle.sh inject-failure-and-rollback
 
       - name: Verify full integration recovery after rollback
         shell: bash
@@ -146,17 +127,7 @@ jobs:
       - name: Destroy all ephemeral staging resources
         if: always()
         shell: bash
-        run: |
-          failed=0
-          for app in "${WORKER_APP:-}" "${API_APP:-}" "${WEB_APP:-}"; do
-            [ -n "$app" ] || continue
-            if ! flyctl status --app "$app" >/dev/null 2>&1; then
-              printf 'App %s was not provisioned; nothing to destroy.\n' "$app" > "artifacts/staging-debug/commands/cleanup-${app}.log"
-              continue
-            fi
-            flyctl apps destroy "$app" --yes > "artifacts/staging-debug/commands/cleanup-${app}.log" 2>&1 || failed=1
-          done
-          [ "$failed" -eq 0 ] || { echo 'Ephemeral cleanup failed; operator action required.' >&2; exit 1; }
+        run: bash scripts/staging-debug-lifecycle.sh cleanup
 
       - name: Upload complete staging-debug evidence
         if: always()

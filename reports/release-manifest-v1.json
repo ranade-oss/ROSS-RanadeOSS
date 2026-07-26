@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 126,
+  "artifactCount": 127,
   "artifacts": [
     {
       "path": ".github/actions/setup-ross-node/action.yml",
@@ -42,8 +42,8 @@
     },
     {
       "path": ".github/workflows/staging-debug-release-train.yml",
-      "sha256": "57224d82cd3a095b1ecf1048e1cf28ecdb8d5dce65366b38a21ce1c87ea36f0b",
-      "sizeBytes": 10651
+      "sha256": "ba54e3a0b98324906bc93e4411e04b4a7ffcb8399401f028b7dae3f77ab3fdb9",
+      "sizeBytes": 8501
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
@@ -551,6 +551,11 @@
       "sizeBytes": 2207
     },
     {
+      "path": "scripts/staging-debug-lifecycle.sh",
+      "sha256": "a3c4db1fbb71b1224a21bf20bec044d4e310a9e83c879b48d1aace0770ea2071",
+      "sizeBytes": 2854
+    },
+    {
       "path": "scripts/run-backup-restore-exercise.sh",
       "sha256": "f2d0ee4cb495214f03db3e479ba3ff58de499d999abed62f72cf5c84bafd0a63",
       "sizeBytes": 10932
@@ -602,8 +607,8 @@
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
-      "sha256": "807796a1bcfc66609a301c8c4160a68b17bfe593a4b408571d18a6160603f9a2",
-      "sizeBytes": 3704
+      "sha256": "1cc949e10de7a48b33ae426209e3fc8a8a859079c6ea9acf6f0c2f402807585c",
+      "sizeBytes": 7704
     },
     {
       "path": "website/package-lock.json",
