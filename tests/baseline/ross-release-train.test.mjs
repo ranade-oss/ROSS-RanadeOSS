@@ -211,7 +211,12 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   assert.match(train, /"machine",\s+"wait",[\s\S]*?"--state",\s+"started"/);
   assert.match(train, /"--machine",\s+machineId/);
   assert.match(train, /ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER: "true"/);
-  assert.match(train, /protectedUpload\.status === 401/);
+  assert.match(
+    train,
+    /"X-ROSS-Data-Boundary": "synthetic-or-non-confidential"/,
+  );
+  assert.match(train, /expectStatus\(protectedUpload, 401/);
+  assert.match(train, /expected HTTP " \+ expected \+ " but received HTTP "/);
   assert.match(train, /workerAuth\.status === 400/);
   assert.match(train, /observe-legal-sources\.mjs/);
   assert.match(train, /verifyProductionSecrets\(\)/);
@@ -246,6 +251,7 @@ test("the exact embedded full probe executes every read-only contract", async ()
       method: options.method ?? "GET",
       origin: new Headers(options.headers).get("origin"),
       authorization: new Headers(options.headers).get("authorization"),
+      boundary: new Headers(options.headers).get("x-ross-data-boundary"),
     });
     if (url === `${apiNetwork}/health`) {
       const origin = new Headers(options.headers).get("origin");
@@ -277,6 +283,16 @@ test("the exact embedded full probe executes every read-only contract", async ()
       });
     }
     if (url === `${apiNetwork}/single-documents`) {
+      if (
+        (options.method ?? "GET") === "POST" &&
+        new Headers(options.headers).get("x-ross-data-boundary") !==
+          "synthetic-or-non-confidential"
+      ) {
+        return Response.json(
+          { code: "ross_data_boundary_acknowledgement_required" },
+          { status: 428 },
+        );
+      }
       return new Response("", { status: 401 });
     }
     if (url === "https://synthetic.supabase.co/auth/v1/settings") {
@@ -343,6 +359,7 @@ test("the exact embedded full probe executes every read-only contract", async ()
   assert.equal(requests[5].origin, "https://untrusted.example");
   assert.equal(requests[6].origin, publicWeb);
   assert.equal(requests[7].origin, publicWeb);
+  assert.equal(requests[7].boundary, "synthetic-or-non-confidential");
   assert.equal(
     requests[9].authorization,
     "Bearer synthetic-worker-secret",

@@ -76,7 +76,7 @@ test("release candidate workflow creates evidence but never deploys", () => {
   const workflow = read(".github/workflows/release-candidate.yml");
   assert.match(workflow, /workflow_dispatch/);
   assert.match(workflow, /npm run check/);
-  assert.match(workflow, /upload-artifact@v4/);
+  assert.match(workflow, /upload-artifact@v7/);
   assert.doesNotMatch(workflow, /\bdeploy(?:ment)?\s*:/i);
   assert.doesNotMatch(workflow, /wrangler deploy|kubectl|helm upgrade/i);
 });

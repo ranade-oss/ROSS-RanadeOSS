@@ -14,6 +14,9 @@ test("Deliverable D retains live source observation and deployment evidence", ()
 
   assert.match(scheduled, /schedule:/);
   assert.match(scheduled, /observe-legal-sources\.mjs/);
+  assert.match(scheduled, /package-manager-cache: false/);
+  assert.match(scheduled, /actions\/upload-artifact@v7/);
+  assert.doesNotMatch(scheduled, /if: always\(\)/);
   assert.match(deployment, /observe-legal-sources\.mjs/);
   assert.match(observer, /LEGISLATION-ON/);
   assert.match(observer, /REGULATIONS-ON/);

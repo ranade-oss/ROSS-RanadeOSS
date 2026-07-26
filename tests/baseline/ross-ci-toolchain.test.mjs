@@ -43,6 +43,10 @@ test("workflows use the current Node 24-based official GitHub actions", () => {
     const workflow = read(`.github/workflows/${filename}`);
     assert.doesNotMatch(workflow, /actions\/checkout@v4/);
     assert.doesNotMatch(workflow, /actions\/setup-node@v4/);
+    assert.doesNotMatch(
+      workflow,
+      /actions\/(?:upload|download)-artifact@v4/,
+    );
   }
 });
 

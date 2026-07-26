@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import express from "express";
 import {
+    ROSS_DATA_BOUNDARY_HEADER,
+    ROSS_DATA_BOUNDARY_VALUE,
     enforceHostedDataBoundary,
     isContentBearingRequest,
 } from "./dataBoundary";
 import type { RuntimeConfig } from "../config/runtime";
+import { requireAuth } from "./auth";
 
 const config: RuntimeConfig = {
     environment: "test",
@@ -96,4 +100,42 @@ test("controlled beta accepts the exact acknowledgement and self-hosted mode is 
         },
     );
     assert.equal(selfHostedNext, true);
+});
+
+test("a boundary-aware upload probe reaches authentication without writing data", async () => {
+    const app = express();
+    app.use(enforceHostedDataBoundary(config));
+    app.post("/single-documents", requireAuth, (_req, res) => {
+        res.status(500).json({
+            detail: "The unauthenticated probe reached a write handler.",
+        });
+    });
+
+    const server = app.listen(0);
+    await new Promise<void>((resolve) => server.once("listening", resolve));
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+
+    try {
+        const url = `http://127.0.0.1:${address.port}/single-documents`;
+        const blocked = await fetch(url, { method: "POST" });
+        assert.equal(blocked.status, 428);
+
+        const authenticatedBoundary = await fetch(url, {
+            method: "POST",
+            headers: {
+                [ROSS_DATA_BOUNDARY_HEADER]: ROSS_DATA_BOUNDARY_VALUE,
+                "Content-Type": "application/octet-stream",
+            },
+            body: new Uint8Array(),
+        });
+        assert.equal(authenticatedBoundary.status, 401);
+        assert.deepEqual(await authenticatedBoundary.json(), {
+            detail: "Missing or invalid Authorization header",
+        });
+    } finally {
+        await new Promise<void>((resolve, reject) =>
+            server.close((error) => (error ? reject(error) : resolve())),
+        );
+    }
 });

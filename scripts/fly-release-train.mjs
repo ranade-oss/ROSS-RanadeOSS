@@ -421,6 +421,17 @@ const json = async (response, label) => {
   expect(response.ok, label + " returned HTTP " + response.status);
   return response.json();
 };
+const expectStatus = async (response, expected, label) => {
+  if (response.status === expected) return;
+  let detail = "";
+  try {
+    detail = (await response.text()).trim().slice(0, 500);
+  } catch {}
+  throw new Error(
+    label + " expected HTTP " + expected + " but received HTTP " +
+      response.status + (detail ? ": " + detail : ""),
+  );
+};
 (async () => {
   const health = await json(
     await request("API health", apiNetwork + "/health"),
@@ -480,7 +491,7 @@ const json = async (response, label) => {
     apiNetwork + "/single-documents",
     { headers: { Origin: publicWeb } },
   );
-  expect(protectedRead.status === 401, "Authentication guard failed");
+  await expectStatus(protectedRead, 401, "Authentication guard");
   const protectedUpload = await request(
     "Protected document upload",
     apiNetwork + "/single-documents",
@@ -489,11 +500,12 @@ const json = async (response, label) => {
       headers: {
         Origin: publicWeb,
         "Content-Type": "application/octet-stream",
+        "X-ROSS-Data-Boundary": "synthetic-or-non-confidential",
       },
       body: new Uint8Array(),
     },
   );
-  expect(protectedUpload.status === 401, "Upload authentication guard failed");
+  await expectStatus(protectedUpload, 401, "Upload authentication guard");
 
   const settings = await request(
     "Supabase settings",

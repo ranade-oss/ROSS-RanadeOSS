@@ -42,7 +42,7 @@ jobs:
         run: node scripts/verify-final-release-id.mjs
 
       - name: Archive non-secret candidate evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ross-${{ inputs.candidate_id }}-evidence
           retention-days: 30

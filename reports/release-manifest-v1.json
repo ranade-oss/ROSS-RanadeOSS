@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 110,
+  "artifactCount": 119,
   "artifacts": [
     {
       "path": ".github/actions/setup-ross-node/action.yml",
@@ -11,24 +11,44 @@
       "sizeBytes": 650
     },
     {
+      "path": ".github/workflows/baseline.yml",
+      "sha256": "c1463c9ddd8cbf19fba988852649f15678dc91bb69a8e9f04f9ee68cd04999df",
+      "sizeBytes": 692
+    },
+    {
+      "path": ".github/workflows/deploy-private-ross.yml",
+      "sha256": "c8d859646fc8143964afdd1277fc6f291c8f6efeb0904e2f397fbd518e18b228",
+      "sizeBytes": 11614
+    },
+    {
       "path": ".github/workflows/deploy-public-beta-ross.yml",
-      "sha256": "dd8cfbd4e00d189232945b9b6dbc85d70af0a5ba4c94210900e6314366ee4d98",
+      "sha256": "8a40a7cb5689498c321e8e3e66cbce67d7a70faa9e3ea369873aaf9c04b7071f",
       "sizeBytes": 12920
     },
     {
       "path": ".github/workflows/final-controlled-beta-evidence.yml",
-      "sha256": "169d702f87b3023b6b13152abaabbcb5bc7e6208bdfd9cb0b7b72bd87fe9e857",
+      "sha256": "49ee5033f9e86962e16b76f097dfa72f76094a304f8070c2b17ebe91fa359768",
       "sizeBytes": 1757
     },
     {
+      "path": ".github/workflows/refresh-release-manifest.yml",
+      "sha256": "b940ec3cab4c9d5f8de4db89d3c96cdbfe280ce72084076d599d960750de52de",
+      "sizeBytes": 2540
+    },
+    {
       "path": ".github/workflows/release-candidate.yml",
-      "sha256": "d1f2862a56d8967bdce2d09ce28cc99c0542f41cdaf86882966eaa619b46f484",
+      "sha256": "b155ce7cc7a54f884e20f6a164929d8851652793725db8e2e0df18bbc7cf0511",
       "sizeBytes": 3027
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
       "sha256": "69253489fffdf6b220f6ffea764c30e46510dd97730fb23e85400c9eaeba6c11",
       "sizeBytes": 9544
+    },
+    {
+      "path": ".github/workflows/verify-ontario-sources.yml",
+      "sha256": "a686858060c8c90be6860e57d7f97bbc4a3d00c79c72c337bc471b4f7cd88e03",
+      "sizeBytes": 916
     },
     {
       "path": "backend/migrations/20260718_01_document_scan_pipeline.sql",
@@ -124,6 +144,16 @@
       "path": "backend/src/lib/chat/tools/toolDispatcher.ts",
       "sha256": "b8e1cdc5f8d083582299d81a82080f8c5c1ea48fdc751dbca12595ef980982a8",
       "sizeBytes": 78933
+    },
+    {
+      "path": "backend/src/middleware/dataBoundary.test.ts",
+      "sha256": "b3b90c02c303b2c2ce67d2553b96bfc8da785f1f4f5b9c7110b5517415dac3f5",
+      "sizeBytes": 4414
+    },
+    {
+      "path": "backend/src/middleware/dataBoundary.ts",
+      "sha256": "e273e51e6c928f4ed22b902095032232260002884fe49397608e0998e601b76a",
+      "sizeBytes": 1680
     },
     {
       "path": "backend/src/routes/documents.ts",
@@ -477,8 +507,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "ed347a7da0a347e06e42de789c0861e6150eeaad1ea52bf006bfb4ef4f8e16fa",
-      "sizeBytes": 31609
+      "sha256": "731807a55f5e21267502071b679dc3a30f56c9c7fde0781efc4e68af0b37b2ff",
+      "sizeBytes": 32016
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
@@ -521,9 +551,24 @@
       "sizeBytes": 301
     },
     {
+      "path": "tests/baseline/ross-ci-toolchain.test.mjs",
+      "sha256": "31a3b311d6d68099452a3c4d6d7c35aadd7f2c6300a28fb1d4752ffbadc97ed6",
+      "sizeBytes": 3245
+    },
+    {
+      "path": "tests/baseline/ross-delivery-d.test.mjs",
+      "sha256": "e6e0763eb8afdfa2e1fd262e1024b0463eae8a36e5de11c187e3c1b119bb1b83",
+      "sizeBytes": 2742
+    },
+    {
+      "path": "tests/baseline/ross-production-readiness.test.mjs",
+      "sha256": "def2f4e5b2e51fb9048821a05f8109b1cbb5415c520453853a612c2780f07ddd",
+      "sizeBytes": 3757
+    },
+    {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "207401c4587f4bdb78a88972a3c26ef06f062c6a497e1f7c3da1125b1cd60aba",
-      "sizeBytes": 27144
+      "sha256": "012ab7b4d6b7b1513a0362d300c2333a477142564cb5a8acc6ea912e6779b4b4",
+      "sizeBytes": 27789
     },
     {
       "path": "website/package-lock.json",
