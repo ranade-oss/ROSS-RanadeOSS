@@ -49,7 +49,10 @@ The workflow:
    - `ross-ranadeoss-worker-rehearsal`
 4. Reads the three current production image digests without changing them.
 5. Deploys those production digests to private-only rehearsal apps as the
-   rollback baseline, with worker dispatch disabled.
+   rollback baseline, with worker dispatch disabled. Rehearsal auto-stop is
+   disabled for the duration of the run; the workflow explicitly starts every
+   Machine, waits for the `started` state, and selects that exact API Machine
+   for the private-network probe.
 6. Promotes the candidate worker and API digests, then deliberately deploys
    the incompatible API image to the rehearsal web app.
 7. Requires the web health check to reject that image.
@@ -59,11 +62,12 @@ The workflow:
    rehearsal API, web app, private worker, runtime API origin, disabled signup
    state, authentication service, CORS boundary, upload guard, worker
    authorization, and current required legal sources.
-10. Stops the rehearsal machines and uploads one release ledger and the build
+10. Stops the rehearsal Machines and uploads one release ledger and the build
     logs.
 
 The three rehearsal apps remain available for later runs. Their Machines are
-stopped with automatic start disabled, which avoids running-compute charges and
+held running only while the rehearsal is active, then explicitly stopped with
+automatic start disabled. This avoids running-compute charges between runs and
 keeps the tested candidate image digests associated with a Fly Machine. Small
 stopped-Machine root-filesystem storage charges may remain.
 

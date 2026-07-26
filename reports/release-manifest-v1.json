@@ -227,18 +227,18 @@
     },
     {
       "path": "deploy/fly/rehearsal-api.toml",
-      "sha256": "aa39613ace8911d8dd794d38eaba1784c16163bd63f15d739e4c7d33d37c6cd8",
-      "sizeBytes": 607
+      "sha256": "be9080969fe2117d1ff775a8f073e6d5e4e5b020ae00976d85c9a13c335d64d7",
+      "sizeBytes": 606
     },
     {
       "path": "deploy/fly/rehearsal-file-worker.toml",
-      "sha256": "0e1ae56c5c85697bbceb16f9b66337f09a428325663f4c8a7487b589c305000a",
-      "sizeBytes": 609
+      "sha256": "cf029f5e7cc8e1a7caf74016268f4bedb509985fcbaef175b719cb00bc0ed687",
+      "sizeBytes": 608
     },
     {
       "path": "deploy/fly/rehearsal-frontend.toml",
-      "sha256": "0b823d9e9e730caf2d6ad5e939c3b4489ec39c1ef8e6bbbd42ea7930ded8cc0c",
-      "sizeBytes": 630
+      "sha256": "df50d726c90109e61e2d7c31f3cc065dd5bf0493b2ecf8d74618ecb61de2340a",
+      "sizeBytes": 629
     },
     {
       "path": "docs/release-evidence/controlled-beta-owner-approval-2026-07-18.md",
@@ -307,8 +307,8 @@
     },
     {
       "path": "docs/deployment/release-train-v1.md",
-      "sha256": "ea2f5688b97eaa059560600c87d6c6f6e4b94654d03ad6bae2184cfdc797a034",
-      "sizeBytes": 4997
+      "sha256": "8af64e72b84cf75f8b269d6dc36e3944be47bcb71c4e230e43111cdda8e2e64e",
+      "sizeBytes": 5287
     },
     {
       "path": "frontend/package-lock.json",
@@ -477,8 +477,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "7d16c4162631fbc370d655576dee0cd8d991f93cd9aa4acf85d075ac5d4f52a1",
-      "sizeBytes": 26609
+      "sha256": "4402daecc9dd6b77fd41a0d4bcde4610d1ba879264aa0f97bec0c15001826591",
+      "sizeBytes": 31179
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
@@ -522,8 +522,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "2424f35278dba2b119a106a77e6ab543996ad884e9b90275299efd8f24465015",
-      "sizeBytes": 18893
+      "sha256": "f3112402faaae14f2b2e1395f4469d212d477cd2fd0e8afda3cd8de30db89772",
+      "sizeBytes": 21854
     },
     {
       "path": "website/package-lock.json",

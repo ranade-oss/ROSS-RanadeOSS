@@ -172,6 +172,9 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   const train = read("scripts/fly-release-train.mjs");
   const rehearsalApi = read("deploy/fly/rehearsal-api.toml");
   const rehearsalWeb = read("deploy/fly/rehearsal-frontend.toml");
+  const rehearsalWorker = read(
+    "deploy/fly/rehearsal-file-worker.toml",
+  );
   const dispatcher = read(
     "backend/src/lib/documentScanDispatcher.ts",
   );
@@ -189,8 +192,16 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   );
   assert.match(train, /AbortSignal\.timeout\(10000\)/);
   assert.match(train, /after 12 attempts/);
+  assert.match(train, /retryableStatus = new Set\(\[408, 425, 429, 500, 502, 503, 504\]\)/);
   assert.match(rehearsalApi, /force_https = false/);
   assert.match(rehearsalWeb, /force_https = false/);
+  for (const config of [rehearsalApi, rehearsalWeb, rehearsalWorker]) {
+    assert.match(config, /auto_stop_machines = "off"/);
+    assert.match(config, /auto_start_machines = false/);
+  }
+  assert.match(train, /\["machine", "start", machine\.id, "--app", app\]/);
+  assert.match(train, /"machine",\s+"wait",[\s\S]*?"--state",\s+"started"/);
+  assert.match(train, /"--machine",\s+machineId/);
   assert.match(train, /ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER: "true"/);
   assert.match(train, /protectedUpload\.status === 401/);
   assert.match(train, /workerAuth\.status === 400/);
@@ -314,7 +325,15 @@ if (command === "deploy") {
   ) {
     process.exit(1);
   }
-  state.apps[app] = { image, state: "started" };
+  state.apps[app] = {
+    image,
+    state: app.includes("-rehearsal") ? "stopped" : "started",
+  };
+  state.deployments = [...(state.deployments || []), {
+    app,
+    image,
+    resultingState: state.apps[app].state,
+  }];
   save();
   process.exit(0);
 }
@@ -331,7 +350,16 @@ if (command === "image" && subcommand === "show") {
   process.exit(0);
 }
 if (command === "ssh" && subcommand === "console") {
+  const app = flag("--app");
+  const machine = flag("--machine");
   const probe = flag("--command") || "";
+  if (
+    state.apps[app]?.state !== "started" ||
+    machine !== app + "-machine"
+  ) {
+    process.stderr.write("SSH probe requires the selected app Machine to be started.");
+    process.exit(29);
+  }
   const encodedProbe = probe.match(
     /Buffer\\.from\\('([^']+)','base64'\\)/,
   )?.[1];
@@ -361,6 +389,27 @@ if (command === "ssh" && subcommand === "console") {
     process.stderr.write("Probe did not use the required Fly Proxy routes.");
     process.exit(32);
   }
+  const requiredApps = rehearsal
+    ? [
+        "ross-ranadeoss-api-rehearsal",
+        "ross-ranadeoss-web-rehearsal",
+        "ross-ranadeoss-worker-rehearsal",
+      ]
+    : [
+        "ross-ranadeoss-api",
+        "ross-ranadeoss-public",
+        "ross-ranadeoss-file-worker",
+      ];
+  if (requiredApps.some((requiredApp) => state.apps[requiredApp]?.state !== "started")) {
+    process.stderr.write("Every probed service Machine must be started.");
+    process.exit(33);
+  }
+  state.probeStates = [...(state.probeStates || []), Object.fromEntries(
+    requiredApps.map((requiredApp) => [
+      requiredApp,
+      state.apps[requiredApp].state,
+    ]),
+  )];
   state.probes = [...(state.probes || []), probe];
   save();
   process.exit(0);
@@ -379,6 +428,24 @@ if (command === "machine" && subcommand === "stop") {
   if (state.apps[app]) state.apps[app].state = "stopped";
   save();
   process.exit(0);
+}
+if (command === "machine" && subcommand === "start") {
+  const app = flag("--app");
+  if (state.apps[app]) state.apps[app].state = "started";
+  state.machineStarts = [...(state.machineStarts || []), app];
+  save();
+  process.exit(state.apps[app] ? 0 : 1);
+}
+if (command === "machine" && subcommand === "wait") {
+  const app = flag("--app");
+  const expectedState = flag("--state");
+  state.machineWaits = [...(state.machineWaits || []), {
+    app,
+    expectedState,
+    actualState: state.apps[app]?.state,
+  }];
+  save();
+  process.exit(state.apps[app]?.state === expectedState ? 0 : 1);
 }
 process.stderr.write("Unexpected fake flyctl command: " + args.join(" "));
 process.exit(2);
@@ -471,6 +538,30 @@ exec ${process.execPath} "$@"
   assert.equal(state.apps[apps.prodApi].image, baseline.api);
   assert.equal(state.apps[apps.prodWeb].image, baseline.web);
   assert.equal(state.apps[apps.prodWorker].image, baseline.worker);
+  const rehearsalDeployments = state.deployments.filter(({ app }) =>
+    app.includes("-rehearsal"),
+  );
+  assert.ok(rehearsalDeployments.length >= 9);
+  assert.ok(
+    rehearsalDeployments.every(
+      ({ resultingState }) => resultingState === "stopped",
+    ),
+  );
+  assert.deepEqual(
+    new Set(state.machineStarts),
+    new Set([apps.stageApi, apps.stageWeb, apps.stageWorker]),
+  );
+  assert.ok(
+    state.probeStates.every((snapshot) =>
+      Object.values(snapshot).every((value) => value === "started"),
+    ),
+  );
+  assert.ok(
+    state.machineWaits.every(
+      ({ expectedState, actualState }) =>
+        expectedState === "started" && actualState === "started",
+    ),
+  );
   assert.ok(
     state.probes.some((probe) =>
       probe.includes("http://ross-ranadeoss-api-rehearsal.flycast"),

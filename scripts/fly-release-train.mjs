@@ -390,18 +390,24 @@ const describeError = (error) => {
   ].filter(Boolean);
   return [...new Set(parts)].join(": ");
 };
+const retryableStatus = new Set([408, 425, 429, 500, 502, 503, 504]);
 const request = async (label, url, options = {}) => {
   let lastError = null;
   for (let attempt = 1; attempt <= 12; attempt += 1) {
     try {
-      return await fetch(url, {
+      const response = await fetch(url, {
         ...options,
         signal: AbortSignal.timeout(10000),
       });
+      if (!retryableStatus.has(response.status) || attempt === 12) {
+        return response;
+      }
+      lastError = new Error("HTTP " + response.status);
+      await response.body?.cancel();
     } catch (error) {
       lastError = error;
-      if (attempt < 12) await wait(5000);
     }
+    if (attempt < 12) await wait(5000);
   }
   throw new Error(
     label + " could not reach " + url + " after 12 attempts: " +
@@ -512,7 +518,7 @@ const json = async (response, label) => {
 });
 `;
 
-function runRemoteProbe(app, args) {
+function runRemoteProbe(app, machineId, args) {
     const encoded = Buffer.from(deployedProbe).toString("base64");
     const command = [
         `node -e "eval(Buffer.from('${encoded}','base64').toString())"`,
@@ -527,15 +533,22 @@ function runRemoteProbe(app, args) {
                 "console",
                 "--app",
                 app,
+                "--machine",
+                machineId,
                 "--command",
                 command,
             ],
-            { allowFailure: true },
+            { allowFailure: true, capture: true },
         );
         if (last.status === 0) return;
+        const detail = (last.stderr || last.stdout || "").trim();
+        if (detail) process.stderr.write(`${detail}\n`);
         if (attempt < 3) run("sleep", ["5"]);
     }
-    throw new Error(`Deployed service probe failed with status ${last?.status}.`);
+    const detail = (last?.stderr || last?.stdout || "").trim().slice(-1000);
+    throw new Error(
+        `Deployed service probe failed for ${app} Machine ${machineId} with status ${last?.status}${detail ? `: ${detail}` : ""}.`,
+    );
 }
 
 function wakePublicService(url) {
@@ -569,11 +582,20 @@ function smoke(target, { full = false } = {}) {
         target === "rehearsal"
             ? `http://${webApp}.flycast`
             : publicWeb;
-    if (target === "public-beta") {
+    let probeMachine;
+    if (target === "rehearsal") {
+        const started = startRehearsalMachines({
+            worker: workerApp,
+            web: webApp,
+            api: apiApp,
+        });
+        probeMachine = started.api;
+    } else {
         wakePublicService(`${publicApi}/health`);
         wakePublicService(`${publicWeb}/login`);
+        probeMachine = requireStartedMachine(apiApp);
     }
-    runRemoteProbe(apiApp, [
+    runRemoteProbe(apiApp, probeMachine, [
         apiNetwork,
         webNetwork,
         `http://${workerApp}.flycast`,
@@ -588,26 +610,126 @@ function smoke(target, { full = false } = {}) {
     ]);
 }
 
-function machineIds(app) {
-    const result = run(
-        "flyctl",
-        ["machine", "list", "--app", app, "--json"],
-        { capture: true, allowFailure: true },
+function machineIds(app, { allowFailure = false } = {}) {
+    let lastDetail = "";
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+        const result = run(
+            "flyctl",
+            ["machine", "list", "--app", app, "--json"],
+            { capture: true, allowFailure: true },
+        );
+        if (result.status === 0) {
+            try {
+                const payload = JSON.parse(result.stdout);
+                if (Array.isArray(payload)) {
+                    return payload
+                        .map((machine) => ({
+                            id: machine?.id ?? machine?.ID,
+                            state: machine?.state ?? machine?.State,
+                        }))
+                        .filter(
+                            (machine) => typeof machine.id === "string",
+                        );
+                }
+                lastDetail = "Fly returned a non-array Machine list.";
+            } catch (error) {
+                lastDetail =
+                    error instanceof Error ? error.message : String(error);
+            }
+        } else {
+            lastDetail = (result.stderr || result.stdout || "").trim();
+        }
+        if (attempt < 3) run("sleep", ["5"]);
+    }
+    if (allowFailure) return [];
+    throw new Error(
+        `Could not list Machines for ${app} after 3 attempts${lastDetail ? `: ${lastDetail.slice(-1000)}` : ""}.`,
     );
-    if (result.status !== 0) return [];
-    const payload = JSON.parse(result.stdout);
-    if (!Array.isArray(payload)) return [];
-    return payload
-        .map((machine) => ({
-            id: machine?.id ?? machine?.ID,
-            state: machine?.state ?? machine?.State,
-        }))
-        .filter((machine) => typeof machine.id === "string");
+}
+
+function requireStartedMachine(app) {
+    const machines = machineIds(app);
+    const started = machines.find((machine) => machine.state === "started");
+    if (started) return started.id;
+    const states = machines.length
+        ? machines
+              .map((machine) => `${machine.id}:${machine.state ?? "unknown"}`)
+              .join(", ")
+        : "none";
+    throw new Error(`${app} has no started Machine; observed ${states}.`);
+}
+
+function startAppMachines(app) {
+    let machines = [];
+    for (let attempt = 1; attempt <= 6; attempt += 1) {
+        machines = machineIds(app);
+        if (machines.length) break;
+        if (attempt < 6) run("sleep", ["5"]);
+    }
+    if (!machines.length) {
+        throw new Error(
+            `${app} has no Machine to start after 6 post-deployment checks.`,
+        );
+    }
+    for (const machine of machines) {
+        let lastDetail = "";
+        for (let attempt = 1; attempt <= 3; attempt += 1) {
+            const current = machineIds(app).find(
+                (item) => item.id === machine.id,
+            );
+            if (current?.state !== "started") {
+                const start = run(
+                    "flyctl",
+                    ["machine", "start", machine.id, "--app", app],
+                    { allowFailure: true, capture: true },
+                );
+                lastDetail = (start.stderr || start.stdout || "").trim();
+            }
+            const wait = run(
+                "flyctl",
+                [
+                    "machine",
+                    "wait",
+                    machine.id,
+                    "--app",
+                    app,
+                    "--state",
+                    "started",
+                    "--wait-timeout",
+                    "2m",
+                ],
+                { allowFailure: true, capture: true },
+            );
+            if (wait.status === 0) {
+                const confirmed = machineIds(app).find(
+                    (item) => item.id === machine.id,
+                );
+                if (confirmed?.state === "started") break;
+            }
+            lastDetail =
+                (wait.stderr || wait.stdout || "").trim() || lastDetail;
+            if (attempt < 3) run("sleep", ["5"]);
+            else {
+                throw new Error(
+                    `${app} Machine ${machine.id} did not reach and remain in started state after 3 attempts${lastDetail ? `: ${lastDetail.slice(-1000)}` : ""}.`,
+                );
+            }
+        }
+    }
+    return requireStartedMachine(app);
+}
+
+function startRehearsalMachines(targetApps) {
+    return {
+        worker: startAppMachines(targetApps.worker),
+        web: startAppMachines(targetApps.web),
+        api: startAppMachines(targetApps.api),
+    };
 }
 
 function stopRehearsalMachines() {
     for (const app of [apps.stageWorker, apps.stageApi, apps.stageWeb]) {
-        for (const machine of machineIds(app)) {
+        for (const machine of machineIds(app, { allowFailure: true })) {
             if (machine.state === "stopped") continue;
             run(
                 "flyctl",
