@@ -62,7 +62,7 @@ test("the consolidated workflow fixes signup verification and replaces the three
   )?.[1];
   assert.equal(
     validateReleaseId(defaultReleaseId),
-    "ross-public-beta-20260726-rc1",
+    "ross-public-beta-20260726-rc2",
   );
   assert.match(workflow, /node scripts\/validate-release-id\.mjs/);
   assert.doesNotMatch(workflow, /a2aj-canlii-v1/);

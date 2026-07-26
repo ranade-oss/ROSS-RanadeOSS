@@ -30,6 +30,7 @@
     "test:e2e": "node --test tests/e2e/*.test.mjs",
     "test:website": "npm run test:routes --prefix website",
     "audit:high": "node scripts/audit-workspaces.mjs",
+    "preflight:fly": "bash scripts/preflight-fly-images.sh",
     "build": "npm run build:public-content && npm run build:ross-workflows && npm run build:completion-dossier && npm run build:release-manifest && npm run build:backend && npm run build:frontend && npm run build:website",
     "build:public-content": "node scripts/build-public-content.mjs",
     "build:ross-workflows": "node scripts/build-ross-workflows.mjs",

@@ -2,6 +2,7 @@ FROM node:22-bookworm-slim AS dependencies
 
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
+COPY frontend/scripts/patch-brace-expansion-compat.mjs ./scripts/patch-brace-expansion-compat.mjs
 RUN npm ci
 
 FROM node:22-bookworm-slim AS build

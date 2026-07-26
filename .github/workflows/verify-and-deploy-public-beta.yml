@@ -6,7 +6,7 @@ on:
       release_id:
         description: New immutable ID using ross-public-beta-YYYYMMDD-rcN
         required: true
-        default: ross-public-beta-20260726-rc1
+        default: ross-public-beta-20260726-rc2
         type: string
       fly_organization:
         description: Fly.io organization slug
@@ -46,7 +46,7 @@ jobs:
     name: Verify and tag exact public update
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     permissions:
       contents: write
     env:
@@ -76,6 +76,9 @@ jobs:
       - name: Run complete engineering gate
         run: npm run check
 
+      - name: Preflight deployable Fly images
+        run: npm run preflight:fly
+
       - name: Confirm generated files are committed
         run: git diff --exit-code
 
@@ -104,7 +107,7 @@ jobs:
           fi
 
       - name: Upload consolidated verification evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ross-${{ inputs.release_id }}-combined-evidence
           path: artifacts/public-beta-update-evidence.json
@@ -145,7 +148,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download verification evidence
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ross-${{ inputs.release_id }}-combined-evidence
           path: artifacts
@@ -181,7 +184,7 @@ jobs:
             exit 1
           fi
 
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1
         with:
           version: 0.4.49
 
@@ -325,7 +328,7 @@ jobs:
 
       - name: Upload final consolidated evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ross-${{ inputs.release_id }}-final-combined-evidence
           path: |
