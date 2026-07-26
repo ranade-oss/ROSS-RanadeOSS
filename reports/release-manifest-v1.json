@@ -307,8 +307,8 @@
     },
     {
       "path": "docs/deployment/release-train-v1.md",
-      "sha256": "8af64e72b84cf75f8b269d6dc36e3944be47bcb71c4e230e43111cdda8e2e64e",
-      "sizeBytes": 5287
+      "sha256": "d6a62d767e79c915fbeecd1754351e376a251f4eaf5a516ec023ff9b83eb4b29",
+      "sizeBytes": 5556
     },
     {
       "path": "frontend/package-lock.json",
@@ -477,8 +477,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "4402daecc9dd6b77fd41a0d4bcde4610d1ba879264aa0f97bec0c15001826591",
-      "sizeBytes": 31179
+      "sha256": "ed347a7da0a347e06e42de789c0861e6150eeaad1ea52bf006bfb4ef4f8e16fa",
+      "sizeBytes": 31609
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
@@ -522,8 +522,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "f3112402faaae14f2b2e1395f4469d212d477cd2fd0e8afda3cd8de30db89772",
-      "sizeBytes": 21854
+      "sha256": "207401c4587f4bdb78a88972a3c26ef06f062c6a497e1f7c3da1125b1cd60aba",
+      "sizeBytes": 27144
     },
     {
       "path": "website/package-lock.json",

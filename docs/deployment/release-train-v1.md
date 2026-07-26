@@ -53,11 +53,14 @@ The workflow:
    disabled for the duration of the run; the workflow explicitly starts every
    Machine, waits for the `started` state, and selects that exact API Machine
    for the private-network probe.
-6. Promotes the candidate worker and API digests, then deliberately deploys
-   the incompatible API image to the rehearsal web app.
-7. Requires the web health check to reject that image.
+6. Promotes and verifies the candidate worker and API digests while the web
+   app remains on its verified baseline digest.
+7. Raises a typed, rehearsal-only fault after recording that exact partial
+   promotion. The fault is deterministic and does not depend on Fly rejecting
+   an incompatible image or on health-check timing.
 8. Restores all three baseline digests, verifies each digest, and repeats the
-   service probes.
+   service probes. Any real deployment or verification error remains distinct
+   from the controlled fault and fails the workflow after rollback.
 9. Successfully promotes all three candidate digests and verifies the
    rehearsal API, web app, private worker, runtime API origin, disabled signup
    state, authentication service, CORS boundary, upload guard, worker

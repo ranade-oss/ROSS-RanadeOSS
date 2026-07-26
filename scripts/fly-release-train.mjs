@@ -114,6 +114,13 @@ function now() {
     return new Date().toISOString();
 }
 
+class ExpectedRehearsalFailure extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "ExpectedRehearsalFailure";
+    }
+}
+
 function currentImage(app) {
     const result = run(
         "flyctl",
@@ -323,7 +330,7 @@ function deployImage(
     app,
     config,
     image,
-    { worker = false, privateOnly = false, expectedFailure = false } = {},
+    { worker = false, privateOnly = false } = {},
 ) {
     const args = [
         "deploy",
@@ -339,10 +346,6 @@ function deployImage(
     ];
     if (worker || privateOnly) args.push("--flycast");
     if (privateOnly) args.push("--no-public-ips");
-    if (expectedFailure) {
-        args.push("--strategy", "immediate", "--wait-timeout", "90s");
-        return run("flyctl", args, { allowFailure: true });
-    }
     return run("bash", [
         "scripts/fly-deploy-with-retry.sh",
         ".",
@@ -753,6 +756,10 @@ function rehearse() {
         status: "running",
         startedAt: now(),
         expectedFailureObserved: false,
+        failureInjection: {
+            type: "controlled-partial-promotion",
+            status: "pending",
+        },
         rollbackVerified: false,
         candidatePromotionVerified: false,
     };
@@ -791,20 +798,26 @@ function rehearse() {
                 candidate.api,
                 { privateOnly: true },
             );
-            const badWeb = deployImage(
-                stageApps.web,
-                rehearsalConfig.web,
-                candidate.api,
-                { privateOnly: true, expectedFailure: true },
-            );
-            if (badWeb.status === 0) {
-                throw new Error(
-                    "The deliberately incompatible web image was accepted.",
-                );
-            }
+            verifyImage(stageApps.worker, candidate.worker);
+            verifyImage(stageApps.api, candidate.api);
+            verifyImage(stageApps.web, baseline.web);
+            ledger.rehearsal.failureInjection = {
+                type: "controlled-partial-promotion",
+                status: "observed",
+                observedAt: now(),
+                workerImage: candidate.worker,
+                apiImage: candidate.api,
+                webImage: baseline.web,
+            };
             ledger.rehearsal.expectedFailureObserved = true;
+            saveLedger();
+            throw new ExpectedRehearsalFailure(
+                "Controlled rehearsal fault after verified worker/API promotion.",
+            );
         } catch (error) {
-            forcedFailureError = error;
+            if (!(error instanceof ExpectedRehearsalFailure)) {
+                forcedFailureError = error;
+            }
         } finally {
             configureRehearsalBaseline();
             deploySet(stageApps, rehearsalConfig, baseline, {

@@ -12,6 +12,7 @@ import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 import {
   assertReleaseTrainAppNames,
   extractDigestImageRef,
@@ -23,6 +24,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const image = (app, character) =>
   `registry.fly.io/${app}@sha256:${character.repeat(64)}`;
+const deployedProbeSource = () => {
+  const match = read("scripts/fly-release-train.mjs").match(
+    /const deployedProbe = `([\s\S]*?)`;\n\nfunction runRemoteProbe/,
+  );
+  assert.ok(match, "The exact embedded deployment probe must be extractable.");
+  return Function(`"use strict"; return \`${match[1]}\`;`)();
+};
 
 test("release IDs are generated from the Toronto date and never reused", () => {
   assert.equal(
@@ -207,6 +215,12 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   assert.match(train, /workerAuth\.status === 400/);
   assert.match(train, /observe-legal-sources\.mjs/);
   assert.match(train, /verifyProductionSecrets\(\)/);
+  assert.match(train, /class ExpectedRehearsalFailure extends Error/);
+  assert.match(train, /type: "controlled-partial-promotion"/);
+  assert.doesNotMatch(
+    train,
+    /deliberately incompatible|expectedFailure\s*=|expectedFailure:/,
+  );
   assert.doesNotMatch(
     train.slice(train.indexOf("function promote()")),
     /configureRehearsalCandidate\(\)/,
@@ -214,6 +228,124 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   assert.match(
     dispatcher,
     /ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER !== "true"/,
+  );
+});
+
+test("the exact embedded full probe executes every read-only contract", async () => {
+  const apiNetwork = "http://ross-ranadeoss-api-rehearsal.flycast";
+  const webNetwork = "http://ross-ranadeoss-web-rehearsal.flycast";
+  const workerNetwork = "http://ross-ranadeoss-worker-rehearsal.flycast";
+  const publicApi = "https://ross-ranadeoss-api-rehearsal.fly.dev";
+  const publicWeb = "https://ross-ranadeoss-web-rehearsal.fly.dev";
+  const release = "rehearsal-12345";
+  const requests = [];
+
+  const fetch = async (url, options = {}) => {
+    requests.push({
+      url,
+      method: options.method ?? "GET",
+      origin: new Headers(options.headers).get("origin"),
+      authorization: new Headers(options.headers).get("authorization"),
+    });
+    if (url === `${apiNetwork}/health`) {
+      const origin = new Headers(options.headers).get("origin");
+      if (origin === "https://untrusted.example") {
+        return new Response("", { status: 403 });
+      }
+      return Response.json(
+        { ok: true, service: "ross-api", releaseId: release },
+        {
+          headers: origin
+            ? { "access-control-allow-origin": origin }
+            : undefined,
+        },
+      );
+    }
+    if (url === `${webNetwork}/login`) {
+      return new Response("", { status: 200 });
+    }
+    if (url === `${workerNetwork}/health`) {
+      return Response.json({ ok: true, service: "ross-file-worker" });
+    }
+    if (url === `${webNetwork}/api/runtime-config`) {
+      return Response.json({
+        apiBaseUrl: publicApi,
+        appUrl: publicWeb,
+        environment: "rehearsal",
+        releaseId: release,
+        signupsEnabled: false,
+      });
+    }
+    if (url === `${apiNetwork}/single-documents`) {
+      return new Response("", { status: 401 });
+    }
+    if (url === "https://synthetic.supabase.co/auth/v1/settings") {
+      return Response.json({ disable_signup: true });
+    }
+    if (url === `${workerNetwork}/process`) {
+      return Response.json({ error: "invalid request" }, { status: 400 });
+    }
+    throw new Error(`Unexpected probe request: ${url}`);
+  };
+
+  await runInNewContext(deployedProbeSource(), {
+    AbortSignal,
+    Error,
+    Promise,
+    Set,
+    Uint8Array,
+    console,
+    fetch,
+    process: {
+      argv: [
+        "node",
+        apiNetwork,
+        webNetwork,
+        workerNetwork,
+        publicApi,
+        publicWeb,
+        "rehearsal",
+        release,
+        "false",
+        "true",
+      ],
+      env: {
+        FILE_WORKER_SHARED_SECRET: "synthetic-worker-secret",
+        SUPABASE_SECRET_KEY: "synthetic-supabase-secret",
+        SUPABASE_URL: "https://synthetic.supabase.co",
+      },
+      exit(code) {
+        throw new Error(`The embedded probe exited with status ${code}.`);
+      },
+    },
+    setTimeout,
+  });
+
+  assert.deepEqual(
+    requests.map(({ url, method }) => ({ url, method })),
+    [
+      { url: `${apiNetwork}/health`, method: "GET" },
+      { url: `${webNetwork}/login`, method: "GET" },
+      { url: `${workerNetwork}/health`, method: "GET" },
+      { url: `${webNetwork}/api/runtime-config`, method: "GET" },
+      { url: `${apiNetwork}/health`, method: "GET" },
+      { url: `${apiNetwork}/health`, method: "GET" },
+      { url: `${apiNetwork}/single-documents`, method: "GET" },
+      { url: `${apiNetwork}/single-documents`, method: "POST" },
+      {
+        url: "https://synthetic.supabase.co/auth/v1/settings",
+        method: "GET",
+      },
+      { url: `${workerNetwork}/process`, method: "POST" },
+    ],
+  );
+  assert.equal(requests[4].origin, publicWeb);
+  assert.equal(requests[5].origin, "https://untrusted.example");
+  assert.equal(requests[6].origin, publicWeb);
+  assert.equal(requests[7].origin, publicWeb);
+  assert.equal(
+    requests[9].authorization,
+    "Bearer synthetic-worker-secret",
   );
 });
 
@@ -316,13 +448,6 @@ if (command === "deploy") {
     delete state.failOnceApp;
     delete state.failOnceImage;
     save();
-    process.exit(1);
-  }
-  if (
-    app.endsWith("web-rehearsal") &&
-    image === state.candidateApi &&
-    config.includes("rehearsal-frontend")
-  ) {
     process.exit(1);
   }
   state.apps[app] = {
@@ -527,6 +652,18 @@ exec ${process.execPath} "$@"
   let state = JSON.parse(readFileSync(statePath, "utf8"));
   assert.equal(ledger.rehearsal.status, "passed");
   assert.equal(ledger.rehearsal.expectedFailureObserved, true);
+  assert.deepEqual(ledger.rehearsal.failureInjection, {
+    type: "controlled-partial-promotion",
+    status: "observed",
+    observedAt: ledger.rehearsal.failureInjection.observedAt,
+    workerImage: candidate.worker,
+    apiImage: candidate.api,
+    webImage: baseline.web,
+  });
+  assert.match(
+    ledger.rehearsal.failureInjection.observedAt,
+    /^\d{4}-\d{2}-\d{2}T/,
+  );
   assert.equal(ledger.rehearsal.rollbackVerified, true);
   assert.equal(ledger.rehearsal.candidatePromotionVerified, true);
   assert.equal(state.apps[apps.stageApi].image, candidate.api);
@@ -541,7 +678,22 @@ exec ${process.execPath} "$@"
   const rehearsalDeployments = state.deployments.filter(({ app }) =>
     app.includes("-rehearsal"),
   );
-  assert.ok(rehearsalDeployments.length >= 9);
+  assert.deepEqual(
+    rehearsalDeployments.map(({ app, image }) => ({ app, image })),
+    [
+      { app: apps.stageWorker, image: baseline.worker },
+      { app: apps.stageApi, image: baseline.api },
+      { app: apps.stageWeb, image: baseline.web },
+      { app: apps.stageWorker, image: candidate.worker },
+      { app: apps.stageApi, image: candidate.api },
+      { app: apps.stageWorker, image: baseline.worker },
+      { app: apps.stageApi, image: baseline.api },
+      { app: apps.stageWeb, image: baseline.web },
+      { app: apps.stageWorker, image: candidate.worker },
+      { app: apps.stageApi, image: candidate.api },
+      { app: apps.stageWeb, image: candidate.web },
+    ],
+  );
   assert.ok(
     rehearsalDeployments.every(
       ({ resultingState }) => resultingState === "stopped",
