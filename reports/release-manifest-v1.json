@@ -512,8 +512,8 @@
     },
     {
       "path": "scripts/lib/staging-debug.mjs",
-      "sha256": "a3bf56de870458f1142eaf1b843f47bfa78dbcd9b3fe75372c663fbf2f8c93b4",
-      "sizeBytes": 2022
+      "sha256": "f496440b11fba669ddedca3091f51a73857adf705b0b974a569a780588654fdd",
+      "sizeBytes": 2822
     },
     {
       "path": "scripts/build-release-train-images.sh",
@@ -552,8 +552,8 @@
     },
     {
       "path": "scripts/staging-debug-lifecycle.sh",
-      "sha256": "a3c4db1fbb71b1224a21bf20bec044d4e310a9e83c879b48d1aace0770ea2071",
-      "sizeBytes": 2854
+      "sha256": "08dae021d6dacde7f648e0aa830838ed34a81a43c6dcfdd8f3ffea6c7da49202",
+      "sizeBytes": 3178
     },
     {
       "path": "scripts/run-backup-restore-exercise.sh",
@@ -607,8 +607,8 @@
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
-      "sha256": "1cc949e10de7a48b33ae426209e3fc8a8a859079c6ea9acf6f0c2f402807585c",
-      "sizeBytes": 7704
+      "sha256": "0a5a43bd6874d79b5d9dc487c4ce90ff2ac47cc8a151829a873145b1ce4fbd94",
+      "sizeBytes": 9422
     },
     {
       "path": "website/package-lock.json",

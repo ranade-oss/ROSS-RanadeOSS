@@ -12,6 +12,20 @@ export function stagingDebugNames(runId, attempt = "1") {
     };
 }
 
+export function normalizeResourceUrl(value, label) {
+    let parsed;
+    try {
+        parsed = new URL(value);
+    } catch {
+        throw new Error(`${label} must be a valid absolute URL.`);
+    }
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password || parsed.search || parsed.hash) {
+        throw new Error(`${label} must be a credential-free HTTPS URL without query or fragment.`);
+    }
+    const path = parsed.pathname.replace(/\/+$/, "");
+    return `${parsed.origin}${path}`;
+}
+
 export function assertIsolatedStaging({ apps, productionApps = [], resources }) {
     const values = Object.values(apps);
     if (values.length !== 3 || new Set(values).size !== 3) {
@@ -35,8 +49,11 @@ export function assertIsolatedStaging({ apps, productionApps = [], resources }) 
     if (productionApps.length !== 3 || productionApps.some((app) => !String(app).trim())) {
         throw new Error("All production app comparison identifiers are required.");
     }
-    if ((resources.productionSupabaseUrl && resources.supabaseUrl === resources.productionSupabaseUrl) ||
-        (resources.productionStorageEndpoint && resources.storageEndpoint === resources.productionStorageEndpoint)) {
+    const stagingSupabase = normalizeResourceUrl(resources.supabaseUrl, "staging Supabase URL");
+    const productionSupabase = normalizeResourceUrl(resources.productionSupabaseUrl, "production Supabase URL");
+    const stagingStorage = normalizeResourceUrl(resources.storageEndpoint, "staging storage URL");
+    const productionStorage = normalizeResourceUrl(resources.productionStorageEndpoint, "production storage URL");
+    if (stagingSupabase === productionSupabase || stagingStorage === productionStorage) {
         throw new Error("Staging data resources must not equal production resources.");
     }
     return { apps, resources };

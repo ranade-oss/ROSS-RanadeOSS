@@ -17,11 +17,9 @@ required() {
 inject_failure_and_rollback() {
   required WEB_APP
   required CANDIDATE_WEB_IMAGE
-  local baseline_version failure_config deploy_status
-  baseline_version="$(flyctl releases --app "$WEB_APP" --json \
-    | tee "$ARTIFACT_DIR/diagnostics/web-releases-before-failure.json" \
-    | jq -er '.[0].Version // .[0].version')"
-  printf '%s\n' "$baseline_version" > "$ARTIFACT_DIR/diagnostics/web-rollback-target.txt"
+  local baseline_image failure_config deploy_status
+  baseline_image="$(node scripts/release-train-image-ref.mjs current "$WEB_APP")"
+  printf '%s\n' "$baseline_image" > "$ARTIFACT_DIR/diagnostics/web-restore-image.txt"
 
   failure_config=deploy/fly/staging-debug-forced-failure.toml
   trap "rm -f '$failure_config'" EXIT
@@ -46,23 +44,34 @@ inject_failure_and_rollback() {
   flyctl logs --app "$WEB_APP" --no-tail \
     > "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy.log" 2>&1 || true
 
-  flyctl releases rollback "$baseline_version" --app "$WEB_APP" --yes \
-    2>&1 | tee "$ARTIFACT_DIR/commands/web-rollback.log"
-  flyctl releases --app "$WEB_APP" --json \
-    > "$ARTIFACT_DIR/diagnostics/web-releases-after-rollback.json"
+  bash scripts/fly-deploy-with-retry.sh . \
+    --config deploy/fly/rehearsal-frontend.toml --app "$WEB_APP" \
+    --image "$baseline_image" --ha=false --yes --flycast --no-public-ips \
+    2>&1 | tee "$ARTIFACT_DIR/commands/web-digest-restore.log"
+  node scripts/release-train-image-ref.mjs verify "$WEB_APP" "$baseline_image" \
+    > "$ARTIFACT_DIR/diagnostics/web-restored-image.txt"
 }
 
 cleanup() {
-  local failed=0 app
+  local failed=0 app output status
   for app in "${WORKER_APP:-}" "${API_APP:-}" "${WEB_APP:-}"; do
     [ -n "$app" ] || continue
-    if ! flyctl status --app "$app" >/dev/null 2>&1; then
+    set +e
+    output="$(flyctl apps destroy "$app" --yes 2>&1)"
+    status=$?
+    set -e
+    printf '%s\n' "$output" > "$ARTIFACT_DIR/commands/cleanup-${app}.log"
+    if [ "$status" -eq 0 ]; then
+      continue
+    fi
+    if printf '%s\n' "$output" | grep -Eqi \
+      'app(lication)? (was )?not found|could not find app|does not exist|404'; then
       printf 'App %s was not provisioned; nothing to destroy.\n' "$app" \
         > "$ARTIFACT_DIR/commands/cleanup-${app}.log"
       continue
     fi
-    flyctl apps destroy "$app" --yes \
-      > "$ARTIFACT_DIR/commands/cleanup-${app}.log" 2>&1 || failed=1
+    printf 'Failed to destroy %s (flyctl exit %d).\n' "$app" "$status" >&2
+    failed=1
   done
   if [ "$failed" -ne 0 ]; then
     echo "Ephemeral cleanup failed; operator action required." >&2
