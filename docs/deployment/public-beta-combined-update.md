@@ -37,7 +37,7 @@ GitHub or Fly. Each user continues to save their own key in
 1. Open GitHub Actions.
 2. Select **Verify and deploy public ROSS beta**.
 3. Click **Run workflow** on `main`.
-4. Keep the default `ross-public-beta-20260724-rc1` release ID and Fly app
+4. Keep the default `ross-public-beta-20260726-rc1` release ID and Fly app
    names, check the single deployment confirmation, and run it. Release IDs
    must always use `ross-public-beta-YYYYMMDD-rcN`; descriptive suffixes are
    not permitted.

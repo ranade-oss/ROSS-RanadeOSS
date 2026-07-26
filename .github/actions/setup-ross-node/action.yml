@@ -1,0 +1,23 @@
+name: Set up ROSS Node toolchain
+description: Use the repository-pinned Node.js and npm versions with locked dependency caching.
+
+runs:
+  using: composite
+  steps:
+    - name: Use Node.js 22.13.0
+      uses: actions/setup-node@v7
+      with:
+        node-version: 22.13.0
+        cache: npm
+        cache-dependency-path: |
+          backend/package-lock.json
+          frontend/package-lock.json
+          website/package-lock.json
+
+    - name: Install pinned npm
+      shell: bash
+      run: npm install --global npm@11.9.0 --no-audit --no-fund
+
+    - name: Verify Node.js and npm
+      shell: bash
+      run: node scripts/check-node-toolchain.mjs

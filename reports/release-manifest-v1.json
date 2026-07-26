@@ -7,18 +7,18 @@
   "artifacts": [
     {
       "path": ".github/workflows/deploy-public-beta-ross.yml",
-      "sha256": "54914c6da0e933f4c84b59485192763569b6567220bda19fd50c8d9af694c1d0",
+      "sha256": "0e632d5eeb4ff328b417c50e181ffe987fcedf2a5f96c5320d6abcff394d7f11",
       "sizeBytes": 12611
     },
     {
       "path": ".github/workflows/final-controlled-beta-evidence.yml",
-      "sha256": "a943889c47a8b7da13fea00470b50e46fcca345168e5635e99671da7e7cdb33b",
-      "sizeBytes": 1947
+      "sha256": "169d702f87b3023b6b13152abaabbcb5bc7e6208bdfd9cb0b7b72bd87fe9e857",
+      "sizeBytes": 1757
     },
     {
       "path": ".github/workflows/release-candidate.yml",
-      "sha256": "32ac7aa202f2abe2d02acbd1443dfb825fbc580823b0beed42f40a55e88f1178",
-      "sizeBytes": 3217
+      "sha256": "d1f2862a56d8967bdce2d09ce28cc99c0542f41cdaf86882966eaa619b46f484",
+      "sizeBytes": 3027
     },
     {
       "path": "backend/migrations/20260718_01_document_scan_pipeline.sql",

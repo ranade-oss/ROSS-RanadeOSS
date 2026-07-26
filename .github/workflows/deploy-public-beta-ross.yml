@@ -60,7 +60,7 @@ jobs:
       VERIFY_RELEASE_TAG: "true"
     steps:
       - name: Check out approved candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -96,7 +96,7 @@ jobs:
       POLICY_VERSION: 2026-07-17-public-beta
     steps:
       - name: Check out approved candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

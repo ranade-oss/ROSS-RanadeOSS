@@ -54,7 +54,7 @@ jobs:
       PUBLIC_WEBSITE_URL: https://ross-ontario.augustmaat.chatgpt.site
       POLICY_VERSION: 2026-07-17-public-beta
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Validate deployment inputs and secrets
         shell: bash

@@ -6,7 +6,7 @@ on:
       release_id:
         description: New immutable ID using ross-public-beta-YYYYMMDD-rcN
         required: true
-        default: ross-public-beta-20260724-rc1
+        default: ross-public-beta-20260726-rc1
         type: string
       fly_organization:
         description: Fly.io organization slug
@@ -53,7 +53,7 @@ jobs:
       ROSS_RELEASE_ID: ${{ inputs.release_id }}
     steps:
       - name: Check out main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -67,24 +67,14 @@ jobs:
           fi
           node scripts/validate-release-id.mjs "$ROSS_RELEASE_ID"
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.13.0
-          cache: npm
-          cache-dependency-path: |
-            backend/package-lock.json
-            frontend/package-lock.json
-            website/package-lock.json
+      - name: Set up pinned Node.js and npm
+        uses: ./.github/actions/setup-ross-node
 
       - name: Install locked dependencies
         run: npm run install:all
 
-      - name: Run repository and full-catalogue tests
-        run: npm test
-
-      - name: Build all deployable applications
-        run: npm run build
+      - name: Run complete engineering gate
+        run: npm run check
 
       - name: Confirm generated files are committed
         run: git diff --exit-code
@@ -149,7 +139,7 @@ jobs:
       POLICY_VERSION: 2026-07-17-public-beta
     steps:
       - name: Check out the immutable verified tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.release_id }}
           fetch-depth: 0

@@ -15,17 +15,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Use Node.js 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.13.0
-          cache: npm
-          cache-dependency-path: |
-            backend/package-lock.json
-            frontend/package-lock.json
-            website/package-lock.json
+      - name: Set up pinned Node.js and npm
+        uses: ./.github/actions/setup-ross-node
 
       - name: Install backend dependencies
         run: npm ci --prefix backend

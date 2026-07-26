@@ -62,11 +62,12 @@ test("the consolidated workflow fixes signup verification and replaces the three
   )?.[1];
   assert.equal(
     validateReleaseId(defaultReleaseId),
-    "ross-public-beta-20260724-rc1",
+    "ross-public-beta-20260726-rc1",
   );
   assert.match(workflow, /node scripts\/validate-release-id\.mjs/);
   assert.doesNotMatch(workflow, /a2aj-canlii-v1/);
-  assert.match(workflow, /Run repository and full-catalogue tests/);
+  assert.match(workflow, /Run complete engineering gate/);
+  assert.match(workflow, /run: npm run check/);
   assert.match(workflow, /Create or confirm the immutable tag/);
   assert.match(workflow, /environment: public-beta/);
   assert.match(workflow, /observe-a2aj-catalogue\.mjs/);
