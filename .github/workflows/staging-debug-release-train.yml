@@ -54,7 +54,10 @@ jobs:
       - name: Build candidate images in the isolated registry namespaces
         shell: bash
         run: |
-          export PROD_API_APP="$API_APP" PROD_WEB_APP="$WEB_APP" PROD_WORKER_APP="$WORKER_APP" STAGE_API_APP="$API_APP"
+          set -euo pipefail
+          export RELEASE_IMAGE_API_APP="$API_APP" RELEASE_IMAGE_WEB_APP="$WEB_APP" RELEASE_IMAGE_WORKER_APP="$WORKER_APP"
+          export RELEASE_RUNTIME_API_APP="$API_APP" RELEASE_RUNTIME_WEB_APP="$WEB_APP" RELEASE_REHEARSAL_API_APP="$API_APP"
+          export RELEASE_SIGNUPS_ENABLED=false
           export ROSS_SUPABASE_URL="$ROSS_STAGING_SUPABASE_URL" ROSS_SUPABASE_PUBLISHABLE_KEY="$ROSS_STAGING_SUPABASE_PUBLISHABLE_KEY"
           export ROSS_RELEASE_ID="staging-debug-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           bash scripts/build-release-train-images.sh

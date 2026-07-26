@@ -24,5 +24,12 @@ test("debug workflow is diagnostic, cleanup-safe, and cannot promote", () => {
   assert.match(workflow, /releases rollback "\$baseline_version"/);
   assert.match(workflow, /forced-debug-failure[\s\S]*web-rollback-probe/);
   assert.match(workflow, /STAGING_SUPABASE_URL/);
-  assert.doesNotMatch(workflow, /promote_public|fly-release-train\.mjs promote|environment: public-beta|ROSS_SUPABASE_SECRET_KEY/);
+  assert.doesNotMatch(workflow, /promote_public|fly-release-train\.mjs promote|environment: public-beta|ROSS_SUPABASE_SECRET_KEY|PROD_[A-Z_]+=/);
+});
+
+test("image builds accept explicit isolated namespaces without production aliases", () => {
+  const build = readFileSync(new URL("../../scripts/build-release-train-images.sh", import.meta.url), "utf8");
+  assert.match(build, /RELEASE_IMAGE_API_APP/);
+  assert.match(build, /RELEASE_RUNTIME_WEB_APP/);
+  assert.match(build, /RELEASE_SIGNUPS_ENABLED/);
 });

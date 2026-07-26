@@ -7,10 +7,6 @@ cd "$ROOT"
 
 required=(
   FLY_API_TOKEN
-  PROD_API_APP
-  PROD_WEB_APP
-  PROD_WORKER_APP
-  STAGE_API_APP
   ROSS_SUPABASE_URL
   ROSS_SUPABASE_PUBLISHABLE_KEY
   ROSS_RELEASE_ID
@@ -21,6 +17,30 @@ required=(
 for name in "${required[@]}"; do
   if [ -z "${!name:-}" ]; then
     echo "Required release-train value is missing: ${name}" >&2
+    exit 2
+  fi
+done
+
+# Production releases retain the historical defaults. Staging-debug callers
+# must supply isolated registry and runtime app names explicitly, without
+# masquerading as production through PROD_* variables.
+image_api_app="${RELEASE_IMAGE_API_APP:-${PROD_API_APP:-}}"
+image_web_app="${RELEASE_IMAGE_WEB_APP:-${PROD_WEB_APP:-}}"
+image_worker_app="${RELEASE_IMAGE_WORKER_APP:-${PROD_WORKER_APP:-}}"
+runtime_api_app="${RELEASE_RUNTIME_API_APP:-${PROD_API_APP:-}}"
+runtime_web_app="${RELEASE_RUNTIME_WEB_APP:-${PROD_WEB_APP:-}}"
+rehearsal_api_app="${RELEASE_REHEARSAL_API_APP:-${STAGE_API_APP:-}}"
+for item in \
+  "RELEASE_IMAGE_API_APP:${image_api_app}" \
+  "RELEASE_IMAGE_WEB_APP:${image_web_app}" \
+  "RELEASE_IMAGE_WORKER_APP:${image_worker_app}" \
+  "RELEASE_RUNTIME_API_APP:${runtime_api_app}" \
+  "RELEASE_RUNTIME_WEB_APP:${runtime_web_app}" \
+  "RELEASE_REHEARSAL_API_APP:${rehearsal_api_app}"; do
+  name="${item%%:*}"
+  value="${item#*:}"
+  if [ -z "$value" ]; then
+    echo "Required release image value is missing: ${name}" >&2
     exit 2
   fi
 done
@@ -37,14 +57,14 @@ fi
 short_sha="${GITHUB_SHA:0:12}"
 label_base="ross-${short_sha}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 
-api_tag="registry.fly.io/${PROD_API_APP}:${label_base}-api"
-web_tag="registry.fly.io/${PROD_WEB_APP}:${label_base}-web"
-worker_tag="registry.fly.io/${PROD_WORKER_APP}:${label_base}-worker"
+api_tag="registry.fly.io/${image_api_app}:${label_base}-api"
+web_tag="registry.fly.io/${image_web_app}:${label_base}-web"
+worker_tag="registry.fly.io/${image_worker_app}:${label_base}-worker"
 
 build_api() {
   flyctl deploy . \
     --config deploy/fly/api.toml \
-    --app "$PROD_API_APP" \
+    --app "$image_api_app" \
     --build-only \
     --push \
     --remote-only \
@@ -56,7 +76,7 @@ build_api() {
 build_worker() {
   flyctl deploy . \
     --config deploy/fly/file-worker.toml \
-    --app "$PROD_WORKER_APP" \
+    --app "$image_worker_app" \
     --build-only \
     --push \
     --remote-only \
@@ -67,7 +87,7 @@ build_worker() {
 build_web() {
   flyctl deploy . \
     --config deploy/fly/frontend.toml \
-    --app "$PROD_WEB_APP" \
+    --app "$image_web_app" \
     --build-only \
     --push \
     --remote-only \
@@ -75,15 +95,15 @@ build_web() {
     --image-label "${label_base}-web" \
     --build-arg "NEXT_PUBLIC_SUPABASE_URL=${ROSS_SUPABASE_URL}" \
     --build-arg "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${ROSS_SUPABASE_PUBLISHABLE_KEY}" \
-    --build-arg "NEXT_PUBLIC_API_BASE_URL=https://${PROD_API_APP}.fly.dev" \
-    --build-arg "NEXT_PUBLIC_REHEARSAL_API_BASE_URL=https://${STAGE_API_APP}.fly.dev" \
-    --build-arg "NEXT_PUBLIC_ROSS_APP_URL=https://${PROD_WEB_APP}.fly.dev" \
+    --build-arg "NEXT_PUBLIC_API_BASE_URL=https://${runtime_api_app}.fly.dev" \
+    --build-arg "NEXT_PUBLIC_REHEARSAL_API_BASE_URL=https://${rehearsal_api_app}.fly.dev" \
+    --build-arg "NEXT_PUBLIC_ROSS_APP_URL=https://${runtime_web_app}.fly.dev" \
     --build-arg "NEXT_PUBLIC_ROSS_WEBSITE_URL=https://ross-ontario.augustmaat.chatgpt.site" \
     --build-arg "NEXT_PUBLIC_ROSS_HOSTED_MODE=controlled-beta" \
     --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=2026-07-17-public-beta" \
     --build-arg "NEXT_PUBLIC_ROSS_TERMS_VERSION=2026-07-17-public-beta" \
     --build-arg "NEXT_PUBLIC_ROSS_PRIVACY_VERSION=2026-07-17-public-beta" \
-    --build-arg "NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=true" \
+    --build-arg "NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=${RELEASE_SIGNUPS_ENABLED:-true}" \
     --build-arg "ROSS_BUILD_RELEASE_ID=${ROSS_RELEASE_ID}"
 }
 
