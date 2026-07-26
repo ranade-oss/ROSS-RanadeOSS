@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/app/lib/supabase";
+import { getApiBaseUrl } from "@/app/lib/runtimeConfig";
 
 export interface FetchDocxResult {
     bytes: ArrayBuffer | null;
@@ -55,8 +56,7 @@ export function useFetchDocxBytes(
         }
 
         const key = cacheKey(documentId, versionId, refetchKey);
-        const apiBase =
-            process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+        const apiBase = getApiBaseUrl();
         const qs = versionId
             ? `?version_id=${encodeURIComponent(versionId)}`
             : "";

@@ -42,10 +42,14 @@ test("the deployment preflight builds every Fly application path", () => {
   assert.match(preflight, /--file deploy\/fly\/file-worker\.Dockerfile/);
   assert.match(preflight, /--file deploy\/fly\/frontend\.Dockerfile/);
   assert.match(preflight, /NEXT_PUBLIC_SUPABASE_URL=https:\/\/synthetic-build/);
+  assert.match(
+    preflight,
+    /NEXT_PUBLIC_REHEARSAL_API_BASE_URL=https:\/\/rehearsal-api\.example\.invalid/,
+  );
   assert.doesNotMatch(preflight, /FLY_API_TOKEN|ROSS_SUPABASE_SECRET_KEY/);
 });
 
-test("container preflight finishes before an immutable tag can be created", () => {
+test("qualification and rehearsal finish before an immutable tag can be created", () => {
   const workflow = read(
     ".github/workflows/verify-and-deploy-public-beta.yml",
   );
@@ -53,19 +57,23 @@ test("container preflight finishes before an immutable tag can be created", () =
     "- name: Run complete engineering gate",
   );
   const preflightIndex = workflow.indexOf(
-    "- name: Preflight deployable Fly images",
+    "- name: Build every Fly container path",
+  );
+  const rehearsalIndex = workflow.indexOf(
+    "- name: Run non-production promotion and rollback rehearsal",
   );
   const tagIndex = workflow.indexOf(
-    "- name: Create or confirm the immutable tag",
+    "- name: Create immutable tag and GitHub release after public success",
   );
 
   assert.notEqual(fullGateIndex, -1);
   assert.notEqual(preflightIndex, -1);
+  assert.notEqual(rehearsalIndex, -1);
   assert.notEqual(tagIndex, -1);
   assert.ok(fullGateIndex < preflightIndex);
+  assert.ok(preflightIndex < rehearsalIndex);
+  assert.ok(rehearsalIndex < tagIndex);
   assert.ok(preflightIndex < tagIndex);
-  assert.match(
-    workflow.slice(preflightIndex, tagIndex),
-    /run: npm run preflight:fly/,
-  );
+  assert.match(workflow.slice(preflightIndex, tagIndex), /npm run preflight:fly/);
+  assert.match(workflow.slice(rehearsalIndex, tagIndex), /inputs\.promote_public/);
 });

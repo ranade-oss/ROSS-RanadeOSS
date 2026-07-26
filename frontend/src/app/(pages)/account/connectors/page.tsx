@@ -29,6 +29,7 @@ import {
     startMcpConnectorOAuth,
     updateMcpConnector,
 } from "@/app/lib/mikeApi";
+import { getApiBaseUrl } from "@/app/lib/runtimeConfig";
 import {
     accountGlassIconButtonClassName,
     accountGlassInputClassName,
@@ -79,7 +80,7 @@ type McpOAuthPopupMessage = {
 };
 
 const mcpOAuthMessageOrigin = new URL(
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001",
+    getApiBaseUrl(),
 ).origin;
 
 function parseCustomHeaders(raw: string): Record<string, string> | undefined {

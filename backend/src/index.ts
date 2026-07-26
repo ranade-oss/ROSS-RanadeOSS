@@ -169,6 +169,7 @@ app.get("/health", (_req, res) =>
     environment: runtime.environment,
     hostedMode: runtime.hostedMode,
     dataBoundaryVersion: runtime.dataBoundaryVersion,
+    releaseId: runtime.releaseId,
   }),
 );
 

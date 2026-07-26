@@ -15,7 +15,7 @@ This update is limited to the public ROSS beta.
   using only the authenticated user's encrypted key.
 - User-directed CanLII full-text search links. ROSS does not crawl CanLII.
 - HTTP-based signup service verification.
-- One verify, tag, approve, deploy, and evidence workflow.
+- One build-once release train with non-production rollback rehearsal.
 
 The private-ROSS OpenAI-key, projects, connectors-page, model-availability, and
 research-check defects are not part of this update.
@@ -32,25 +32,19 @@ No database migration or new secret is required. Do not add a CanLII key to
 GitHub or Fly. Each user continues to save their own key in
 **Account → API Keys → CanLII API Key**.
 
-## Deploy
+## Release
 
-1. Open GitHub Actions.
-2. Select **Verify and deploy public ROSS beta**.
-3. Click **Run workflow** on `main`.
-4. Keep the default `ross-public-beta-20260726-rc2` release ID and Fly app
-   names, check the single deployment confirmation, and run it. Release IDs
-   must always use `ross-public-beta-YYYYMMDD-rcN`; descriptive suffixes are
-   not permitted.
-5. Approve the existing `public-beta` environment when GitHub requests approval.
+Use **ROSS release train**. Its default run performs only the non-production
+promotion-and-rollback rehearsal. It has no release-ID or app-name fields.
+Public promotion is an explicit boolean choice on a later run, and the release
+ID is generated automatically.
 
-The workflow runs the tests and builds, preflights all three Fly container build
-paths and the complete public frontend image, and only then creates the
-immutable release tag. It deploys that exact tag, checks the API and signup URL,
-runs deployed E2E tests, observes the live A2AJ catalogue, and uploads one final
-evidence artifact.
+See [ROSS Release Train v1](release-train-v1.md) for the one-button rehearsal,
+forced staging failure, three-component rollback, digest promotion, cleanup,
+and operator summary.
 
-Do not run the older standalone hotfix or the separate release-candidate,
-final-evidence, and legacy public-deployment workflows for this update.
+Do not run the older standalone hotfix or the blocked legacy public-deployment
+workflow.
 
 ## CanLII boundary
 

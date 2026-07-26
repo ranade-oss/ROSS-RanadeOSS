@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { useFetchDocxBytes } from "@/app/hooks/useFetchDocxBytes";
 import { supabase } from "@/app/lib/supabase";
+import { getApiBaseUrl } from "@/app/lib/runtimeConfig";
 import {
     clearDocxQuoteHighlights,
     highlightDocxQuote,
@@ -149,8 +150,7 @@ async function tagWIdsOnRenderedDom(
             data: { session },
         } = await supabase.auth.getSession();
         const token = session?.access_token;
-        const apiBase =
-            process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+        const apiBase = getApiBaseUrl();
         const qs = versionId
             ? `?version_id=${encodeURIComponent(versionId)}`
             : "";

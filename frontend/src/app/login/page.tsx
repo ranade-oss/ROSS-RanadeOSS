@@ -8,6 +8,7 @@ import { Input } from "@/app/components/ui/input";
 import Link from "next/link";
 import { SiteLogo } from "@/app/components/site-logo";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { areSignupsEnabled } from "@/app/lib/runtimeConfig";
 
 const authGlassCardClassName =
     "rounded-2xl border border-white/70 bg-white/72 p-8 shadow-[0_4px_14px_rgba(15,23,42,0.045),inset_0_1px_0_rgba(255,255,255,0.86),inset_0_-8px_18px_rgba(255,255,255,0.12)] backdrop-blur-2xl";
@@ -21,8 +22,7 @@ const authToggleInactiveClassName =
     "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2";
 
 export default function LoginPage() {
-    const signupsEnabled =
-        process.env.NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED !== "false";
+    const signupsEnabled = areSignupsEnabled();
     const router = useRouter();
     const { isAuthenticated, authLoading } = useAuth();
     const [email, setEmail] = useState("");

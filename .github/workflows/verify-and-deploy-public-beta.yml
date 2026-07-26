@@ -1,35 +1,10 @@
-name: Verify and deploy public ROSS beta
+name: ROSS release train
 
 on:
   workflow_dispatch:
     inputs:
-      release_id:
-        description: New immutable ID using ross-public-beta-YYYYMMDD-rcN
-        required: true
-        default: ross-public-beta-20260726-rc2
-        type: string
-      fly_organization:
-        description: Fly.io organization slug
-        required: true
-        default: personal
-        type: string
-      api_app_name:
-        description: ROSS API Fly app
-        required: true
-        default: ross-ranadeoss-api
-        type: string
-      web_app_name:
-        description: Public ROSS Fly app
-        required: true
-        default: ross-ranadeoss-public
-        type: string
-      file_worker_app_name:
-        description: Private file-worker Fly app
-        required: true
-        default: ross-ranadeoss-file-worker
-        type: string
-      confirm_deployment:
-        description: Verify, tag, and deploy this public-only update
+      promote_public:
+        description: Promote the rehearsed image digests to public production
         required: true
         default: false
         type: boolean
@@ -38,34 +13,20 @@ permissions:
   contents: read
 
 concurrency:
-  group: verify-and-deploy-public-ross-beta
+  group: ross-release-train
   cancel-in-progress: false
 
 jobs:
-  verify:
-    name: Verify and tag exact public update
+  qualify:
+    name: Qualify exact release source
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 50
-    permissions:
-      contents: write
-    env:
-      ROSS_RELEASE_ID: ${{ inputs.release_id }}
+    timeout-minutes: 90
     steps:
-      - name: Check out main
+      - name: Check out exact main commit
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - name: Validate the single operator confirmation and release ID
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ inputs.confirm_deployment }}" != "true" ]; then
-            echo "The deployment confirmation must be checked." >&2
-            exit 1
-          fi
-          node scripts/validate-release-id.mjs "$ROSS_RELEASE_ID"
 
       - name: Set up pinned Node.js and npm
         uses: ./.github/actions/setup-ross-node
@@ -76,52 +37,20 @@ jobs:
       - name: Run complete engineering gate
         run: npm run check
 
-      - name: Preflight deployable Fly images
+      - name: Build every Fly container path
         run: npm run preflight:fly
 
-      - name: Confirm generated files are committed
+      - name: Confirm generated and governed files are committed
         run: git diff --exit-code
 
-      - name: Write consolidated verification evidence
-        run: >-
-          node scripts/write-public-beta-update-evidence.mjs
-          --phase verified
-          --output artifacts/public-beta-update-evidence.json
-
-      - name: Create or confirm the immutable tag
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --tags --force
-          if git rev-parse --verify --quiet "refs/tags/${ROSS_RELEASE_ID}" >/dev/null; then
-            TAG_COMMIT="$(git rev-list -n 1 "refs/tags/${ROSS_RELEASE_ID}")"
-            if [ "$TAG_COMMIT" != "$GITHUB_SHA" ]; then
-              echo "The release tag already exists on a different commit and will not be moved." >&2
-              exit 1
-            fi
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git tag -a "$ROSS_RELEASE_ID" -m "Verified public ROSS A2AJ and CanLII update"
-            git push origin "refs/tags/${ROSS_RELEASE_ID}"
-          fi
-
-      - name: Upload consolidated verification evidence
-        uses: actions/upload-artifact@v7
-        with:
-          name: ross-${{ inputs.release_id }}-combined-evidence
-          path: artifacts/public-beta-update-evidence.json
-          if-no-files-found: error
-          retention-days: 30
-
-  deploy:
-    name: Approve and deploy exact verified tag
-    needs: verify
+  release-train:
+    name: Rehearse and optionally promote exact image digests
+    needs: qualify
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 150
     environment: public-beta
     permissions:
-      contents: read
+      contents: write
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       ROSS_SUPABASE_URL: ${{ secrets.ROSS_SUPABASE_URL }}
@@ -133,27 +62,33 @@ jobs:
       ROSS_S3_SECRET_ACCESS_KEY: ${{ secrets.ROSS_S3_SECRET_ACCESS_KEY }}
       ROSS_SECURITY_ALERT_WEBHOOK_URL: ${{ secrets.ROSS_SECURITY_ALERT_WEBHOOK_URL }}
       ROSS_SECURITY_ALERT_WEBHOOK_SECRET: ${{ secrets.ROSS_SECURITY_ALERT_WEBHOOK_SECRET }}
-      API_APP: ${{ inputs.api_app_name }}
-      WEB_APP: ${{ inputs.web_app_name }}
-      WORKER_APP: ${{ inputs.file_worker_app_name }}
-      FLY_ORG: ${{ inputs.fly_organization }}
-      ROSS_RELEASE_ID: ${{ inputs.release_id }}
+      FLY_ORG: personal
+      PROD_API_APP: ross-ranadeoss-api
+      PROD_WEB_APP: ross-ranadeoss-public
+      PROD_WORKER_APP: ross-ranadeoss-file-worker
+      STAGE_API_APP: ross-ranadeoss-api-rehearsal
+      STAGE_WEB_APP: ross-ranadeoss-web-rehearsal
+      STAGE_WORKER_APP: ross-ranadeoss-worker-rehearsal
       PUBLIC_WEBSITE_URL: https://ross-ontario.augustmaat.chatgpt.site
       POLICY_VERSION: 2026-07-17-public-beta
+      ROSS_QUALIFICATION_STATUS: passed
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Check out the immutable verified tag
+      - name: Check out exact qualified commit
         uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.release_id }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
-      - name: Download verification evidence
-        uses: actions/download-artifact@v8
-        with:
-          name: ross-${{ inputs.release_id }}-combined-evidence
-          path: artifacts
+      - name: Set up pinned Node.js and npm
+        uses: ./.github/actions/setup-ross-node
 
-      - name: Validate deployment inputs and existing secrets
+      - name: Set up pinned Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1
+        with:
+          version: 0.4.49
+
+      - name: Validate existing protected secrets
         shell: bash
         run: |
           set -euo pipefail
@@ -169,186 +104,137 @@ jobs:
             ROSS_SECURITY_ALERT_WEBHOOK_URL \
             ROSS_SECURITY_ALERT_WEBHOOK_SECRET; do
             if [ -z "${!name:-}" ]; then
-              echo "Required public-beta secret is missing: ${name}" >&2
+              echo "Required public-beta environment secret is missing: ${name}" >&2
               exit 1
             fi
           done
-          for value in "$API_APP" "$WEB_APP" "$WORKER_APP"; do
-            if ! [[ "$value" =~ ^[a-z0-9][a-z0-9-]{2,61}[a-z0-9]$ ]]; then
-              echo "Fly app names must use 4-63 lowercase letters, numbers, or hyphens." >&2
+          flyctl auth whoami >/dev/null
+          SUPABASE_BASE="${ROSS_SUPABASE_URL%/}"
+          for key_name in \
+            ROSS_SUPABASE_PUBLISHABLE_KEY \
+            ROSS_SUPABASE_SECRET_KEY; do
+            if ! curl --fail --silent --show-error --output /dev/null \
+              "${SUPABASE_BASE}/auth/v1/settings" \
+              -H "apikey: ${!key_name}"; then
+              echo "${key_name} does not authenticate against ROSS_SUPABASE_URL." >&2
               exit 1
             fi
           done
-          if [ "$API_APP" = "$WEB_APP" ] || [ "$API_APP" = "$WORKER_APP" ] || [ "$WEB_APP" = "$WORKER_APP" ]; then
-            echo "The API, web, and private worker must use different Fly app names." >&2
+
+      - name: Generate the next unused public release ID
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          release_id="$(node scripts/release-train-image-ref.mjs next-id)"
+          node scripts/validate-release-id.mjs "$release_id"
+          echo "ROSS_RELEASE_ID=${release_id}" >> "$GITHUB_ENV"
+          echo "Generated candidate release ID: ${release_id}"
+
+      - name: Build and pin candidate images once
+        run: bash scripts/build-release-train-images.sh
+
+      - name: Run non-production promotion and rollback rehearsal
+        run: node scripts/fly-release-train.mjs rehearse
+
+      - name: Preflight the final release record without writing it
+        if: inputs.promote_public
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          if git rev-parse --verify --quiet "refs/tags/${ROSS_RELEASE_ID}" >/dev/null; then
+            echo "Generated release tag unexpectedly already exists." >&2
             exit 1
           fi
+          if [ "$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.permissions.push')" != "true" ]; then
+            echo "The workflow token cannot create the final release record." >&2
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$ROSS_RELEASE_ID" -m "ROSS public beta release train preflight"
+          git push --dry-run origin "refs/tags/${ROSS_RELEASE_ID}"
+          git tag --delete "$ROSS_RELEASE_ID"
 
-      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1
-        with:
-          version: 0.4.49
+      - name: Promote the rehearsed digests to public production
+        if: inputs.promote_public
+        run: node scripts/fly-release-train.mjs promote
 
-      - name: Confirm Fly applications exist
+      - name: Create immutable tag and GitHub release after public success
+        if: inputs.promote_public && success()
         shell: bash
         run: |
           set -euo pipefail
-          for app in "$API_APP" "$WEB_APP" "$WORKER_APP"; do
-            flyctl status --app "$app" >/dev/null
-          done
-
-      - name: Configure private file worker
-        shell: bash
-        run: |
-          set -euo pipefail
-          FILE_WORKER_SHARED_SECRET="$(openssl rand -hex 32)"
-          echo "::add-mask::${FILE_WORKER_SHARED_SECRET}"
-          echo "FILE_WORKER_SHARED_SECRET=${FILE_WORKER_SHARED_SECRET}" >> "$GITHUB_ENV"
-          flyctl secrets set --stage --app "$WORKER_APP" \
-            "FILE_WORKER_SHARED_SECRET=${FILE_WORKER_SHARED_SECRET}" \
-            "FILE_WORKER_STORAGE_ORIGINS=${ROSS_S3_ENDPOINT_URL}"
-
-      - name: Deploy private scan and conversion worker
-        run: >-
-          bash scripts/fly-deploy-with-retry.sh .
-          --config deploy/fly/file-worker.toml
-          --app "$WORKER_APP"
-          --remote-only
-          --no-cache
-          --flycast
-          --ha=false
-
-      - name: Configure public-beta API
-        shell: bash
-        run: |
-          set -euo pipefail
-          WEB_URL="https://${WEB_APP}.fly.dev"
-          API_URL="https://${API_APP}.fly.dev"
-          WORKER_URL="http://${WORKER_APP}.flycast"
-          echo "ROSS_DEPLOYED_APP_URL=${WEB_URL}" >> "$GITHUB_ENV"
-          echo "ROSS_DEPLOYED_API_URL=${API_URL}" >> "$GITHUB_ENV"
-
-          flyctl secrets set --stage --app "$API_APP" \
-            "SUPABASE_URL=${ROSS_SUPABASE_URL}" \
-            "SUPABASE_SECRET_KEY=${ROSS_SUPABASE_SECRET_KEY}" \
-            "R2_ENDPOINT_URL=${ROSS_S3_ENDPOINT_URL}" \
-            "R2_REGION=${ROSS_S3_REGION}" \
-            "R2_ACCESS_KEY_ID=${ROSS_S3_ACCESS_KEY_ID}" \
-            "R2_SECRET_ACCESS_KEY=${ROSS_S3_SECRET_ACCESS_KEY}" \
-            "R2_BUCKET_NAME=ross-private-files" \
-            "FILE_WORKER_URL=${WORKER_URL}" \
-            "FILE_WORKER_SHARED_SECRET=${FILE_WORKER_SHARED_SECRET}" \
-            "SECURITY_ALERT_WEBHOOK_URL=${ROSS_SECURITY_ALERT_WEBHOOK_URL}" \
-            "SECURITY_ALERT_WEBHOOK_SECRET=${ROSS_SECURITY_ALERT_WEBHOOK_SECRET}" \
-            "ROSS_UPLOAD_SCAN_REQUIRED=true" \
-            "ROSS_ENV=staging" \
-            "ROSS_HOSTED_MODE=controlled-beta" \
-            "ROSS_REQUIRE_VERIFIED_EMAIL=true" \
-            "HOSTED_MODEL_PROVIDERS=openai" \
-            "ROSS_DATA_BOUNDARY_VERSION=${POLICY_VERSION}" \
-            "ROSS_RELEASE_ID=${ROSS_RELEASE_ID}" \
-            "RATE_LIMIT_GENERAL_MAX=180" \
-            "RATE_LIMIT_CHAT_MAX=20" \
-            "RATE_LIMIT_UPLOAD_MAX=20" \
-            "RATE_LIMIT_EXPORT_MAX=5" \
-            "DOWNLOAD_TOKEN_TTL_SECONDS=86400" \
-            "CORS_ALLOWED_ORIGINS=${WEB_URL}" \
-            "FRONTEND_URL=${WEB_URL}" \
-            "API_PUBLIC_URL=${API_URL}"
-
-          ensure_secret() {
-            local key="$1"
-            if ! flyctl secrets list --app "$API_APP" --json \
-              | jq -e --arg key "$key" '.[] | select((.Name // .name) == $key)' \
-              >/dev/null; then
-              flyctl secrets set --stage --app "$API_APP" \
-                "${key}=$(openssl rand -hex 32)"
-            fi
+          rollback_on_finalization_error() {
+            status="$?"
+            trap - ERR
+            echo "Release record finalization failed; restoring all prior production images." >&2
+            node scripts/fly-release-train.mjs restore || \
+              echo "Automatic production restoration also failed; review the release ledger immediately." >&2
+            exit "$status"
           }
-          ensure_secret DOWNLOAD_SIGNING_SECRET
-          ensure_secret USER_API_KEYS_ENCRYPTION_SECRET
-          ensure_secret MCP_CONNECTORS_ENCRYPTION_SECRET
+          trap rollback_on_finalization_error ERR
+          if git rev-parse --verify --quiet "refs/tags/${ROSS_RELEASE_ID}" >/dev/null; then
+            echo "Generated release tag unexpectedly already exists." >&2
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$ROSS_RELEASE_ID" -m "ROSS public beta release train"
+          for attempt in 1 2 3 4 5; do
+            if git push origin "refs/tags/${ROSS_RELEASE_ID}"; then
+              break
+            fi
+            if [ "$attempt" -eq 5 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
+          for attempt in 1 2 3 4 5; do
+            if gh release create "$ROSS_RELEASE_ID" \
+              --verify-tag \
+              --title "$ROSS_RELEASE_ID" \
+              --notes "Qualified, rehearsed, promoted by immutable image digest, and health-checked. See the attached release ledger." \
+              artifacts/release-train-ledger.json; then
+              break
+            fi
+            if [ "$attempt" -eq 5 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
+          trap - ERR
 
-      - name: Deploy ROSS API
-        run: >-
-          bash scripts/fly-deploy-with-retry.sh .
-          --config deploy/fly/api.toml
-          --app "$API_APP"
-          --remote-only
-          --no-cache
-          --ha=false
-
-      - name: Deploy public ROSS application
-        shell: bash
-        run: |
-          set -euo pipefail
-          bash scripts/fly-deploy-with-retry.sh . \
-            --config deploy/fly/frontend.toml \
-            --app "$WEB_APP" \
-            --remote-only \
-            --no-cache \
-            --ha=false \
-            --build-arg "NEXT_PUBLIC_SUPABASE_URL=${ROSS_SUPABASE_URL}" \
-            --build-arg "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${ROSS_SUPABASE_PUBLISHABLE_KEY}" \
-            --build-arg "NEXT_PUBLIC_API_BASE_URL=${ROSS_DEPLOYED_API_URL}" \
-            --build-arg "NEXT_PUBLIC_ROSS_APP_URL=${ROSS_DEPLOYED_APP_URL}" \
-            --build-arg "NEXT_PUBLIC_ROSS_WEBSITE_URL=${PUBLIC_WEBSITE_URL}" \
-            --build-arg "NEXT_PUBLIC_ROSS_HOSTED_MODE=controlled-beta" \
-            --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=${POLICY_VERSION}" \
-            --build-arg "NEXT_PUBLIC_ROSS_TERMS_VERSION=${POLICY_VERSION}" \
-            --build-arg "NEXT_PUBLIC_ROSS_PRIVACY_VERSION=${POLICY_VERSION}" \
-            --build-arg "NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=true"
-
-      - name: Verify public services
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl --fail --retry 8 --retry-delay 5 --retry-all-errors \
-            --output /dev/null \
-            "${ROSS_DEPLOYED_API_URL}/health"
-          curl --fail --retry 8 --retry-delay 5 --retry-all-errors \
-            --output /dev/null \
-            "${ROSS_DEPLOYED_APP_URL}/signup"
-
-      - name: Run deployed application smoke tests
-        env:
-          ROSS_E2E_API_URL: https://${{ inputs.api_app_name }}.fly.dev
-          ROSS_E2E_APP_URL: https://${{ inputs.web_app_name }}.fly.dev
-        run: npm run test:e2e
-
-      - name: Observe the complete live A2AJ catalogue
-        run: >-
-          node scripts/observe-a2aj-catalogue.mjs
-          --output artifacts/a2aj-full-catalogue-live.json
-
-      - name: Finalize consolidated deployment evidence
-        run: >-
-          node scripts/write-public-beta-update-evidence.mjs
-          --phase deployed
-          --output artifacts/public-beta-update-evidence.json
-
-      - name: Upload final consolidated evidence
+      - name: Upload release ledger and build logs
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: ross-${{ inputs.release_id }}-final-combined-evidence
+          name: ross-release-train-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            artifacts/public-beta-update-evidence.json
-            artifacts/a2aj-full-catalogue-live.json
+            artifacts/release-train-ledger.json
+            artifacts/release-train-legal-source-health.json
+            artifacts/release-train-build/*.log
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 90
 
-      - name: Publish deployment summary
-        if: success()
+      - name: Publish operator summary
+        if: always()
         shell: bash
         run: |
           {
-            echo "## Public ROSS beta deployed"
+            echo "## ROSS release train"
             echo
-            echo "- App: ${ROSS_DEPLOYED_APP_URL}"
-            echo "- Create account: ${ROSS_DEPLOYED_APP_URL}/signup"
-            echo "- API health: ${ROSS_DEPLOYED_API_URL}/health"
-            echo "- Release: ${ROSS_RELEASE_ID}"
-            echo "- Region: Toronto (yyz)"
-            echo "- A2AJ: full live catalogue observation uploaded"
-            echo "- CanLII: per-user REST metadata and citator connector"
+            echo "- Commit: ${GITHUB_SHA}"
+            echo "- Candidate release ID: ${ROSS_RELEASE_ID}"
+            echo "- Public promotion requested: ${{ inputs.promote_public }}"
+            if [ -f artifacts/release-train-ledger.json ]; then
+              echo "- Rehearsal: $(jq -r '.rehearsal.status // "not-run"' artifacts/release-train-ledger.json)"
+              echo "- Forced failure observed: $(jq -r '.rehearsal.expectedFailureObserved // false' artifacts/release-train-ledger.json)"
+              echo "- Rollback verified: $(jq -r '.rehearsal.rollbackVerified // false' artifacts/release-train-ledger.json)"
+              echo "- Candidate staging promotion: $(jq -r '.rehearsal.candidatePromotionVerified // false' artifacts/release-train-ledger.json)"
+              echo "- Read-only integration checks: $(jq -r '.rehearsal.readOnlyIntegrationChecks // "not-run"' artifacts/release-train-ledger.json)"
+              echo "- Legal sources: $(jq -r '.rehearsal.legalSourceObservation // "not-run"' artifacts/release-train-ledger.json)"
+              echo "- Production: $(jq -r '.production.status // "not-requested"' artifacts/release-train-ledger.json)"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

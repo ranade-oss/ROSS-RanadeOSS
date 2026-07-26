@@ -3,6 +3,7 @@ import { ChevronDown, Loader2 } from "lucide-react";
 import { PillButton } from "@/app/components/ui/pill-button";
 import { supabase } from "@/app/lib/supabase";
 import { dataBoundaryHeaders } from "@/app/lib/dataBoundary";
+import { getApiBaseUrl } from "@/app/lib/runtimeConfig";
 import type { EditAnnotation } from "../../shared/types";
 import { applyOptimisticResolution } from "../EditCard";
 
@@ -65,8 +66,7 @@ function BulkEditActions({
                 data: { session },
             } = await supabase.auth.getSession();
             const token = session?.access_token;
-            const apiBase =
-                process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+            const apiBase = getApiBaseUrl();
 
             // Sequential so the per-document version counter advances in a
             // predictable order and the viewer doesn't race between bumps.

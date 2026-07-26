@@ -1,14 +1,19 @@
 {
-  "version": "1.1.0",
+  "version": "1.3.0",
   "releaseId": "ross-public-beta-20260717-rc1",
-  "generatedAt": "2026-07-18T15:13:02.000Z",
+  "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 67,
+  "artifactCount": 110,
   "artifacts": [
     {
+      "path": ".github/actions/setup-ross-node/action.yml",
+      "sha256": "e6d8fea70913eb3dc9473592d60d9861e25356037b707d5e366a6f0cd84a8424",
+      "sizeBytes": 650
+    },
+    {
       "path": ".github/workflows/deploy-public-beta-ross.yml",
-      "sha256": "0e632d5eeb4ff328b417c50e181ffe987fcedf2a5f96c5320d6abcff394d7f11",
-      "sizeBytes": 12611
+      "sha256": "dd8cfbd4e00d189232945b9b6dbc85d70af0a5ba4c94210900e6314366ee4d98",
+      "sizeBytes": 12920
     },
     {
       "path": ".github/workflows/final-controlled-beta-evidence.yml",
@@ -21,6 +26,11 @@
       "sizeBytes": 3027
     },
     {
+      "path": ".github/workflows/verify-and-deploy-public-beta.yml",
+      "sha256": "69253489fffdf6b220f6ffea764c30e46510dd97730fb23e85400c9eaeba6c11",
+      "sizeBytes": 9544
+    },
+    {
       "path": "backend/migrations/20260718_01_document_scan_pipeline.sql",
       "sha256": "9f0c6fb40922c8321b0d0e8df9571447099ee5263e68a6f8fb8bfe46cc7593a8",
       "sizeBytes": 5788
@@ -29,6 +39,11 @@
       "path": "backend/migrations/20260718_02_add_canlii_user_api_key_provider.sql",
       "sha256": "7d1a9356042ce7783a0b6ea154794a72586e1dfa46aa9b739881f5b189a07c36",
       "sizeBytes": 274
+    },
+    {
+      "path": "backend/package-lock.json",
+      "sha256": "025dd00b9f216a2d3c27bd6d95cbae1f3b8a6e85d5a60d9833fc968624f7034e",
+      "sizeBytes": 203235
     },
     {
       "path": "backend/package.json",
@@ -47,8 +62,8 @@
     },
     {
       "path": "backend/src/config/runtime.ts",
-      "sha256": "8f2d769885c891160084767ef5dad30510dd5f72f68718db12de8e0a3f9ccdd6",
-      "sizeBytes": 6956
+      "sha256": "14de7b428f2031a915bdf89ce9b79debfeca47f5d91361fc5ba2685047619c5a",
+      "sizeBytes": 7096
     },
     {
       "path": "backend/src/fileWorker.ts",
@@ -56,9 +71,14 @@
       "sizeBytes": 9841
     },
     {
+      "path": "backend/src/index.ts",
+      "sha256": "0b031efbfb400166c4e2864713fc8b80803feb5e0d96cc7ddfb7ee0968a1e7d7",
+      "sizeBytes": 5791
+    },
+    {
       "path": "backend/src/lib/documentScanDispatcher.ts",
-      "sha256": "ea97a562b60ac4b78916b842c55bc6a3d92f070becaeb94bb5345af819a3cbd0",
-      "sizeBytes": 12767
+      "sha256": "bb2472f81637ae9746950f9c37f2ea42730ad012178bd4cbab9233c3e11fd802",
+      "sizeBytes": 12990
     },
     {
       "path": "backend/src/lib/documentScanTypes.ts",
@@ -176,6 +196,16 @@
       "sizeBytes": 4141
     },
     {
+      "path": "deploy/fly/api.toml",
+      "sha256": "94aeb3208f71ba9075a1247ad24776cb6da2c02a000c11e0e63c7104a1921aa1",
+      "sizeBytes": 606
+    },
+    {
+      "path": "deploy/fly/backend.Dockerfile",
+      "sha256": "e490de4f8cd2e7b9be22b878c91304ee74a9eb11b85efc41e9d354fd0b3c902d",
+      "sizeBytes": 808
+    },
+    {
       "path": "deploy/fly/file-worker.Dockerfile",
       "sha256": "8a04a7aa31164e2df30b96e0a8121508a625f72c9261a7aac29c6cb169f0e428",
       "sizeBytes": 887
@@ -184,6 +214,31 @@
       "path": "deploy/fly/file-worker.toml",
       "sha256": "8a6033467b85245c9483f58fb3ca4f15924a67976ca6481ed10c374180b68050",
       "sizeBytes": 608
+    },
+    {
+      "path": "deploy/fly/frontend.Dockerfile",
+      "sha256": "8466f97666c44339d7e38638c4147f84420694f93c861b1f73675dc4e40c77e1",
+      "sizeBytes": 2200
+    },
+    {
+      "path": "deploy/fly/frontend.toml",
+      "sha256": "5218d7c55837372516e3efb34c88dd96a5b89c8ccf464b2fa87ffcbea46cbc2e",
+      "sizeBytes": 629
+    },
+    {
+      "path": "deploy/fly/rehearsal-api.toml",
+      "sha256": "50ea2efa0633314443ede4ad0e22df3436e27a3d9ce72de5dfca8d9dc0189089",
+      "sizeBytes": 606
+    },
+    {
+      "path": "deploy/fly/rehearsal-file-worker.toml",
+      "sha256": "0e1ae56c5c85697bbceb16f9b66337f09a428325663f4c8a7487b589c305000a",
+      "sizeBytes": 609
+    },
+    {
+      "path": "deploy/fly/rehearsal-frontend.toml",
+      "sha256": "8ee622be5a9de93557cc4dfe00c87fd53a726042b434e3c15700cd35a968a855",
+      "sizeBytes": 629
     },
     {
       "path": "docs/release-evidence/controlled-beta-owner-approval-2026-07-18.md",
@@ -251,6 +306,21 @@
       "sizeBytes": 3159
     },
     {
+      "path": "docs/deployment/release-train-v1.md",
+      "sha256": "ea2f5688b97eaa059560600c87d6c6f6e4b94654d03ad6bae2184cfdc797a034",
+      "sizeBytes": 4997
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "sha256": "78c5149b7d30f1d3e39e545a995e8bf537a1368b302fd8ca452ddaffbe811fef",
+      "sizeBytes": 533845
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "22b09b9350f124db43a922da2add4519c2a6fad1bf5891fbc2a77683b8d614ab",
+      "sizeBytes": 2969
+    },
+    {
       "path": "frontend/src/app/components/projects/ProjectDocumentsView.tsx",
       "sha256": "abfe65146aa653a8952f9bffa43d8ba73773f3e1e4e0bdd560a1782d9aa443c9",
       "sizeBytes": 160868
@@ -261,9 +331,44 @@
       "sizeBytes": 8613
     },
     {
+      "path": "frontend/src/app/components/shared/views/DocxView.tsx",
+      "sha256": "66d14dd7d4f46d1b9c3c3b63bfb2e51cfeb66b99f7e5741b311fb8aba71862a2",
+      "sizeBytes": 18977
+    },
+    {
+      "path": "frontend/src/app/components/assistant/DocPanel.tsx",
+      "sha256": "242785507d8302d7dbde8b4e77e0a2243248f9b80e4ec0fbd07e12d121e2270f",
+      "sizeBytes": 14160
+    },
+    {
+      "path": "frontend/src/app/components/assistant/EditCard.tsx",
+      "sha256": "4091e8041397480c213b17db15b08fcb080a4b26bba8a6988e6ef0bfb9489731",
+      "sizeBytes": 12458
+    },
+    {
+      "path": "frontend/src/app/components/assistant/TrackedChangeHeader.tsx",
+      "sha256": "52ae3ac000687a270da9aeeaf7f574f22a6a4901b3fb1957c35a45945801c522",
+      "sizeBytes": 8171
+    },
+    {
+      "path": "frontend/src/app/components/assistant/message/EditCardsSection.tsx",
+      "sha256": "f35158ff6690703f1ad577e23b13649d28a0080e511b7858d2b46226ad41947e",
+      "sizeBytes": 10821
+    },
+    {
+      "path": "frontend/src/app/components/assistant/message/EventBlocks.tsx",
+      "sha256": "0a62854a48b18a9c5fc679c62dbea7bfb4b1b728fe445de9da9fac15b69adb32",
+      "sizeBytes": 31522
+    },
+    {
       "path": "frontend/src/app/(pages)/account/api-keys/page.tsx",
       "sha256": "894dd9f6376beb13a84297a97e4433fcdaeba1731f69e02183308473d91da8c8",
       "sizeBytes": 11004
+    },
+    {
+      "path": "frontend/src/app/(pages)/account/connectors/page.tsx",
+      "sha256": "e378bbb08c7b6923d612f2e734348e97964d08cb96cb274ce31987dcc1974506",
+      "sizeBytes": 51140
     },
     {
       "path": "frontend/src/app/contexts/UserProfileContext.tsx",
@@ -271,9 +376,59 @@
       "sizeBytes": 10488
     },
     {
+      "path": "frontend/src/app/hooks/useFetchDocxBytes.ts",
+      "sha256": "6b6425ffced39b82b933eeacbb1efc714e15233a92d0c39f1c1a5b45c9a8d6e4",
+      "sizeBytes": 4779
+    },
+    {
+      "path": "frontend/src/app/hooks/useFetchSingleDoc.ts",
+      "sha256": "973484f3d088e0a2d7855e109e0e3b3db984b52ea0b2b6713106d3b049938adc",
+      "sizeBytes": 3750
+    },
+    {
+      "path": "frontend/src/app/api/runtime-config/route.ts",
+      "sha256": "80806c21603f7ee2b1175a946b64a46fe9d5676d9c4b31f7336dbe412a51959c",
+      "sizeBytes": 319
+    },
+    {
+      "path": "frontend/src/app/layout.tsx",
+      "sha256": "c72fcd17304c3a798dc3cd1d475819a2a0d082cdd3832a71ba2e42abdd7230cf",
+      "sizeBytes": 2384
+    },
+    {
       "path": "frontend/src/app/lib/mikeApi.ts",
-      "sha256": "e29d7fca2f250e36511bd73b003e6a60902b1537e323e9924c1b8dbed5619a9e",
-      "sizeBytes": 39176
+      "sha256": "06c96c908d67b520a4995a716906ec3ebd1112f8699880cf32a6882f369ef7f9",
+      "sizeBytes": 39183
+    },
+    {
+      "path": "frontend/src/app/lib/runtimeConfig.server.ts",
+      "sha256": "6c58f060cd3d32dda13d9398e21eb7dfc071fdece3a9c0c4a082ee39118a1a3f",
+      "sizeBytes": 2645
+    },
+    {
+      "path": "frontend/src/app/lib/runtimeConfig.ts",
+      "sha256": "6c3d24f431e2d38ce82af5dac26e69ff98abec899e22b7e88233391228be6f15",
+      "sizeBytes": 1179
+    },
+    {
+      "path": "frontend/src/app/login/page.tsx",
+      "sha256": "1b79f9b057da32620b8ed1df8e89c28b4b47dbc5675051091b648eb7a7406a58",
+      "sizeBytes": 8139
+    },
+    {
+      "path": "frontend/src/app/signup/page.tsx",
+      "sha256": "09b62470572de8e9b6d9210de20b477dc018bafe5f7f02987f51152ee4b688d4",
+      "sizeBytes": 18551
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "sha256": "ebb67f04045f3010214217bece3b98d171a8b65acd5c35e2f87dc868eb7bba8c",
+      "sizeBytes": 3154
+    },
+    {
+      "path": "package.json",
+      "sha256": "593419efc71656734dfccf139b0d992f7b4bdf03bd5ae0f7a391bd1dbf7f1197",
+      "sizeBytes": 3688
     },
     {
       "path": "reports/legal-source-health-v1.json",
@@ -301,6 +456,46 @@
       "sizeBytes": 3092
     },
     {
+      "path": "scripts/lib/live-source-observer.mjs",
+      "sha256": "602d07e0d1a4db162e8760e940efdfa338c7869f7324427d125b741203dc1601",
+      "sizeBytes": 6751
+    },
+    {
+      "path": "scripts/lib/release-train.mjs",
+      "sha256": "7b08133586b241fa727c0a255ec6f1873c2ba7f3fdc85b195e8c21dc0544cfdb",
+      "sizeBytes": 4775
+    },
+    {
+      "path": "scripts/build-release-train-images.sh",
+      "sha256": "6a3c18fd86d91861b0062c39e9206fd82cbf367e56952bcb4b7327cfb19fec57",
+      "sizeBytes": 4760
+    },
+    {
+      "path": "scripts/fly-deploy-with-retry.sh",
+      "sha256": "ddbb0b6493fe951c119f403701ebbb067e6cdedcf43d56742bee6a1d7aaef974",
+      "sizeBytes": 653
+    },
+    {
+      "path": "scripts/fly-release-train.mjs",
+      "sha256": "634fdf04a9d6d9e08a0449495550cb55ec8411fc5d9520c035dc6efcb4a37771",
+      "sizeBytes": 25243
+    },
+    {
+      "path": "scripts/observe-legal-sources.mjs",
+      "sha256": "11a1c2e066ebaa55d4a001a7f3148183e5179838bb88e40deec2e6f45a7bc6e4",
+      "sizeBytes": 1082
+    },
+    {
+      "path": "scripts/preflight-fly-images.sh",
+      "sha256": "09d1a5c7c2f9b46f651d088acfd00f8a74720030927b588ff1e3c493e20abc44",
+      "sizeBytes": 1703
+    },
+    {
+      "path": "scripts/release-train-image-ref.mjs",
+      "sha256": "17cef8f7cf2b22e4bcaf19c0766fbbfef916941e654ad1156a87ab7047e92b2e",
+      "sizeBytes": 1896
+    },
+    {
       "path": "scripts/run-backup-restore-exercise.sh",
       "sha256": "f2d0ee4cb495214f03db3e479ba3ff58de499d999abed62f72cf5c84bafd0a63",
       "sizeBytes": 10932
@@ -319,6 +514,26 @@
       "path": "scripts/lib/final-completion.mjs",
       "sha256": "8f1cd40e89bc9c7551a2e464da29e452052eaa040cbaa3d2c9dece6621d5fef0",
       "sizeBytes": 3312
+    },
+    {
+      "path": "scripts/validate-release-id.mjs",
+      "sha256": "5eca3fbee3ddd6245497243e5f2690d351956af3d9d025afd5e2fadb10766cde",
+      "sizeBytes": 301
+    },
+    {
+      "path": "tests/baseline/ross-release-train.test.mjs",
+      "sha256": "202ac8630b6688a32a799303c3734f8dbbbaa6f95dace5b628008e114d689c40",
+      "sizeBytes": 16631
+    },
+    {
+      "path": "website/package-lock.json",
+      "sha256": "ecba6ff6eb960dc0c841e64c1752cd19ddbc573b0cce71739cce9411ad22184a",
+      "sizeBytes": 259462
+    },
+    {
+      "path": "website/package.json",
+      "sha256": "7cac4f02832a884ada383e460ed7b943b87a6dee86bf1713de6e6d77617eb40f",
+      "sizeBytes": 1621
     },
     {
       "path": "website/app/site-config.ts",

@@ -11,6 +11,7 @@ import { CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { updateUserProfile } from "@/app/lib/mikeApi";
 import { rossBrand } from "@/app/lib/rossBrand";
+import { areSignupsEnabled } from "@/app/lib/runtimeConfig";
 
 const authGlassCardClassName =
     "rounded-2xl border border-white/70 bg-white/72 p-8 shadow-[0_4px_14px_rgba(15,23,42,0.045),inset_0_1px_0_rgba(255,255,255,0.86),inset_0_-8px_18px_rgba(255,255,255,0.12)] backdrop-blur-2xl";
@@ -28,8 +29,7 @@ const privacyVersion =
     process.env.NEXT_PUBLIC_ROSS_PRIVACY_VERSION ?? "2026-07-17-public-beta";
 
 export default function SignupPage() {
-    const signupsEnabled =
-        process.env.NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED !== "false";
+    const signupsEnabled = areSignupsEnabled();
     const router = useRouter();
     const { isAuthenticated, authLoading } = useAuth();
     const [email, setEmail] = useState("");

@@ -46,13 +46,12 @@ test("workflows use the current Node 24-based official GitHub actions", () => {
   }
 });
 
-test("the consolidated deployment uses current artifact actions and pins Fly setup", () => {
+test("the release train uses current artifact actions and pins Fly setup", () => {
   const deployment = read(
     ".github/workflows/verify-and-deploy-public-beta.yml",
   );
 
   assert.match(deployment, /actions\/upload-artifact@v7/);
-  assert.match(deployment, /actions\/download-artifact@v8/);
   assert.doesNotMatch(
     deployment,
     /actions\/(?:upload|download)-artifact@v4/,
@@ -64,7 +63,7 @@ test("the consolidated deployment uses current artifact actions and pins Fly set
   assert.doesNotMatch(deployment, /setup-flyctl@master/);
 });
 
-test("the consolidated deployment runs the same full gate as baseline CI", () => {
+test("the release train runs the same full gate as baseline CI", () => {
   const baseline = read(".github/workflows/baseline.yml");
   const deployment = read(
     ".github/workflows/verify-and-deploy-public-beta.yml",

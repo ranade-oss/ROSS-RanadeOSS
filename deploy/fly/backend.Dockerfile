@@ -9,7 +9,9 @@ RUN npm run build && npm prune --omit=dev
 
 FROM node:22-bookworm-slim AS runtime
 
-ENV NODE_ENV=production
+ARG ROSS_BUILD_RELEASE_ID
+ENV NODE_ENV=production \
+    ROSS_BUILD_RELEASE_ID=${ROSS_BUILD_RELEASE_ID}
 WORKDIR /app/backend
 
 RUN apt-get update \
@@ -27,4 +29,3 @@ COPY --from=build /app/backend/dist ./dist
 EXPOSE 3001
 USER node
 CMD ["node", "dist/index.js"]
-

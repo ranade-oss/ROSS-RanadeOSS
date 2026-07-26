@@ -198,7 +198,11 @@ export function loadRuntimeConfig(): RuntimeConfig {
         dataBoundaryVersion:
             process.env.ROSS_DATA_BOUNDARY_VERSION?.trim() || "2026-07-16",
         hostedModelProviders: hostedModelProviders(currentHostedMode),
-        releaseId: process.env.ROSS_RELEASE_ID?.trim() || null,
+        releaseId:
+            process.env.ROSS_RUNTIME_RELEASE_ID?.trim() ||
+            process.env.ROSS_BUILD_RELEASE_ID?.trim() ||
+            process.env.ROSS_RELEASE_ID?.trim() ||
+            null,
         releaseManifestSha256:
             process.env.ROSS_RELEASE_MANIFEST_SHA256?.trim() || null,
     };

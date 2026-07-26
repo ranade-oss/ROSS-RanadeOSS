@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { validateWorkerResult } from "./documentScanDispatcher";
+import {
+  documentScanDispatcherEnabled,
+  validateWorkerResult,
+} from "./documentScanDispatcher";
 import {
   cleanStorageKey,
   derivedPdfStorageKey,
@@ -58,5 +61,22 @@ test("dispatcher rejects an untrusted worker result", () => {
         derivedCreated: false,
       }),
     /Invalid worker result/,
+  );
+});
+
+test("release rehearsals disable the background document dispatcher", () => {
+  assert.equal(
+    documentScanDispatcherEnabled({
+      NODE_ENV: "production",
+      ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER: "true",
+    }),
+    false,
+  );
+  assert.equal(
+    documentScanDispatcherEnabled({
+      NODE_ENV: "production",
+      ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER: "false",
+    }),
+    true,
   );
 });

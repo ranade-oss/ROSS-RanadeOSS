@@ -3,6 +3,10 @@ import { Inter, EB_Garamond } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/app/components/providers";
 import { rossBrand } from "@/app/lib/rossBrand";
+import {
+    readRossRuntimeConfig,
+    serializeRossRuntimeConfig,
+} from "@/app/lib/runtimeConfig.server";
 
 const inter = Inter({
     variable: "--font-inter",
@@ -46,13 +50,25 @@ export const metadata: Metadata = {
     },
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const runtimeConfig = serializeRossRuntimeConfig(readRossRuntimeConfig());
+
     return (
         <html lang="en">
+            <head>
+                <script
+                    id="ross-runtime-config"
+                    dangerouslySetInnerHTML={{
+                        __html: `window.__ROSS_RUNTIME_CONFIG__=${runtimeConfig};`,
+                    }}
+                />
+            </head>
             <body
                 className={`${inter.variable} ${ebGaramond.variable} font-sans antialiased`}
             >

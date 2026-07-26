@@ -51,8 +51,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  blocked:
+    name: Legacy public deployment is disabled
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use the ROSS release train
+        shell: bash
+        run: |
+          echo "This deployment path is permanently blocked. Run ROSS release train instead." >&2
+          exit 1
+
   preflight:
     name: Validate legacy governed release before approval
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:

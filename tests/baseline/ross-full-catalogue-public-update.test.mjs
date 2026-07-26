@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { validateReleaseId } from "../../scripts/lib/release-identifier.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -54,34 +53,36 @@ test("the existing per-user CanLII field activates backend metadata, citation, a
   assert.doesNotMatch(provider, /process\.env/);
 });
 
-test("the consolidated workflow fixes signup verification and replaces the three manual release workflows", () => {
+test("the release train rehearses by default and generates release IDs automatically", () => {
   const workflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
-  assert.match(workflow, /name: Verify and deploy public ROSS beta/);
-  const defaultReleaseId = workflow.match(
-    /default: (ross-public-beta-[^\s]+)/,
-  )?.[1];
-  assert.equal(
-    validateReleaseId(defaultReleaseId),
-    "ross-public-beta-20260726-rc2",
-  );
+  assert.match(workflow, /name: ROSS release train/);
+  assert.match(workflow, /promote_public:/);
+  assert.match(workflow, /default: false/);
+  assert.doesNotMatch(workflow, /release_id:|api_app_name:|web_app_name:/);
+  assert.match(workflow, /release-train-image-ref\.mjs next-id/);
   assert.match(workflow, /node scripts\/validate-release-id\.mjs/);
   assert.doesNotMatch(workflow, /a2aj-canlii-v1/);
   assert.match(workflow, /Run complete engineering gate/);
   assert.match(workflow, /run: npm run check/);
-  assert.match(workflow, /Create or confirm the immutable tag/);
   assert.match(workflow, /environment: public-beta/);
-  assert.match(workflow, /observe-a2aj-catalogue\.mjs/);
-  assert.match(workflow, /--output \/dev\/null/);
-  assert.doesNotMatch(workflow, /grep -q "Create Account"/);
-  assert.match(workflow, /final-combined-evidence/);
+  assert.match(workflow, /build-release-train-images\.sh/);
+  assert.match(workflow, /fly-release-train\.mjs rehearse/);
+  assert.match(workflow, /if: inputs\.promote_public/);
+  assert.match(workflow, /fly-release-train\.mjs promote/);
+  assert.match(
+    workflow,
+    /Create immutable tag and GitHub release after public success/,
+  );
+  assert.match(workflow, /release-train-ledger\.json/);
 });
 
-test("the older public deployment workflow is clearly legacy and preflights governed releases before approval", () => {
+test("the older public deployment workflow is clearly legacy and hard blocked", () => {
   const workflow = read(".github/workflows/deploy-public-beta-ross.yml");
   assert.match(workflow, /name: "Legacy: deploy previously governed public beta"/);
+  assert.match(workflow, /Legacy public deployment is disabled/);
+  assert.match(workflow, /Run ROSS release train instead/);
   assert.match(workflow, /preflight:/);
-  assert.match(workflow, /node scripts\/validate-release-id\.mjs/);
-  assert.match(workflow, /node scripts\/verify-final-release-id\.mjs/);
+  assert.match(workflow, /preflight:[\s\S]*?if: \$\{\{ false \}\}/);
   assert.match(workflow, /needs: preflight/);
 });
 

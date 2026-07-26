@@ -15,8 +15,17 @@ const WORKER_TIMEOUT_MS = 10 * 60 * 1_000;
 let dispatcherStarted = false;
 let dispatcherBusy = false;
 
+export function documentScanDispatcherEnabled(
+  environment: NodeJS.ProcessEnv = process.env,
+) {
+  return (
+    environment.NODE_ENV !== "test" &&
+    environment.ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER !== "true"
+  );
+}
+
 export function startDocumentScanDispatcher() {
-  if (dispatcherStarted || process.env.NODE_ENV === "test") return;
+  if (dispatcherStarted || !documentScanDispatcherEnabled()) return;
   const workerUrl = process.env.FILE_WORKER_URL?.trim();
   const workerSecret = process.env.FILE_WORKER_SHARED_SECRET?.trim();
   if (!workerUrl || !workerSecret) {

@@ -9,6 +9,8 @@ const KEYS = [
     "HOSTED_MODEL_PROVIDERS",
     "ROSS_PRODUCTION_CONTROLS_APPROVED",
     "ROSS_RELEASE_ID",
+    "ROSS_BUILD_RELEASE_ID",
+    "ROSS_RUNTIME_RELEASE_ID",
     "ROSS_RELEASE_MANIFEST_SHA256",
     "LOG_RAW_LLM_STREAM",
     "RAW_LLM_STREAM_LOG_DIR",
@@ -56,6 +58,39 @@ test("local mode preserves self-hosted defaults", () => {
         assert.equal(config.hostedMode, "self-hosted");
         assert.deepEqual(config.hostedModelProviders, []);
     });
+});
+
+test("runtime and build release identities override legacy staged secrets", () => {
+    withEnvironment(
+        {
+            ROSS_ENV: "staging",
+            ROSS_HOSTED_MODE: "controlled-beta",
+            HOSTED_MODEL_PROVIDERS: "openai",
+            CORS_ALLOWED_ORIGINS: "https://app.ross.test",
+            ROSS_RELEASE_ID: "ross-public-beta-20260724-rc1",
+            ROSS_BUILD_RELEASE_ID: "ross-public-beta-20260726-rc4",
+        },
+        () => {
+            assert.equal(
+                loadRuntimeConfig().releaseId,
+                "ross-public-beta-20260726-rc4",
+            );
+        },
+    );
+    withEnvironment(
+        {
+            ROSS_ENV: "staging",
+            ROSS_HOSTED_MODE: "controlled-beta",
+            HOSTED_MODEL_PROVIDERS: "openai",
+            CORS_ALLOWED_ORIGINS: "https://app.ross.test",
+            ROSS_RELEASE_ID: "ross-public-beta-20260724-rc1",
+            ROSS_BUILD_RELEASE_ID: "ross-public-beta-20260726-rc4",
+            ROSS_RUNTIME_RELEASE_ID: "rehearsal-123",
+        },
+        () => {
+            assert.equal(loadRuntimeConfig().releaseId, "rehearsal-123");
+        },
+    );
 });
 
 test("staging requires an explicit hosted mode and provider allowlist", () => {

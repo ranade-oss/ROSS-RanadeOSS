@@ -39,10 +39,12 @@ RUN npm run build
 
 FROM node:22-bookworm-slim AS runtime
 
+ARG ROSS_BUILD_RELEASE_ID
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
-    HOSTNAME=0.0.0.0
+    HOSTNAME=0.0.0.0 \
+    ROSS_BUILD_RELEASE_ID=${ROSS_BUILD_RELEASE_ID}
 
 WORKDIR /app/frontend
 COPY --from=build --chown=node:node /app/frontend/public ./public

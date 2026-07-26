@@ -21,6 +21,7 @@ import type {
   TabularReviewDetailOut,
 } from "@/app/components/shared/types";
 import { dataBoundaryHeaders } from "@/app/lib/dataBoundary";
+import { getApiBaseUrl } from "@/app/lib/runtimeConfig";
 
 // Server-side shape before mapping
 interface ServerMessage {
@@ -38,8 +39,7 @@ interface ServerChatDetailOut {
   messages: ServerMessage[];
 }
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+const API_BASE = getApiBaseUrl();
 const isDev = process.env.NODE_ENV !== "production";
 const devLog = (...args: Parameters<typeof console.log>) => {
   if (isDev) console.log(...args);

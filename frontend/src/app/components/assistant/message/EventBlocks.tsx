@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ChevronDown, Download, ExternalLink, Loader2 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
+import { getApiBaseUrl } from "@/app/lib/runtimeConfig";
 import type { AssistantEvent } from "../../shared/types";
 import { FileTypeIcon } from "../../shared/FileTypeIcon";
 import { RESPONSE_GLASS_SURFACE, withoutMarkdownNode } from "./messageStyles";
@@ -510,8 +511,7 @@ export function DocDownloadBlock({
     // Only backend-relative URLs are accepted. The download fetch carries
     // the user's bearer token, so any absolute URL from tool output is
     // refused to keep the token from leaking off-origin.
-    const API_BASE =
-        process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+    const API_BASE = getApiBaseUrl();
     const isSafeHref = download_url.startsWith("/");
     const href = isSafeHref ? `${API_BASE}${download_url}` : null;
     const [busy, setBusy] = useState(false);

@@ -17,15 +17,22 @@ function configuredOrigin(value: string | undefined) {
 }
 
 const apiOrigin = configuredOrigin(process.env.NEXT_PUBLIC_API_BASE_URL);
+const rehearsalApiOrigin = configuredOrigin(
+    process.env.NEXT_PUBLIC_REHEARSAL_API_BASE_URL,
+);
 const supabaseOrigin = configuredOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL);
 const supabaseWebSocketOrigin = supabaseOrigin
     ? supabaseOrigin.replace(/^http/, "ws")
     : null;
 const connectSources = Array.from(
     new Set(
-        ["'self'", apiOrigin, supabaseOrigin, supabaseWebSocketOrigin].filter(
-            (source): source is string => Boolean(source),
-        ),
+        [
+            "'self'",
+            apiOrigin,
+            rehearsalApiOrigin,
+            supabaseOrigin,
+            supabaseWebSocketOrigin,
+        ].filter((source): source is string => Boolean(source)),
     ),
 );
 const scriptSources = ["'self'", "'unsafe-inline'"];
