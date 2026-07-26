@@ -170,11 +170,27 @@ test("the frontend uses public runtime configuration for staging parity", () => 
 
 test("rehearsal is private, read-only, and cannot dispatch production jobs", () => {
   const train = read("scripts/fly-release-train.mjs");
+  const rehearsalApi = read("deploy/fly/rehearsal-api.toml");
+  const rehearsalWeb = read("deploy/fly/rehearsal-frontend.toml");
   const dispatcher = read(
     "backend/src/lib/documentScanDispatcher.ts",
   );
 
   assert.match(train, /--no-public-ips/);
+  assert.ok(train.includes('`http://${apiApp}.flycast`'));
+  assert.ok(train.includes('`http://${webApp}.flycast`'));
+  assert.ok(train.includes('`http://${workerApp}.flycast`'));
+  assert.doesNotMatch(
+    train.slice(
+      train.indexOf("function smoke("),
+      train.indexOf("function machineIds("),
+    ),
+    /\.internal/,
+  );
+  assert.match(train, /AbortSignal\.timeout\(10000\)/);
+  assert.match(train, /after 12 attempts/);
+  assert.match(rehearsalApi, /force_https = false/);
+  assert.match(rehearsalWeb, /force_https = false/);
   assert.match(train, /ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER: "true"/);
   assert.match(train, /protectedUpload\.status === 401/);
   assert.match(train, /workerAuth\.status === 400/);
@@ -314,7 +330,41 @@ if (command === "image" && subcommand === "show") {
   }));
   process.exit(0);
 }
-if (command === "ssh" && subcommand === "console") process.exit(0);
+if (command === "ssh" && subcommand === "console") {
+  const probe = flag("--command") || "";
+  const encodedProbe = probe.match(
+    /Buffer\\.from\\('([^']+)','base64'\\)/,
+  )?.[1];
+  if (!encodedProbe) {
+    process.stderr.write("The deployed probe payload is missing.");
+    process.exit(30);
+  }
+  try {
+    new Function(Buffer.from(encodedProbe, "base64").toString("utf8"));
+  } catch (error) {
+    process.stderr.write("The deployed probe payload is invalid: " + error.message);
+    process.exit(30);
+  }
+  if (probe.includes(".internal")) {
+    process.stderr.write("Direct 6PN probes are forbidden for IPv4-bound services.");
+    process.exit(31);
+  }
+  const rehearsal =
+    probe.includes("http://ross-ranadeoss-api-rehearsal.flycast") &&
+    probe.includes("http://ross-ranadeoss-web-rehearsal.flycast") &&
+    probe.includes("http://ross-ranadeoss-worker-rehearsal.flycast");
+  const production =
+    probe.includes("https://ross-ranadeoss-api.fly.dev") &&
+    probe.includes("https://ross-ranadeoss-public.fly.dev") &&
+    probe.includes("http://ross-ranadeoss-file-worker.flycast");
+  if (!rehearsal && !production) {
+    process.stderr.write("Probe did not use the required Fly Proxy routes.");
+    process.exit(32);
+  }
+  state.probes = [...(state.probes || []), probe];
+  save();
+  process.exit(0);
+}
 if (command === "machine" && subcommand === "list") {
   const app = flag("--app");
   const record = state.apps[app];
@@ -421,6 +471,15 @@ exec ${process.execPath} "$@"
   assert.equal(state.apps[apps.prodApi].image, baseline.api);
   assert.equal(state.apps[apps.prodWeb].image, baseline.web);
   assert.equal(state.apps[apps.prodWorker].image, baseline.worker);
+  assert.ok(
+    state.probes.some((probe) =>
+      probe.includes("http://ross-ranadeoss-api-rehearsal.flycast"),
+    ),
+  );
+  assert.equal(
+    state.probes.some((probe) => probe.includes(".internal")),
+    false,
+  );
 
   state.failOnceApp = apps.prodWeb;
   state.failOnceImage = candidate.web;
@@ -449,6 +508,11 @@ exec ${process.execPath} "$@"
   assert.equal(state.apps[apps.prodApi].image, candidate.api);
   assert.equal(state.apps[apps.prodWeb].image, candidate.web);
   assert.equal(state.apps[apps.prodWorker].image, candidate.worker);
+  assert.ok(
+    state.probes.some((probe) =>
+      probe.includes("https://ross-ranadeoss-api.fly.dev"),
+    ),
+  );
 
   const restoredPromotion = runTrain("restore");
   assert.equal(

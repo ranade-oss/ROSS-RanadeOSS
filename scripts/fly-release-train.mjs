@@ -380,17 +380,50 @@ const [
 const expect = (condition, message) => {
   if (!condition) throw new Error(message);
 };
+const wait = (milliseconds) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
+const describeError = (error) => {
+  const parts = [
+    error instanceof Error ? error.message : String(error),
+    error?.cause?.code,
+    error?.cause?.message,
+  ].filter(Boolean);
+  return [...new Set(parts)].join(": ");
+};
+const request = async (label, url, options = {}) => {
+  let lastError = null;
+  for (let attempt = 1; attempt <= 12; attempt += 1) {
+    try {
+      return await fetch(url, {
+        ...options,
+        signal: AbortSignal.timeout(10000),
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt < 12) await wait(5000);
+    }
+  }
+  throw new Error(
+    label + " could not reach " + url + " after 12 attempts: " +
+      describeError(lastError),
+  );
+};
 const json = async (response, label) => {
   expect(response.ok, label + " returned HTTP " + response.status);
   return response.json();
 };
 (async () => {
-  const health = await json(await fetch(apiNetwork + "/health"), "API health");
+  const health = await json(
+    await request("API health", apiNetwork + "/health"),
+    "API health",
+  );
   expect(health.ok === true && health.service === "ross-api", "API health contract failed");
-  const login = await fetch(webNetwork + "/login", { redirect: "manual" });
+  const login = await request("Web login", webNetwork + "/login", {
+    redirect: "manual",
+  });
   expect(login.status >= 200 && login.status < 400, "Web login route failed");
   const workerHealth = await json(
-    await fetch(workerNetwork + "/health"),
+    await request("Worker health", workerNetwork + "/health"),
     "Worker health",
   );
   expect(
@@ -401,7 +434,10 @@ const json = async (response, label) => {
   expect(health.releaseId === expectedRelease, "API release identity mismatch");
 
   const runtime = await json(
-    await fetch(webNetwork + "/api/runtime-config"),
+    await request(
+      "Web runtime configuration",
+      webNetwork + "/api/runtime-config",
+    ),
     "Web runtime configuration",
   );
   expect(runtime.apiBaseUrl === publicApi, "Runtime API origin mismatch");
@@ -413,47 +449,62 @@ const json = async (response, label) => {
     "Runtime signup policy mismatch",
   );
 
-  const allowed = await fetch(apiNetwork + "/health", {
-    headers: { Origin: publicWeb },
-  });
+  const allowed = await request(
+    "Allowed CORS origin",
+    apiNetwork + "/health",
+    { headers: { Origin: publicWeb } },
+  );
   expect(allowed.ok, "Allowed CORS origin failed");
   expect(
     allowed.headers.get("access-control-allow-origin") === publicWeb,
     "Allowed CORS origin was not echoed",
   );
-  const denied = await fetch(apiNetwork + "/health", {
-    headers: { Origin: "https://untrusted.example" },
-  });
+  const denied = await request(
+    "Denied CORS origin",
+    apiNetwork + "/health",
+    { headers: { Origin: "https://untrusted.example" } },
+  );
   expect(denied.status === 403, "Untrusted CORS origin was not denied");
 
-  const protectedRead = await fetch(apiNetwork + "/single-documents", {
-    headers: { Origin: publicWeb },
-  });
+  const protectedRead = await request(
+    "Protected document read",
+    apiNetwork + "/single-documents",
+    { headers: { Origin: publicWeb } },
+  );
   expect(protectedRead.status === 401, "Authentication guard failed");
-  const protectedUpload = await fetch(apiNetwork + "/single-documents", {
-    method: "POST",
-    headers: {
-      Origin: publicWeb,
-      "Content-Type": "application/octet-stream",
+  const protectedUpload = await request(
+    "Protected document upload",
+    apiNetwork + "/single-documents",
+    {
+      method: "POST",
+      headers: {
+        Origin: publicWeb,
+        "Content-Type": "application/octet-stream",
+      },
+      body: new Uint8Array(),
     },
-    body: new Uint8Array(),
-  });
+  );
   expect(protectedUpload.status === 401, "Upload authentication guard failed");
 
-  const settings = await fetch(
+  const settings = await request(
+    "Supabase settings",
     process.env.SUPABASE_URL.replace(/\\/$/, "") + "/auth/v1/settings",
     { headers: { apikey: process.env.SUPABASE_SECRET_KEY } },
   );
   expect(settings.ok, "Supabase authentication configuration failed");
 
-  const workerAuth = await fetch(workerNetwork + "/process", {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + process.env.FILE_WORKER_SHARED_SECRET,
-      "Content-Type": "application/json",
+  const workerAuth = await request(
+    "Worker authentication",
+    workerNetwork + "/process",
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + process.env.FILE_WORKER_SHARED_SECRET,
+        "Content-Type": "application/json",
+      },
+      body: "{}",
     },
-    body: "{}",
-  });
+  );
   expect(workerAuth.status === 400, "API-to-worker shared secret wiring failed");
 })().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
@@ -510,13 +561,21 @@ function smoke(target, { full = false } = {}) {
         target === "rehearsal" ? apps.stageWorker : apps.prodWorker;
     const publicApi = `https://${apiApp}.fly.dev`;
     const publicWeb = `https://${webApp}.fly.dev`;
+    const apiNetwork =
+        target === "rehearsal"
+            ? `http://${apiApp}.flycast`
+            : publicApi;
+    const webNetwork =
+        target === "rehearsal"
+            ? `http://${webApp}.flycast`
+            : publicWeb;
     if (target === "public-beta") {
         wakePublicService(`${publicApi}/health`);
         wakePublicService(`${publicWeb}/login`);
     }
     runRemoteProbe(apiApp, [
-        `http://${apiApp}.internal:3001`,
-        `http://${webApp}.internal:3000`,
+        apiNetwork,
+        webNetwork,
         `http://${workerApp}.flycast`,
         publicApi,
         publicWeb,

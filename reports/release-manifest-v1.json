@@ -227,8 +227,8 @@
     },
     {
       "path": "deploy/fly/rehearsal-api.toml",
-      "sha256": "50ea2efa0633314443ede4ad0e22df3436e27a3d9ce72de5dfca8d9dc0189089",
-      "sizeBytes": 606
+      "sha256": "aa39613ace8911d8dd794d38eaba1784c16163bd63f15d739e4c7d33d37c6cd8",
+      "sizeBytes": 607
     },
     {
       "path": "deploy/fly/rehearsal-file-worker.toml",
@@ -237,8 +237,8 @@
     },
     {
       "path": "deploy/fly/rehearsal-frontend.toml",
-      "sha256": "8ee622be5a9de93557cc4dfe00c87fd53a726042b434e3c15700cd35a968a855",
-      "sizeBytes": 629
+      "sha256": "0b823d9e9e730caf2d6ad5e939c3b4489ec39c1ef8e6bbbd42ea7930ded8cc0c",
+      "sizeBytes": 630
     },
     {
       "path": "docs/release-evidence/controlled-beta-owner-approval-2026-07-18.md",
@@ -477,8 +477,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "634fdf04a9d6d9e08a0449495550cb55ec8411fc5d9520c035dc6efcb4a37771",
-      "sizeBytes": 25243
+      "sha256": "7d16c4162631fbc370d655576dee0cd8d991f93cd9aa4acf85d075ac5d4f52a1",
+      "sizeBytes": 26609
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
@@ -522,8 +522,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "202ac8630b6688a32a799303c3734f8dbbbaa6f95dace5b628008e114d689c40",
-      "sizeBytes": 16631
+      "sha256": "2424f35278dba2b119a106a77e6ab543996ad884e9b90275299efd8f24465015",
+      "sizeBytes": 18893
     },
     {
       "path": "website/package-lock.json",
