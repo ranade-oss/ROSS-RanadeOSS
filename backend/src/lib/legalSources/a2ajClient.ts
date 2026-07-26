@@ -142,8 +142,11 @@ export class A2ajClient {
         return documentResultsSchema.parse(raw).results[0];
     }
 
-    async coverage(): Promise<A2ajCoverageRow[]> {
-        const raw = await this.request("/coverage");
+    async coverage(
+        docType: "cases" | "laws",
+    ): Promise<A2ajCoverageRow[]> {
+        const params = new URLSearchParams({ doc_type: docType });
+        const raw = await this.request(`/coverage?${params}`);
         const direct = coverageRowsSchema.safeParse(raw);
         if (direct.success) return direct.data;
         const wrapper = z.record(z.unknown()).parse(raw);

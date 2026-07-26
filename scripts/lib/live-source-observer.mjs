@@ -2,7 +2,7 @@ const REQUIRED_TARGETS = [
   {
     id: "a2aj-canada",
     url: "https://api.a2aj.ca/coverage",
-    kind: "a2aj-coverage",
+    kind: "a2aj-split-coverage",
   },
   {
     id: "ontario-elaws",
@@ -42,32 +42,27 @@ const reasonCode = (error) => {
   return "network-or-validation-failure";
 };
 
+const requestHeaders = (target) => ({
+  Accept:
+    target.kind === "a2aj-split-coverage"
+      ? "application/json"
+      : "text/html, application/xml, text/xml",
+  "User-Agent": "ROSS-RanadeOSS-source-observer/1.0",
+});
+
+async function fetchResponse(fetchImpl, url, target, timeoutMs) {
+  return fetchImpl(url, {
+    headers: requestHeaders(target),
+    redirect: "follow",
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+}
+
 async function inspect(response, target) {
   if (!response.ok) {
     const error = new Error("Legal source returned a non-success status.");
     error.status = response.status;
     throw error;
-  }
-
-  if (target.kind === "a2aj-coverage") {
-    const rows = a2ajRows(await response.json());
-    if (!rows.length) {
-      const error = new Error("A2AJ coverage was empty.");
-      error.code = "invalid-payload";
-      throw error;
-    }
-    const datasets = new Set(
-      rows
-        .map((row) => String(row?.dataset ?? row?.id ?? row?.code ?? "").toUpperCase())
-        .filter(Boolean),
-    );
-    const requiredDatasets = ["ONCA", "LEGISLATION-ON", "REGULATIONS-ON"];
-    if (requiredDatasets.some((dataset) => !datasets.has(dataset))) {
-      const error = new Error("A2AJ did not report required Ontario coverage.");
-      error.code = "missing-ontario-dataset";
-      throw error;
-    }
-    return `coverage-${rows.length}-datasets`;
   }
 
   const body = await response.text();
@@ -84,6 +79,63 @@ async function inspect(response, target) {
   return `content-${body.length}-bytes`;
 }
 
+async function inspectA2ajCoverage(fetchImpl, target, timeoutMs) {
+  const groups = await Promise.all(
+    [
+      { docType: "cases", requiredDatasets: ["ONCA"] },
+      {
+        docType: "laws",
+        requiredDatasets: ["LEGISLATION-ON", "REGULATIONS-ON"],
+      },
+    ].map(async ({ docType, requiredDatasets }) => {
+      const params = new URLSearchParams({ doc_type: docType });
+      const response = await fetchResponse(
+        fetchImpl,
+        `${target.url}?${params}`,
+        target,
+        timeoutMs,
+      );
+      if (!response.ok) {
+        const error = new Error("Legal source returned a non-success status.");
+        error.status = response.status;
+        throw error;
+      }
+      const rows = a2ajRows(await response.json());
+      if (!rows.length) {
+        const error = new Error(`A2AJ ${docType} coverage was empty.`);
+        error.code = "invalid-payload";
+        throw error;
+      }
+      const datasets = new Set(
+        rows
+          .map((row) =>
+            String(row?.dataset ?? row?.id ?? row?.code ?? "").toUpperCase(),
+          )
+          .filter(Boolean),
+      );
+      if (requiredDatasets.some((dataset) => !datasets.has(dataset))) {
+        const error = new Error(
+          `A2AJ ${docType} coverage omitted required Ontario datasets.`,
+        );
+        error.code = "missing-ontario-dataset";
+        throw error;
+      }
+      return { docType, rows, response };
+    }),
+  );
+  const cases = groups.find((group) => group.docType === "cases");
+  const laws = groups.find((group) => group.docType === "laws");
+  const versions = groups
+    .map((group) => responseVersion(group.response, null))
+    .filter(Boolean);
+  return {
+    sourceVersion:
+      versions.length === groups.length
+        ? versions.join("|")
+        : `coverage-${cases.rows.length}-cases-${laws.rows.length}-laws`,
+  };
+}
+
 export async function observeLiveLegalSources({
   fetchImpl = fetch,
   now = () => new Date(),
@@ -96,22 +148,28 @@ export async function observeLiveLegalSources({
   for (const target of REQUIRED_TARGETS) {
     const startedAt = clock();
     try {
-      const response = await fetchImpl(target.url, {
-        headers: {
-          Accept: target.kind === "a2aj-coverage" ? "application/json" : "text/html, application/xml, text/xml",
-          "User-Agent": "ROSS-RanadeOSS-source-observer/1.0",
-        },
-        redirect: "follow",
-        signal: AbortSignal.timeout(timeoutMs),
-      });
-      const fallbackVersion = await inspect(response, target);
+      const observation =
+        target.kind === "a2aj-split-coverage"
+          ? await inspectA2ajCoverage(fetchImpl, target, timeoutMs)
+          : await (async () => {
+              const response = await fetchResponse(
+                fetchImpl,
+                target.url,
+                target,
+                timeoutMs,
+              );
+              const fallbackVersion = await inspect(response, target);
+              return {
+                sourceVersion: responseVersion(response, fallbackVersion),
+              };
+            })();
       providers[target.id] = {
         state: "healthy",
         checkedAt: observedAt,
         lastSuccessfulAt: observedAt,
         consecutiveFailures: 0,
         consecutiveSuccesses: 1,
-        sourceVersion: responseVersion(response, fallbackVersion),
+        sourceVersion: observation.sourceVersion,
         latencyClass: latencyClass(Math.max(0, clock() - startedAt)),
         reasonCode: "ok",
       };

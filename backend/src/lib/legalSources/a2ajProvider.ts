@@ -453,9 +453,12 @@ export class A2ajProvider implements LegalSourceProvider {
     if (this.coverageCache && this.coverageCache.expiresAt > Date.now())
       return this.coverageCache.rows;
     const checkedAt = new Date().toISOString();
-    const raw = await this.client.coverage();
+    const [caseCoverage, lawCoverage] = await Promise.all([
+      this.client.coverage("cases"),
+      this.client.coverage("laws"),
+    ]);
     const rows = dedupeCoverage(
-      raw
+      [...caseCoverage, ...lawCoverage]
         .map((row) => normalizeCoverageRow(row, checkedAt, this.descriptor.id))
         .filter((row): row is LegalSourceCoverage => row !== null),
     );

@@ -9,8 +9,19 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 
 test("the public update exposes the complete live A2AJ catalogue with warnings and pagination", () => {
+  const client = read("backend/src/lib/legalSources/a2ajClient.ts");
   const provider = read("backend/src/lib/legalSources/a2ajProvider.ts");
   const route = read("backend/src/routes/a2ajCatalogue.ts");
+  const scheduledObserver = read("scripts/lib/live-source-observer.mjs");
+  const deploymentObserver = read("scripts/observe-a2aj-catalogue.mjs");
+  assert.match(client, /docType: "cases" \| "laws"/);
+  assert.match(client, /doc_type: docType/);
+  assert.match(provider, /this\.client\.coverage\("cases"\)/);
+  assert.match(provider, /this\.client\.coverage\("laws"\)/);
+  assert.match(scheduledObserver, /docType: "cases"/);
+  assert.match(scheduledObserver, /docType: "laws"/);
+  assert.match(deploymentObserver, /\/coverage\?doc_type=cases/);
+  assert.match(deploymentObserver, /\/coverage\?doc_type=laws/);
   assert.match(provider, /async catalogue\(\)/);
   assert.match(provider, /searchDecisionPage/);
   assert.match(provider, /searchLegislationPage/);

@@ -73,6 +73,15 @@ test("A2AJ client sends bounded documented search parameters", async () => {
   const lawUrl = new URL(urls[1]);
   assert.equal(lawUrl.searchParams.get("doc_type"), "laws");
   assert.equal(lawUrl.searchParams.get("dataset"), "LEGISLATION-ON");
+
+  await client.coverage("cases");
+  await client.coverage("laws");
+  const caseCoverageUrl = new URL(urls[2]);
+  const lawCoverageUrl = new URL(urls[3]);
+  assert.equal(caseCoverageUrl.pathname, "/coverage");
+  assert.equal(caseCoverageUrl.searchParams.get("doc_type"), "cases");
+  assert.equal(lawCoverageUrl.pathname, "/coverage");
+  assert.equal(lawCoverageUrl.searchParams.get("doc_type"), "laws");
 });
 
 test("A2AJ client retries transient failures and opens its circuit", async () => {
@@ -100,14 +109,17 @@ test("A2AJ client retries transient failures and opens its circuit", async () =>
     fetchImpl: async () => new Response("busy", { status: 503 }),
   });
   await assert.rejects(
-    () => failing.coverage(),
+    () => failing.coverage("cases"),
     (error) => error instanceof A2ajApiError && error.status === 503,
   );
   await assert.rejects(
-    () => failing.coverage(),
+    () => failing.coverage("laws"),
     (error) => error instanceof A2ajApiError && error.status === 503,
   );
-  await assert.rejects(() => failing.coverage(), /circuit breaker is open/);
+  await assert.rejects(
+    () => failing.coverage("cases"),
+    /circuit breaker is open/,
+  );
 });
 
 test("A2AJ provider maps Ontario metadata and grounded passages", async () => {
@@ -230,22 +242,18 @@ test("A2AJ provider validates and exercises the complete live-style catalogue", 
     `REGULATIONS-${code}`,
   ]);
   const requested = new Set<string>();
+  const coverageRequests: string[] = [];
   const client = {
-    coverage: async () => [
-      ...decisionDatasets.map((dataset) => ({
+    coverage: async (docType: "cases" | "laws") => {
+      coverageRequests.push(docType);
+      const datasets = docType === "cases" ? decisionDatasets : lawDatasets;
+      return datasets.map((dataset) => ({
         dataset,
         count: 1,
         first_date: "2000-01-01",
         last_date: "2026-07-19",
-      })),
-      ...lawDatasets.map((dataset) => ({
-        dataset,
-        count: 1,
-        first_date: "2000-01-01",
-        last_date: "2026-07-19",
-      })),
-      { dataset: "ONCA", count: 1 },
-    ],
+      }));
+    },
     search: async (input: { dataset?: string; docType?: string }) => {
       const dataset = input.dataset ?? "SCC";
       requested.add(dataset);
@@ -271,6 +279,7 @@ test("A2AJ provider validates and exercises the complete live-style catalogue", 
   assert.equal(catalogue.datasetCount, 48);
   assert.equal(catalogue.decisionDatasetCount, 26);
   assert.equal(catalogue.lawDatasetCount, 22);
+  assert.deepEqual(coverageRequests.sort(), ["cases", "laws"]);
   assert.ok(catalogue.warnings.every((warning) => warning.length > 20));
   assert.equal(
     catalogue.datasets.find((row) => row.dataset === "BCCA")?.jurisdiction,

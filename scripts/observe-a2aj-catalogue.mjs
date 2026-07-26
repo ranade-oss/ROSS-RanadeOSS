@@ -133,8 +133,22 @@ async function mapWithConcurrency(values, concurrency, task) {
 
 let report;
 try {
-  const raw = await requestJson("/coverage");
-  const rows = coverageRows(raw);
+  const [caseCoverage, lawCoverage] = await Promise.all([
+    requestJson("/coverage?doc_type=cases"),
+    requestJson("/coverage?doc_type=laws"),
+  ]);
+  const caseRows = coverageRows(caseCoverage);
+  const lawRows = coverageRows(lawCoverage);
+  if (!caseRows.length) throw new Error("A2AJ returned no case datasets.");
+  if (!lawRows.length) throw new Error("A2AJ returned no law datasets.");
+  const caseCodes = new Set(caseRows.map(datasetCode).filter(Boolean));
+  const lawCodes = new Set(lawRows.map(datasetCode).filter(Boolean));
+  if (!caseCodes.has("ONCA"))
+    throw new Error("A2AJ case coverage omitted ONCA.");
+  for (const dataset of ["LEGISLATION-ON", "REGULATIONS-ON"])
+    if (!lawCodes.has(dataset))
+      throw new Error(`A2AJ law coverage omitted ${dataset}.`);
+  const rows = [...caseRows, ...lawRows];
   const unique = new Map();
   for (const row of rows) {
     const dataset = datasetCode(row);
@@ -155,6 +169,12 @@ try {
       ? "healthy"
       : "degraded",
     datasetCount: datasets.length,
+    decisionDatasetCount: datasets.filter(
+      (item) => item.materialType === "decision",
+    ).length,
+    lawDatasetCount: datasets.filter(
+      (item) => item.materialType !== "decision",
+    ).length,
     healthyCount: datasets.filter((item) => item.status === "healthy").length,
     degradedCount: datasets.filter((item) => item.status === "degraded").length,
     warnings,
@@ -167,6 +187,8 @@ try {
     endpoint: baseUrl,
     status: "unavailable",
     datasetCount: 0,
+    decisionDatasetCount: 0,
+    lawDatasetCount: 0,
     healthyCount: 0,
     degradedCount: 0,
     warnings,
