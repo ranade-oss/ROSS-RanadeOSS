@@ -617,7 +617,7 @@
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
-      "sha256": "fee45c7a128fd110939715fdfc7817c58e4d2de9e197e6d7661657f6a2734b64",
+      "sha256": "f6be049d97023ca7f01193d357dc02f4b5bb14c23fdf675f824961dfa2285d7d",
       "sizeBytes": 20903
     },
     {
