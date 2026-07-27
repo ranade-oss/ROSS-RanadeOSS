@@ -47,8 +47,8 @@
     },
     {
       "path": ".github/workflows/staging-debug-release-train.yml",
-      "sha256": "65ce831767a8b0abe2de82dac9d2d606ebc1c101e8fb8e981a3b79943960982f",
-      "sizeBytes": 12074
+      "sha256": "15f27aec7e3de70df3b88d2bb1d81e292bc55229ee656fef480837eedaeae915",
+      "sizeBytes": 12122
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
@@ -552,8 +552,8 @@
     },
     {
       "path": "scripts/run-staging-debug-probe.mjs",
-      "sha256": "2da7258bdf81290a51b43e7a88c5b6f7e0ce5d970db4c2214696c7a9ed25b101",
-      "sizeBytes": 3094
+      "sha256": "434b47139ba6d63044945dd3ff1a941dbcf7f319179cc87693192a5243ec9a2f",
+      "sizeBytes": 3162
     },
     {
       "path": "scripts/smoke-staging-web-image.sh",
@@ -562,8 +562,8 @@
     },
     {
       "path": "scripts/staging-debug-lifecycle.sh",
-      "sha256": "8bbf675c5e962c5af6033c27351f232ab995848ea6b1ae52620f16d0d5af303c",
-      "sizeBytes": 5991
+      "sha256": "c7c5b0b9094be22b886e324eb88dd07a009406a113d977dbf66d3fe4b9c733fc",
+      "sizeBytes": 6810
     },
     {
       "path": "scripts/staging-debug-preflight.mjs",
@@ -622,8 +622,8 @@
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
-      "sha256": "f6be049d97023ca7f01193d357dc02f4b5bb14c23fdf675f824961dfa2285d7d",
-      "sizeBytes": 20903
+      "sha256": "046f4d8853fb667eefe900527ff3ed675c8b2f7f2452f0907a1640e25b75ab9f",
+      "sizeBytes": 22490
     },
     {
       "path": "website/package-lock.json",
