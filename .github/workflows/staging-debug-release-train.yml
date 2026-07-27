@@ -13,7 +13,7 @@ concurrency:
 jobs:
   debug:
     outputs:
-      artifact-upload: ${{ steps.debug_upload.outcome }}
+      artifact_upload: ${{ steps.debug_upload.outcome }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     environment: staging-debug
@@ -191,7 +191,7 @@ jobs:
           printf '{"outcome":"%s"}\n' "${{ needs.debug.result }}" > artifacts/staging-debug/debug-job-result.json
           printf '{"outcome":"%s"}\n' "${{ steps.download.outcome }}" > artifacts/staging-debug/evidence-download-result.json
           printf '{"outcome":"%s","productionPromotion":false,"stagingWorkflowRerun":false}\n' "${{ needs.debug.result }}" > artifacts/staging-debug/result.json
-          printf '{"outcome":"%s"}\n' "${{ needs.debug.outputs.artifact-upload }}" > artifacts/staging-debug/debug-artifact-upload-result.json
+          printf '{"outcome":"%s"}\n' "${{ needs.debug.outputs.artifact_upload }}" > artifacts/staging-debug/debug-artifact-upload-result.json
       - name: Upload complete staging-debug evidence
         id: final_upload
         if: always()

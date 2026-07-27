@@ -42,7 +42,7 @@
     },
     {
       "path": ".github/workflows/staging-debug-release-train.yml",
-      "sha256": "3218c5a3e36935ee3cab37c41527ca16696da1dd2115464bc3e13367e3afb874",
+      "sha256": "b9f0a7c014d9d4b50699209009c46d9cf68e68787e10baffc324f941cc0edb1d",
       "sizeBytes": 12070
     },
     {
@@ -617,8 +617,8 @@
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
-      "sha256": "e7544cb854f08bec817878f107a90c9fde8de14cc654c08f8cc2b266b6935f66",
-      "sizeBytes": 20673
+      "sha256": "f6be049d97023ca7f01193d357dc02f4b5bb14c23fdf675f824961dfa2285d7d",
+      "sizeBytes": 20903
     },
     {
       "path": "website/package-lock.json",
