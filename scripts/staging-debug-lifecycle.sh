@@ -17,7 +17,7 @@ required() {
 inject_failure_and_rollback() {
   required WEB_APP
   required CANDIDATE_WEB_IMAGE
-  local baseline_image failure_config deploy_status
+  local baseline_image failure_config deploy_status failure_log
   baseline_image="$(node scripts/release-train-image-ref.mjs current "$WEB_APP")"
   printf '%s\n' "$baseline_image" > "$ARTIFACT_DIR/diagnostics/web-restore-image.txt"
 
@@ -37,7 +37,16 @@ inject_failure_and_rollback() {
     echo "The deliberately invalid deployment unexpectedly succeeded." >&2
     exit 1
   fi
-  printf '{"expectedDeploymentFailureObserved":true,"exitCode":%d}\n' \
+  failure_log="$ARTIFACT_DIR/commands/web-forced-failure.log"
+  if grep -Eqi 'unauthori[sz]ed|authentication|permission denied|forbidden|network|timeout|connection refused|could not resolve' "$failure_log"; then
+    echo "Forced deployment failed for authentication, permission, or network reasons, not the expected health check." >&2
+    exit 1
+  fi
+  if ! grep -Eqi 'health check|service check|unhealthy|failed to become healthy' "$failure_log"; then
+    echo "Forced deployment did not contain evidence of the expected Fly health-check failure." >&2
+    exit 1
+  fi
+  printf '{"outcome":"expected-failure","cause":"fly-health-check","exitCode":%d}\n' \
     "$deploy_status" > "$ARTIFACT_DIR/diagnostics/forced-failure-result.json"
   flyctl status --app "$WEB_APP" --json \
     > "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-status.json" 2>&1 || true
@@ -50,6 +59,9 @@ inject_failure_and_rollback() {
     2>&1 | tee "$ARTIFACT_DIR/commands/web-digest-restore.log"
   node scripts/release-train-image-ref.mjs verify "$WEB_APP" "$baseline_image" \
     > "$ARTIFACT_DIR/diagnostics/web-restored-image.txt"
+  printf '{"outcome":"passed","recordedDigest":"%s","restoredDigest":"%s"}\n' \
+    "$baseline_image" "$(cat "$ARTIFACT_DIR/diagnostics/web-restored-image.txt")" \
+    > "$ARTIFACT_DIR/diagnostics/digest-restoration-result.json"
 }
 
 cleanup() {
@@ -74,9 +86,11 @@ cleanup() {
     failed=1
   done
   if [ "$failed" -ne 0 ]; then
+    printf '{"outcome":"failed"}\n' > "$ARTIFACT_DIR/cleanup-result.json"
     echo "Ephemeral cleanup failed; operator action required." >&2
     exit 1
   fi
+  printf '{"outcome":"passed"}\n' > "$ARTIFACT_DIR/cleanup-result.json"
 }
 
 case "${1:-}" in

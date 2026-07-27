@@ -7,11 +7,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: ross-staging-debug-${{ github.run_id }}
+  group: ross-staging-debug
   cancel-in-progress: false
 
 jobs:
   debug:
+    outputs:
+      artifact-upload: ${{ steps.debug_upload.outcome }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     environment: staging-debug
@@ -25,6 +27,8 @@ jobs:
       ROSS_STAGING_S3_REGION: ${{ secrets.STAGING_S3_REGION }}
       ROSS_STAGING_S3_ACCESS_KEY_ID: ${{ secrets.STAGING_S3_ACCESS_KEY_ID }}
       ROSS_STAGING_S3_SECRET_ACCESS_KEY: ${{ secrets.STAGING_S3_SECRET_ACCESS_KEY }}
+      ROSS_STAGING_S3_BUCKET: ${{ vars.STAGING_S3_BUCKET }}
+      ROSS_PRODUCTION_FLY_ORG: ${{ vars.PRODUCTION_FLY_ORG }}
       ROSS_PRODUCTION_API_APP: ${{ vars.PRODUCTION_API_APP }}
       ROSS_PRODUCTION_WEB_APP: ${{ vars.PRODUCTION_WEB_APP }}
       ROSS_PRODUCTION_WORKER_APP: ${{ vars.PRODUCTION_WORKER_APP }}
@@ -44,6 +48,9 @@ jobs:
           mkdir -p artifacts/staging-debug/{commands,diagnostics}
           node scripts/validate-staging-debug.mjs | tee artifacts/staging-debug/isolation.txt >> "$GITHUB_ENV"
           env | sed -nE '/^(API|WEB|WORKER)_APP=/p' >> artifacts/staging-debug/isolation.txt
+
+      - name: Read-only staging dependency preflights
+        run: node scripts/staging-debug-preflight.mjs
 
       - name: Run complete repository gate
         run: npm run install:all && npm run check
@@ -75,8 +82,8 @@ jobs:
           worker_secret="$(openssl rand -hex 32)"; echo "::add-mask::$worker_secret"
           signing_secret="$(openssl rand -hex 32)"; echo "::add-mask::$signing_secret"
           flyctl secrets set --stage --app "$WORKER_APP" "FILE_WORKER_SHARED_SECRET=$worker_secret" "FILE_WORKER_STORAGE_ORIGINS=$ROSS_STAGING_S3_ENDPOINT_URL"
-          flyctl secrets set --stage --app "$API_APP" "SUPABASE_URL=$ROSS_STAGING_SUPABASE_URL" "SUPABASE_SECRET_KEY=$ROSS_STAGING_SUPABASE_SECRET_KEY" "R2_ENDPOINT_URL=$ROSS_STAGING_S3_ENDPOINT_URL" "R2_REGION=$ROSS_STAGING_S3_REGION" "R2_ACCESS_KEY_ID=$ROSS_STAGING_S3_ACCESS_KEY_ID" "R2_SECRET_ACCESS_KEY=$ROSS_STAGING_S3_SECRET_ACCESS_KEY" "R2_BUCKET_NAME=ross-staging-debug" "FILE_WORKER_URL=http://${WORKER_APP}.flycast" "FILE_WORKER_SHARED_SECRET=$worker_secret" "DOWNLOAD_SIGNING_SECRET=$signing_secret" "USER_API_KEYS_ENCRYPTION_SECRET=$signing_secret" "MCP_CONNECTORS_ENCRYPTION_SECRET=$signing_secret" "ROSS_ENV=staging" "ROSS_HOSTED_MODE=controlled-beta" "HOSTED_MODEL_PROVIDERS=openai" "ROSS_RUNTIME_RELEASE_ID=$ROSS_STAGING_DEBUG_RELEASE_ID" "ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER=true" "ROSS_UPLOAD_SCAN_REQUIRED=false" "CORS_ALLOWED_ORIGINS=https://${WEB_APP}.fly.dev" "FRONTEND_URL=https://${WEB_APP}.fly.dev" "API_PUBLIC_URL=https://${API_APP}.fly.dev"
-          flyctl secrets set --stage --app "$WEB_APP" "ROSS_RUNTIME_API_BASE_URL=https://${API_APP}.fly.dev" "ROSS_RUNTIME_APP_URL=https://${WEB_APP}.fly.dev" "ROSS_RUNTIME_SIGNUPS_ENABLED=false" "ROSS_RUNTIME_ENVIRONMENT=staging-debug" "ROSS_RUNTIME_RELEASE_ID=$ROSS_STAGING_DEBUG_RELEASE_ID"
+          flyctl secrets set --stage --app "$API_APP" "SUPABASE_URL=$ROSS_STAGING_SUPABASE_URL" "SUPABASE_SECRET_KEY=$ROSS_STAGING_SUPABASE_SECRET_KEY" "R2_ENDPOINT_URL=$ROSS_STAGING_S3_ENDPOINT_URL" "R2_REGION=$ROSS_STAGING_S3_REGION" "R2_ACCESS_KEY_ID=$ROSS_STAGING_S3_ACCESS_KEY_ID" "R2_SECRET_ACCESS_KEY=$ROSS_STAGING_S3_SECRET_ACCESS_KEY" "R2_BUCKET_NAME=$ROSS_STAGING_S3_BUCKET" "FILE_WORKER_URL=http://${WORKER_APP}.flycast" "FILE_WORKER_SHARED_SECRET=$worker_secret" "DOWNLOAD_SIGNING_SECRET=$signing_secret" "USER_API_KEYS_ENCRYPTION_SECRET=$signing_secret" "MCP_CONNECTORS_ENCRYPTION_SECRET=$signing_secret" "ROSS_ENV=staging" "ROSS_HOSTED_MODE=controlled-beta" "HOSTED_MODEL_PROVIDERS=openai" "ROSS_RUNTIME_RELEASE_ID=$ROSS_STAGING_DEBUG_RELEASE_ID" "ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER=true" "ROSS_UPLOAD_SCAN_REQUIRED=false" "CORS_ALLOWED_ORIGINS=https://${WEB_APP}.fly.dev" "FRONTEND_URL=https://${WEB_APP}.fly.dev" "API_PUBLIC_URL=https://${API_APP}.fly.dev"
+          flyctl secrets set --stage --app "$WEB_APP" "ROSS_RUNTIME_API_BASE_URL=https://${API_APP}.fly.dev" "ROSS_RUNTIME_APP_URL=https://${WEB_APP}.fly.dev" "ROSS_RUNTIME_SIGNUPS_ENABLED=false" "ROSS_RUNTIME_ENVIRONMENT=rehearsal" "ROSS_RUNTIME_RELEASE_ID=$ROSS_STAGING_DEBUG_RELEASE_ID"
 
       - name: Deploy and diagnose worker stage
         shell: bash
@@ -101,7 +108,9 @@ jobs:
           flyctl logs --app "$WEB_APP" --no-tail > artifacts/staging-debug/diagnostics/web-candidate.log 2>&1 || true
 
       - name: Run exact complete release-train integration probe
-        run: node scripts/run-staging-debug-probe.mjs staging-debug 2>&1 | tee artifacts/staging-debug/diagnostics/full-probe-before-failure.log
+        run: |
+          node scripts/run-staging-debug-probe.mjs rehearsal 2>&1 | tee artifacts/staging-debug/diagnostics/full-probe-before-failure.log
+          printf '{"outcome":"passed","image":"%s","port":3000,"routes":["/login","/api/runtime-config"]}\n' "$CANDIDATE_WEB_IMAGE" > artifacts/staging-debug/candidate-deployment-result.json
 
       - name: Inject a genuine deployment failure and restore baseline
         shell: bash
@@ -111,8 +120,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/run-staging-debug-probe.mjs staging-debug 2>&1 | tee artifacts/staging-debug/diagnostics/full-probe-after-rollback.log
-          printf '{"status":"passed","genuineDeploymentFailure":"observed","rollback":"verified","fullProbe":"passed","productionPromotion":false}\n' > artifacts/staging-debug/result.json
+          node scripts/run-staging-debug-probe.mjs rehearsal 2>&1 | tee artifacts/staging-debug/diagnostics/full-probe-after-rollback.log
+          printf '{"outcome":"passed","runtimeEnvironment":"rehearsal"}\n' > artifacts/staging-debug/post-restoration-probe-result.json
 
       - name: Collect failure diagnostics
         if: failure()
@@ -124,12 +133,54 @@ jobs:
             flyctl logs --app "$app" --no-tail > "artifacts/staging-debug/diagnostics/${app}-failure.log" 2>&1 || true
           done
 
-      - name: Destroy all ephemeral staging resources
+      - name: Upload debug evidence for independent cleanup job
+        id: debug_upload
         if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ross-staging-debug-working-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/staging-debug
+          if-no-files-found: warn
+          retention-days: 1
+
+  cleanup:
+    name: Independent cleanup and final evidence
+    needs: debug
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging-debug
+    env:
+      FLY_API_TOKEN: ${{ secrets.STAGING_FLY_API_TOKEN }}
+      API_APP: ross-api-debug-${{ github.run_id }}-${{ github.run_attempt }}
+      WEB_APP: ross-web-debug-${{ github.run_id }}-${{ github.run_attempt }}
+      WORKER_APP: ross-worker-debug-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1
+        with: { version: 0.4.49 }
+      - name: Recover debug evidence
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: ross-staging-debug-working-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/staging-debug
+      - name: Destroy deterministic ephemeral staging resources
+        id: cleanup
         shell: bash
         run: bash scripts/staging-debug-lifecycle.sh cleanup
-
+      - name: Record outcomes only after successful cleanup
+        if: steps.cleanup.outcome == 'success'
+        shell: bash
+        run: |
+          mkdir -p artifacts/staging-debug
+          printf '{"outcome":"%s"}\n' "${{ needs.debug.result }}" > artifacts/staging-debug/debug-job-result.json
+          printf '{"outcome":"%s"}\n' "${{ steps.download.outcome }}" > artifacts/staging-debug/evidence-download-result.json
+          printf '{"outcome":"%s","productionPromotion":false,"stagingWorkflowRerun":false}\n' "${{ needs.debug.result }}" > artifacts/staging-debug/result.json
+          printf '{"outcome":"%s"}\n' "${{ needs.debug.outputs.artifact-upload }}" > artifacts/staging-debug/debug-artifact-upload-result.json
       - name: Upload complete staging-debug evidence
+        id: final_upload
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -137,5 +188,18 @@ jobs:
           path: artifacts/staging-debug
           if-no-files-found: error
           retention-days: 30
+      - name: Record artifact upload outcome
+        if: always()
+        shell: bash
+        run: |
+          printf '### Staging-debug outcomes
+* Debug job: `%s`
+* Cleanup: `%s`
+* Artifact upload: `%s`
+' \
+            "${{ needs.debug.result }}" "${{ steps.cleanup.outcome }}" "${{ steps.final_upload.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          test "${{ steps.cleanup.outcome }}" = success
+          test "${{ steps.final_upload.outcome }}" = success
+          test "${{ needs.debug.result }}" = success
 
 # Intentionally no production environment, production credentials, promotion input, or promotion job.

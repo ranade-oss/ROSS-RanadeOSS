@@ -12,8 +12,12 @@ const apps = {
     web: required("WEB_APP"),
     worker: required("WORKER_APP"),
 };
-const expectedEnvironment = process.argv[2] ?? "staging-debug";
+const expectedEnvironment = process.argv[2] ?? "rehearsal";
+if (expectedEnvironment !== "rehearsal") {
+    throw new Error("Staging-debug must exercise the frontend's accepted rehearsal runtime.");
+}
 const expectedRelease = required("ROSS_STAGING_DEBUG_RELEASE_ID");
+const expectedWebImage = required("CANDIDATE_WEB_IMAGE");
 
 function fly(args, { capture = false } = {}) {
     const result = spawnSync("flyctl", args, {
@@ -41,6 +45,14 @@ function start(app) {
 
 start(apps.worker);
 start(apps.web);
+const deployedWebImage = fly(["image", "show", "--app", apps.web, "--json"], { capture: true });
+const image = JSON.parse(deployedWebImage);
+const actualWebImage = `${image.Registry}/${image.Repository}@${image.Digest}`;
+if (actualWebImage !== expectedWebImage) throw new Error(`Candidate web image mismatch: ${actualWebImage}`);
+const webConfig = await import("node:fs").then(({ readFileSync }) => readFileSync(new URL("../deploy/fly/rehearsal-frontend.toml", import.meta.url), "utf8"));
+if (!/internal_port\s*=\s*3000/.test(webConfig) || !/path\s*=\s*"\/login"/.test(webConfig)) {
+    throw new Error("Rehearsal web workflow configuration must expose port 3000 and health-check /login.");
+}
 const apiMachine = start(apps.api);
 const encoded = Buffer.from(deployedReleaseTrainProbe).toString("base64");
 const args = [
