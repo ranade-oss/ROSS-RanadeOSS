@@ -205,11 +205,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          printf '### Staging-debug outcomes
-* Debug job: `%s`
-* Cleanup: `%s`
-* Artifact upload: `%s`
-' \
+          printf '### Staging-debug outcomes\n* Debug job: `%s`\n* Cleanup: `%s`\n* Artifact upload: `%s`\n' \
             "${{ needs.debug.result }}" "${{ steps.cleanup.outcome }}" "${{ steps.final_upload.outcome }}" >> "$GITHUB_STEP_SUMMARY"
           test "${{ steps.cleanup.outcome }}" = success
           test "${{ steps.final_upload.outcome }}" = success
