@@ -45,6 +45,9 @@ test("debug workflow is diagnostic, cleanup-safe, and cannot promote", () => {
   assert.match(workflow, /cleanup:[\s\S]*needs: debug[\s\S]*staging-debug-lifecycle\.sh cleanup/);
   assert.match(workflow, /Immediate defensive cleanup in approved staging context[\s\S]*if: always\(\)/);
   assert.match(workflow, /cleanup:[\s\S]*FLY_API_TOKEN: \$\{\{ secrets\.STAGING_FLY_CLEANUP_TOKEN \}\}/);
+  assert.match(workflow, /artifact_upload: \\$\\{\\{ steps\\.debug_upload\\.outcome \\$\\}/);
+  assert.match(workflow, /needs\\.debug\\.outputs\\.artifact_upload/);
+  assert.doesNotMatch(workflow, /needs\\.debug\\.outputs\\.artifact-upload/);
   const fallback = workflow.slice(workflow.indexOf("  cleanup:"));
   assert.doesNotMatch(fallback, /environment: staging-debug/);
   assert.match(workflow, /STAGING_SUPABASE_URL/);
