@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 119,
+  "artifactCount": 131,
   "artifacts": [
     {
       "path": ".github/actions/setup-ross-node/action.yml",
@@ -41,6 +41,11 @@
       "sizeBytes": 3027
     },
     {
+      "path": ".github/workflows/staging-debug-release-train.yml",
+      "sha256": "590e664decb1439a1eb1a76315dbc6907a9f9c9c5ee496c5a859c7e7e0efcafc",
+      "sizeBytes": 10310
+    },
+    {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
       "sha256": "69253489fffdf6b220f6ffea764c30e46510dd97730fb23e85400c9eaeba6c11",
       "sizeBytes": 9544
@@ -74,6 +79,11 @@
       "path": "backend/scripts/restore-storage-exercise.mjs",
       "sha256": "fa40ef12674c5ec326ceae6ef62220f9b0cfef0124ebf6e719045ee752b00c73",
       "sizeBytes": 6549
+    },
+    {
+      "path": "backend/scripts/staging-debug-preflight.mjs",
+      "sha256": "b99d23525d831ff960411084f2408a14b93b9684274902b034c67cb7a4afe414",
+      "sizeBytes": 2048
     },
     {
       "path": "backend/schema.sql",
@@ -341,6 +351,11 @@
       "sizeBytes": 5556
     },
     {
+      "path": "docs/staging-debug-release-train.md",
+      "sha256": "dce3fc45bef22dee514cc9dd3fbea178aa4fe092c628ed939e7da4de1a82ed2f",
+      "sizeBytes": 3551
+    },
+    {
       "path": "frontend/package-lock.json",
       "sha256": "78c5149b7d30f1d3e39e545a995e8bf537a1368b302fd8ca452ddaffbe811fef",
       "sizeBytes": 533845
@@ -432,8 +447,8 @@
     },
     {
       "path": "frontend/src/app/lib/runtimeConfig.server.ts",
-      "sha256": "6c58f060cd3d32dda13d9398e21eb7dfc071fdece3a9c0c4a082ee39118a1a3f",
-      "sizeBytes": 2645
+      "sha256": "530d386d2c2a32c3919589096fe480921774f0c93819d38eb6f02b5557b27177",
+      "sizeBytes": 2757
     },
     {
       "path": "frontend/src/app/lib/runtimeConfig.ts",
@@ -496,9 +511,19 @@
       "sizeBytes": 4775
     },
     {
+      "path": "scripts/lib/release-train-probe.mjs",
+      "sha256": "a9a238424999ea97a1f2fbd1d9b04ee8fe044da053403e6c2d46f94e0ce1f4a0",
+      "sizeBytes": 5182
+    },
+    {
+      "path": "scripts/lib/staging-debug.mjs",
+      "sha256": "f4269728fac31cd2e185d859bd6ff8bad5a122a18510f8a33edce350ca32f9f1",
+      "sizeBytes": 3339
+    },
+    {
       "path": "scripts/build-release-train-images.sh",
-      "sha256": "6a3c18fd86d91861b0062c39e9206fd82cbf367e56952bcb4b7327cfb19fec57",
-      "sizeBytes": 4760
+      "sha256": "777328e5428fa2c580854a957d1c64c46eb82164636e077ccb87e7d5c716bd02",
+      "sizeBytes": 5794
     },
     {
       "path": "scripts/fly-deploy-with-retry.sh",
@@ -507,8 +532,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "731807a55f5e21267502071b679dc3a30f56c9c7fde0781efc4e68af0b37b2ff",
-      "sizeBytes": 32016
+      "sha256": "71338c98da92f12dfc244c3eb49d74b00cde169e5b8cdfbe5597ec75954199d0",
+      "sizeBytes": 26940
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
@@ -524,6 +549,26 @@
       "path": "scripts/release-train-image-ref.mjs",
       "sha256": "17cef8f7cf2b22e4bcaf19c0766fbbfef916941e654ad1156a87ab7047e92b2e",
       "sizeBytes": 1896
+    },
+    {
+      "path": "scripts/run-staging-debug-probe.mjs",
+      "sha256": "ed6a4c2237e50bd48f30ed86079716aa35e03906719a2404112f2fcfd5d273ce",
+      "sizeBytes": 2203
+    },
+    {
+      "path": "scripts/print-staging-debug-names.mjs",
+      "sha256": "24d663a0fbbc1729ff60258908832c4a5b40b33ddfb402192fa9e3526a0e2918",
+      "sizeBytes": 290
+    },
+    {
+      "path": "scripts/staging-debug-frontend-smoke.sh",
+      "sha256": "9db1144f0ecb31b91c23b990bb59b68cebefecf067d0cfcfe71948abc8c32ee5",
+      "sizeBytes": 1655
+    },
+    {
+      "path": "scripts/staging-debug-lifecycle.sh",
+      "sha256": "dcdea29287f76937b0270d0ded21f1cfa57b5b5ae1ac188775c8d53d8c979aca",
+      "sizeBytes": 3478
     },
     {
       "path": "scripts/run-backup-restore-exercise.sh",
@@ -551,6 +596,16 @@
       "sizeBytes": 301
     },
     {
+      "path": "scripts/validate-staging-debug.mjs",
+      "sha256": "f57b3dc8a16192317958c4676f83c463d5d1feb55cda528ab789965bedf84759",
+      "sizeBytes": 1123
+    },
+    {
+      "path": "scripts/verify-staging-fly-token.mjs",
+      "sha256": "8be80503a0cff7e725032e9511e710c27d9aa59460f2f5b543a5803348e19187",
+      "sizeBytes": 1073
+    },
+    {
       "path": "tests/baseline/ross-ci-toolchain.test.mjs",
       "sha256": "31a3b311d6d68099452a3c4d6d7c35aadd7f2c6300a28fb1d4752ffbadc97ed6",
       "sizeBytes": 3245
@@ -567,8 +622,13 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "012ab7b4d6b7b1513a0362d300c2333a477142564cb5a8acc6ea912e6779b4b4",
-      "sizeBytes": 27789
+      "sha256": "2406c9046010025257a3bd9586f7821010a8e1b35717a66f7c4fbd12ed712720",
+      "sizeBytes": 27604
+    },
+    {
+      "path": "tests/baseline/ross-staging-debug.test.mjs",
+      "sha256": "47b207f22a82a8368722de6561f4e46d3028dcc607983d6dc9e3fdeb509854ae",
+      "sizeBytes": 14631
     },
     {
       "path": "website/package-lock.json",

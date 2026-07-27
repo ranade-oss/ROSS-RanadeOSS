@@ -2,6 +2,12 @@ import "server-only";
 
 import type { RossPublicRuntimeConfig } from "./runtimeConfig";
 
+export const ROSS_RUNTIME_ENVIRONMENTS = [
+    "development",
+    "rehearsal",
+    "public-beta",
+] as const;
+
 function httpOrigin(value: string, label: string): string {
     let url: URL;
     try {
@@ -26,12 +32,8 @@ function runtimeEnvironment(
             ? "public-beta"
             : "development";
     }
-    if (
-        value === "development" ||
-        value === "rehearsal" ||
-        value === "public-beta"
-    ) {
-        return value;
+    if ((ROSS_RUNTIME_ENVIRONMENTS as readonly string[]).includes(value)) {
+        return value as RossPublicRuntimeConfig["environment"];
     }
     throw new Error(
         "ROSS_RUNTIME_ENVIRONMENT must be development, rehearsal, or public-beta.",
