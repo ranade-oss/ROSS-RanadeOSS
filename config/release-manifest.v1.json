@@ -112,6 +112,7 @@
     "scripts/preflight-fly-images.sh",
     "scripts/release-train-image-ref.mjs",
     "scripts/run-staging-debug-probe.mjs",
+    "scripts/smoke-staging-web-image.sh",
     "scripts/staging-debug-lifecycle.sh",
     "scripts/staging-debug-preflight.mjs",
     "scripts/run-backup-restore-exercise.sh",

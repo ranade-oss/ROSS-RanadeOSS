@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 128,
+  "artifactCount": 129,
   "artifacts": [
     {
       "path": ".github/actions/setup-ross-node/action.yml",
@@ -42,8 +42,8 @@
     },
     {
       "path": ".github/workflows/staging-debug-release-train.yml",
-      "sha256": "0bfff0499f8581fcbbe0d107f7757e30feac305d504c5ae9c94006611d01c687",
-      "sizeBytes": 11484
+      "sha256": "3218c5a3e36935ee3cab37c41527ca16696da1dd2115464bc3e13367e3afb874",
+      "sizeBytes": 12070
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
@@ -347,8 +347,8 @@
     },
     {
       "path": "docs/staging-debug-release-train.md",
-      "sha256": "771b40a6290fa4124faa45dec9e2d49d1ebd69b38cd932a80848dddbf2d84014",
-      "sizeBytes": 3386
+      "sha256": "4a811d18be9396c9a39322d25e420ec2f30b5a862f7ec05e169d63e46f45f15f",
+      "sizeBytes": 4514
     },
     {
       "path": "frontend/package-lock.json",
@@ -551,14 +551,19 @@
       "sizeBytes": 3094
     },
     {
+      "path": "scripts/smoke-staging-web-image.sh",
+      "sha256": "c865ba70c8e77f7f453d7da477a8fb4f492b32161e34e4e92a9c77b6c2db06bc",
+      "sizeBytes": 2357
+    },
+    {
       "path": "scripts/staging-debug-lifecycle.sh",
-      "sha256": "209acc278c4cde3686a9676e29b80b2b88f3d77546ecd070023c287cfe8cbc37",
-      "sizeBytes": 4149
+      "sha256": "8bbf675c5e962c5af6033c27351f232ab995848ea6b1ae52620f16d0d5af303c",
+      "sizeBytes": 5991
     },
     {
       "path": "scripts/staging-debug-preflight.mjs",
-      "sha256": "02fe3249daacf5fc0644b128c51f62c1824a20d190be36e1401c7c595b03fa33",
-      "sizeBytes": 5184
+      "sha256": "56d30a8656b85c0f1b9f5bb7ea3848dfbebc7963bbb9a970df7d857d38315aba",
+      "sizeBytes": 7108
     },
     {
       "path": "scripts/run-backup-restore-exercise.sh",
@@ -612,8 +617,8 @@
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
-      "sha256": "edc9f9248263633f28cd09bcb618722f0bc0a5a1ad33967f6e1147ace8c722f8",
-      "sizeBytes": 14403
+      "sha256": "e7544cb854f08bec817878f107a90c9fde8de14cc654c08f8cc2b266b6935f66",
+      "sizeBytes": 20673
     },
     {
       "path": "website/package-lock.json",

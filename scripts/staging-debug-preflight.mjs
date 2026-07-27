@@ -37,17 +37,51 @@ async function expectOk(response, label) {
   throw new Error(`${label} failed with HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
 }
 
+// Minimum tables/columns read or written by the hosted backend. Entries come
+// from backend/schema.sql plus the dated workflow-submission migration. PostgREST
+// can prove the resulting schema shape with limit=0 reads, but it does not expose
+// Supabase migration history to these API credentials.
+export const MINIMUM_STAGING_SCHEMA = Object.freeze({
+  user_profiles: ["id", "user_id", "beta_data_boundary_version"],
+  user_api_keys: ["id", "user_id", "encrypted_key"],
+  user_mcp_connectors: ["id", "user_id", "transport"],
+  user_mcp_oauth_tokens: ["id", "connector_id", "encrypted_access_token"],
+  user_mcp_oauth_states: ["id", "connector_id", "state_hash"],
+  user_mcp_connector_tools: ["id", "connector_id", "tool_name"],
+  user_mcp_tool_audit_logs: ["id", "connector_id", "tool_name"],
+  projects: ["id", "user_id", "name"],
+  project_subfolders: ["id", "project_id", "parent_folder_id"],
+  documents: ["id", "user_id", "status"],
+  document_versions: ["id", "document_id", "quarantine_storage_path"],
+  document_scan_jobs: ["id", "version_id", "status"],
+  document_edits: ["id", "document_id", "change_id"],
+  workflows: ["id", "user_id", "title"],
+  hidden_workflows: ["id", "user_id", "workflow_id"],
+  workflow_shares: ["id", "workflow_id", "shared_with_email"],
+  workflow_open_source_submissions: ["id", "workflow_id", "submitted_by_user_id"],
+  chats: ["id", "user_id", "jurisdictions"],
+  chat_messages: ["id", "chat_id", "citations"],
+  tabular_reviews: ["id", "user_id", "columns_config"],
+  tabular_cells: ["id", "review_id", "document_id"],
+  tabular_review_chats: ["id", "review_id", "user_id"],
+  tabular_review_chat_messages: ["id", "chat_id", "annotations"],
+  security_audit_events: ["id", "occurred_at", "event_type"],
+});
+
 export async function preflightSupabase({ url, publishableKey, secretKey, fetchImpl = fetch }) {
   validateSupabaseKeys(publishableKey, secretKey);
   const origin = url.replace(/\/+$/, "");
   await expectOk(await fetchImpl(`${origin}/auth/v1/settings`, {
     method: "GET", headers: { apikey: publishableKey }, signal: AbortSignal.timeout(15_000),
   }), "Supabase publishable-key preflight");
-  await expectOk(await fetchImpl(`${origin}/rest/v1/user_profiles?select=id&limit=0`, {
-    method: "GET",
-    headers: { apikey: secretKey, "Accept-Profile": "public" },
-    signal: AbortSignal.timeout(15_000),
-  }), "Supabase public.user_profiles.id schema preflight");
+  for (const [table, columns] of Object.entries(MINIMUM_STAGING_SCHEMA)) {
+    const query = new URLSearchParams({ select: columns.join(","), limit: "0" });
+    await expectOk(await fetchImpl(`${origin}/rest/v1/${table}?${query}`, {
+      method: "GET",
+      headers: { apikey: secretKey, "Accept-Profile": "public" },
+      signal: AbortSignal.timeout(15_000),
+    }), `Supabase public.${table}(${columns.join(",")}) schema preflight`);
+  }
 }
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");

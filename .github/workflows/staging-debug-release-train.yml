@@ -75,6 +75,10 @@ jobs:
           echo "ROSS_STAGING_DEBUG_RELEASE_ID=$ROSS_RELEASE_ID" >> "$GITHUB_ENV"
           bash scripts/build-release-train-images.sh
 
+      - name: Smoke exact candidate web image before deployment
+        shell: bash
+        run: bash scripts/smoke-staging-web-image.sh
+
       - name: Configure staging-only service dependencies
         shell: bash
         run: |
@@ -133,6 +137,14 @@ jobs:
             flyctl logs --app "$app" --no-tail > "artifacts/staging-debug/diagnostics/${app}-failure.log" 2>&1 || true
           done
 
+      - name: Immediate defensive cleanup in approved staging context
+        id: immediate_cleanup
+        if: always()
+        shell: bash
+        env:
+          ROSS_STAGING_DEBUG_CLEANUP_RESULT: artifacts/staging-debug/immediate-cleanup-result.json
+        run: bash scripts/staging-debug-lifecycle.sh cleanup
+
       - name: Upload debug evidence for independent cleanup job
         id: debug_upload
         if: always()
@@ -149,9 +161,10 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: staging-debug
     env:
-      FLY_API_TOKEN: ${{ secrets.STAGING_FLY_API_TOKEN }}
+      # Repository secret: narrowly scoped to destroy staging-debug apps in the
+      # dedicated staging organization. It must not require environment review.
+      FLY_API_TOKEN: ${{ secrets.STAGING_FLY_CLEANUP_TOKEN }}
       API_APP: ross-api-debug-${{ github.run_id }}-${{ github.run_attempt }}
       WEB_APP: ross-web-debug-${{ github.run_id }}-${{ github.run_attempt }}
       WORKER_APP: ross-worker-debug-${{ github.run_id }}-${{ github.run_attempt }}
