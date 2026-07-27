@@ -3,8 +3,13 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 129,
+  "artifactCount": 130,
   "artifacts": [
+    {
+      "path": ".github/actionlint.yaml",
+      "sha256": "532b5dd2b8fced57ebc2ef18624a238111ccfa920399c272d4e096098fe79554",
+      "sizeBytes": 246
+    },
     {
       "path": ".github/actions/setup-ross-node/action.yml",
       "sha256": "e6d8fea70913eb3dc9473592d60d9861e25356037b707d5e366a6f0cd84a8424",
