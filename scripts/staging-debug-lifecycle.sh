@@ -17,7 +17,7 @@ required() {
 inject_failure_and_rollback() {
   required WEB_APP
   required CANDIDATE_WEB_IMAGE
-  local baseline_image failure_config deploy_status failure_log evidence machine_check_evidence
+  local baseline_image failure_config deploy_status failure_log evidence machine_check_evidence port9_corroborated
   baseline_image="$(node scripts/release-train-image-ref.mjs current "$WEB_APP")"
   printf '%s\n' "$baseline_image" > "$ARTIFACT_DIR/diagnostics/web-restore-image.txt"
 
@@ -62,9 +62,22 @@ inject_failure_and_rollback() {
   machine_check_evidence="$(cat \
     "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-machines.json" \
     "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-checks.json")"
+  port9_corroborated=0
+  if printf '%s\n' "$machine_check_evidence" | grep -Eqi \
+    'servicecheck-[^[:space:]]*-http-9|"port"[[:space:]]*:[[:space:]]*9|configured.?port[^0-9]*9'; then
+    port9_corroborated=1
+  fi
   if printf '%s\n' "$evidence" | grep -Eqi \
-    'unauthori[sz]ed|authentication failed|permission denied|forbidden|no such host|could not resolve|dial tcp|connection (refused|reset)|control.?plane|fly api (error|unavailable)'; then
-    echo "Forced deployment failed for authentication, permission, network, DNS, or control-plane reasons, not the expected health check." >&2
+    'unauthori[sz]ed|authentication failed|permission denied|forbidden|no such host|could not resolve|control.?plane|fly api (error|unavailable)'; then
+    echo "Forced deployment failed for authentication, permission, DNS, or control-plane reasons, not the expected health check." >&2
+    exit 1
+  fi
+  # Fly's port-9 service check reports "connect: connection refused". Accept
+  # transport-failure wording only when machine/check evidence identifies the
+  # deliberately configured port 9. An unrelated transport failure fails closed.
+  if printf '%s\n' "$evidence" | grep -Eqi 'dial tcp|connection (refused|reset)' \
+    && [ "$port9_corroborated" -ne 1 ]; then
+    echo "Forced deployment failed for a network reason without port-9 service-check corroboration." >&2
     exit 1
   fi
   # "timeout reached waiting for health checks to pass" is the exact expected
@@ -74,8 +87,12 @@ inject_failure_and_rollback() {
     echo "Forced deployment did not contain evidence of the expected Fly health-check failure." >&2
     exit 1
   fi
+  if [ "$port9_corroborated" -ne 1 ]; then
+    echo "Fly machine/check evidence did not identify the deliberate internal_port = 9 service check." >&2
+    exit 1
+  fi
   if ! printf '%s\n' "$machine_check_evidence" | grep -Eqi \
-    'health|unhealthy|failed|critical|port.?9|"port"[[:space:]]*:[[:space:]]*9'; then
+    'health|unhealthy|failed|critical|connection refused'; then
     echo "Fly machine/check evidence did not corroborate the internal_port = 9 health-check failure." >&2
     exit 1
   fi
