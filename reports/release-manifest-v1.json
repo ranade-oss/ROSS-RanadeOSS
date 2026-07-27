@@ -3,8 +3,13 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 129,
+  "artifactCount": 130,
   "artifacts": [
+    {
+      "path": ".github/actionlint.yaml",
+      "sha256": "532b5dd2b8fced57ebc2ef18624a238111ccfa920399c272d4e096098fe79554",
+      "sizeBytes": 246
+    },
     {
       "path": ".github/actions/setup-ross-node/action.yml",
       "sha256": "e6d8fea70913eb3dc9473592d60d9861e25356037b707d5e366a6f0cd84a8424",
@@ -12,8 +17,8 @@
     },
     {
       "path": ".github/workflows/baseline.yml",
-      "sha256": "c1463c9ddd8cbf19fba988852649f15678dc91bb69a8e9f04f9ee68cd04999df",
-      "sizeBytes": 692
+      "sha256": "d6fd555c31526ee8163106989574491e030cb3ab0af332b6d4893c9d14f3bca3",
+      "sizeBytes": 861
     },
     {
       "path": ".github/workflows/deploy-private-ross.yml",
@@ -42,8 +47,8 @@
     },
     {
       "path": ".github/workflows/staging-debug-release-train.yml",
-      "sha256": "b9f0a7c014d9d4b50699209009c46d9cf68e68787e10baffc324f941cc0edb1d",
-      "sizeBytes": 12070
+      "sha256": "65ce831767a8b0abe2de82dac9d2d606ebc1c101e8fb8e981a3b79943960982f",
+      "sizeBytes": 12074
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",

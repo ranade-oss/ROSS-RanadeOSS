@@ -17,6 +17,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      - name: Validate GitHub Actions workflows
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7
+        with:
+          version: 1.7.12
+
       - name: Set up pinned Node.js and npm
         uses: ./.github/actions/setup-ross-node
 
