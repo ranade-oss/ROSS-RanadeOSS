@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { assertIsolatedStaging, normalizeResourceUrl, stagingDebugNames } from "../../scripts/lib/staging-debug.mjs";
+import { runStagingDebugPreflight, supabaseKeyHeaders } from "../../backend/scripts/lib/staging-debug-preflight.mjs";
 
 test("staging debug names are run-scoped and reject production overlap", () => {
   const apps = stagingDebugNames("123", "2");
@@ -114,12 +115,57 @@ test("image smoke and external preflight are read-only fail-closed contracts", (
   assert.match(smoke, /docker run[\s\S]*ROSS_RUNTIME_ENVIRONMENT=rehearsal/);
   assert.match(smoke, /\/login/);
   assert.match(smoke, /\/api\/runtime-config/);
-  const preflight = readFileSync(new URL("../../backend/scripts/staging-debug-preflight.mjs", import.meta.url), "utf8");
+  const preflight = readFileSync(new URL("../../backend/scripts/lib/staging-debug-preflight.mjs", import.meta.url), "utf8");
   assert.match(preflight, /Supabase publishable key validation/);
   assert.match(preflight, /Supabase secret key validation/);
   assert.match(preflight, /document_scan_jobs/);
   assert.match(preflight, /HeadBucketCommand/);
   assert.doesNotMatch(preflight, /PutObject|insert\(|update\(|delete\(/);
+});
+
+test("opaque Supabase keys use apikey only and preflight never writes", async () => {
+  const requests = [];
+  const s3Commands = [];
+  const result = await runStagingDebugPreflight({
+    environment: preflightEnvironment(),
+    fetchImpl: async (url, options) => {
+      requests.push({ url, ...options });
+      return { ok: true, status: 200 };
+    },
+    createS3Client: () => ({ send: async (command) => s3Commands.push(command) }),
+  });
+  assert.equal(result.bucket, "ross-staging-debug");
+  assert.equal(requests[0].headers.apikey, "sb_publishable_fixture");
+  assert.equal(requests[1].headers.apikey, "sb_secret_fixture");
+  assert.ok(requests.every(({ headers }) => headers.Authorization === undefined));
+  assert.ok(requests.every(({ method = "GET" }) => method === "GET" || method === "HEAD"));
+  assert.equal(s3Commands.length, 1);
+  const legacy = `header.${Buffer.from(JSON.stringify({ role: "anon" })).toString("base64url")}.signature`;
+  assert.deepEqual(supabaseKeyHeaders(legacy, "legacy", { legacyRole: "anon" }), { apikey: legacy, Authorization: `Bearer ${legacy}` });
+  assert.throws(() => supabaseKeyHeaders(legacy, "secret", { legacyRole: "service_role" }), /role service_role/);
+});
+
+test("every external preflight dependency fails closed", async () => {
+  for (const [label, failure] of [
+    ["publishable", { request: 0 }],
+    ["secret", { request: 1 }],
+    ["schema", { request: 2 }],
+    ["S3", { s3: true }],
+  ]) {
+    let requestIndex = 0;
+    await assert.rejects(
+      runStagingDebugPreflight({
+        environment: preflightEnvironment(),
+        fetchImpl: async () => {
+          const failed = requestIndex++ === failure.request;
+          return { ok: !failed, status: failed ? 403 : 200 };
+        },
+        createS3Client: () => ({ send: async () => { if (failure.s3) throw new Error("denied"); } }),
+      }),
+      label === "S3" ? /bucket validation failed/ : /failed with HTTP 403/,
+      `${label} failure must reject preflight`,
+    );
+  }
 });
 
 test("staging Fly token must not have production organization authority", () => {
@@ -164,6 +210,7 @@ test("release manifest governs every staging-debug and shared-probe change", () 
     "tests/baseline/ross-release-train.test.mjs",
     "tests/baseline/ross-staging-debug.test.mjs",
     "backend/scripts/staging-debug-preflight.mjs",
+    "backend/scripts/lib/staging-debug-preflight.mjs",
     "frontend/src/app/lib/runtimeConfig.server.ts",
   ]) {
     assert.ok(manifest.artifacts.includes(path), `${path} must be governed`);
@@ -233,4 +280,16 @@ function runFlyTokenCheck(payload) {
       ROSS_PRODUCTION_FLY_ORG: "ross-production",
     },
   });
+}
+
+function preflightEnvironment() {
+  return {
+    ROSS_STAGING_SUPABASE_URL: "https://staging.supabase.example/",
+    ROSS_STAGING_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_fixture",
+    ROSS_STAGING_SUPABASE_SECRET_KEY: "sb_secret_fixture",
+    ROSS_STAGING_S3_ENDPOINT_URL: "https://staging-storage.example",
+    ROSS_STAGING_S3_REGION: "auto",
+    ROSS_STAGING_S3_ACCESS_KEY_ID: "fixture-access",
+    ROSS_STAGING_S3_SECRET_ACCESS_KEY: "fixture-secret",
+  };
 }

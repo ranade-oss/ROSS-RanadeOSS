@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 131,
+  "artifactCount": 132,
   "artifacts": [
     {
       "path": ".github/actions/setup-ross-node/action.yml",
@@ -82,8 +82,13 @@
     },
     {
       "path": "backend/scripts/staging-debug-preflight.mjs",
-      "sha256": "b99d23525d831ff960411084f2408a14b93b9684274902b034c67cb7a4afe414",
-      "sizeBytes": 2048
+      "sha256": "7d7ac4df16ec6f0376a1de23d7737d74c88210fea278ecd21086692eac123c43",
+      "sizeBytes": 231
+    },
+    {
+      "path": "backend/scripts/lib/staging-debug-preflight.mjs",
+      "sha256": "34e10182dff2c737ca17bb8840f75bcc55c40ee4182c96430b8cda6b4b26a056",
+      "sizeBytes": 3365
     },
     {
       "path": "backend/schema.sql",
@@ -627,8 +632,8 @@
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
-      "sha256": "47b207f22a82a8368722de6561f4e46d3028dcc607983d6dc9e3fdeb509854ae",
-      "sizeBytes": 14631
+      "sha256": "2357cca46d4819c69ed49398e1809970c6719b9143c208023435432f577e5a57",
+      "sizeBytes": 17270
     },
     {
       "path": "website/package-lock.json",

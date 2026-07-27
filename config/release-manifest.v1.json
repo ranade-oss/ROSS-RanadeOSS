@@ -19,6 +19,7 @@
     "backend/package.json",
     "backend/scripts/restore-storage-exercise.mjs",
     "backend/scripts/staging-debug-preflight.mjs",
+    "backend/scripts/lib/staging-debug-preflight.mjs",
     "backend/schema.sql",
     "backend/src/config/runtime.ts",
     "backend/src/fileWorker.ts",
