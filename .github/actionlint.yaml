@@ -1,0 +1,7 @@
+paths:
+  .github/workflows/deploy-public-beta-ross.yml:
+    ignore:
+      - 'constant expression "false" in condition'
+  .github/workflows/staging-debug-release-train.yml:
+    ignore:
+      - 'shellcheck reported issue in this script: SC2016:.+'
