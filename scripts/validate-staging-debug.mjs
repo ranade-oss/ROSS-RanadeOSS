@@ -9,6 +9,8 @@ const required = (name) => {
 const apps = stagingDebugNames(required("GITHUB_RUN_ID"), required("GITHUB_RUN_ATTEMPT"));
 assertIsolatedStaging({
     apps,
+    stagingOrg: required("FLY_ORG"),
+    productionOrg: required("ROSS_PRODUCTION_FLY_ORG"),
     productionApps: [
         required("ROSS_PRODUCTION_API_APP"),
         required("ROSS_PRODUCTION_WEB_APP"),

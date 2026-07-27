@@ -26,7 +26,7 @@ export function normalizeResourceUrl(value, label) {
     return `${parsed.origin}${path}`;
 }
 
-export function assertIsolatedStaging({ apps, productionApps = [], resources }) {
+export function assertIsolatedStaging({ apps, productionApps = [], stagingOrg, productionOrg, resources }) {
     const values = Object.values(apps);
     if (values.length !== 3 || new Set(values).size !== 3) {
         throw new Error("Debug API, web, and worker apps must be distinct.");
@@ -48,6 +48,12 @@ export function assertIsolatedStaging({ apps, productionApps = [], resources }) 
     }
     if (productionApps.length !== 3 || productionApps.some((app) => !String(app).trim())) {
         throw new Error("All production app comparison identifiers are required.");
+    }
+    if (!String(stagingOrg ?? "").trim() || !String(productionOrg ?? "").trim()) {
+        throw new Error("Dedicated staging and production Fly organization identifiers are required.");
+    }
+    if (stagingOrg.trim().toLowerCase() === productionOrg.trim().toLowerCase()) {
+        throw new Error("The staging Fly organization must not equal the production organization.");
     }
     const stagingSupabase = normalizeResourceUrl(resources.supabaseUrl, "staging Supabase URL");
     const productionSupabase = normalizeResourceUrl(resources.productionSupabaseUrl, "production Supabase URL");

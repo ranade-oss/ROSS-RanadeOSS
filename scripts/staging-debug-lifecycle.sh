@@ -17,7 +17,7 @@ required() {
 inject_failure_and_rollback() {
   required WEB_APP
   required CANDIDATE_WEB_IMAGE
-  local baseline_image failure_config deploy_status
+  local baseline_image failure_config deploy_status failure_log evidence machine_check_evidence
   baseline_image="$(node scripts/release-train-image-ref.mjs current "$WEB_APP")"
   printf '%s\n' "$baseline_image" > "$ARTIFACT_DIR/diagnostics/web-restore-image.txt"
 
@@ -37,12 +37,50 @@ inject_failure_and_rollback() {
     echo "The deliberately invalid deployment unexpectedly succeeded." >&2
     exit 1
   fi
-  printf '{"expectedDeploymentFailureObserved":true,"exitCode":%d}\n' \
-    "$deploy_status" > "$ARTIFACT_DIR/diagnostics/forced-failure-result.json"
+  failure_log="$ARTIFACT_DIR/commands/web-forced-failure.log"
+
+  # Preserve control-plane evidence before deciding whether the expected
+  # deployment failure occurred. The copied config proves what was submitted;
+  # machine/check output proves how Fly evaluated it.
+  flyctl machine list --app "$WEB_APP" --json \
+    > "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-machines.json" 2>&1 || true
+  flyctl checks list --app "$WEB_APP" --json \
+    > "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-checks.json" 2>&1 || true
   flyctl status --app "$WEB_APP" --json \
     > "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-status.json" 2>&1 || true
   flyctl logs --app "$WEB_APP" --no-tail \
     > "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy.log" 2>&1 || true
+
+  grep -Eq '^  internal_port = 9$' "$ARTIFACT_DIR/diagnostics/forced-failure.toml" || {
+    echo "Forced-failure evidence does not preserve deliberate internal_port = 9." >&2
+    exit 1
+  }
+  evidence="$(cat "$failure_log" \
+    "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-machines.json" \
+    "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-checks.json" \
+    "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-status.json")"
+  machine_check_evidence="$(cat \
+    "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-machines.json" \
+    "$ARTIFACT_DIR/diagnostics/web-after-failed-deploy-checks.json")"
+  if printf '%s\n' "$evidence" | grep -Eqi \
+    'unauthori[sz]ed|authentication failed|permission denied|forbidden|no such host|could not resolve|dial tcp|connection (refused|reset)|control.?plane|fly api (error|unavailable)'; then
+    echo "Forced deployment failed for authentication, permission, network, DNS, or control-plane reasons, not the expected health check." >&2
+    exit 1
+  fi
+  # "timeout reached waiting for health checks to pass" is the exact expected
+  # Fly wording (run 30223766400). A trailing "request canceled" is incidental.
+  if ! printf '%s\n' "$evidence" | grep -Eqi \
+    'timeout reached waiting for health checks to pass|health check(s)? (failed|did not pass)|service check(s)? failed|failed to become healthy|unhealthy'; then
+    echo "Forced deployment did not contain evidence of the expected Fly health-check failure." >&2
+    exit 1
+  fi
+  if ! printf '%s\n' "$machine_check_evidence" | grep -Eqi \
+    'health|unhealthy|failed|critical|port.?9|"port"[[:space:]]*:[[:space:]]*9'; then
+    echo "Fly machine/check evidence did not corroborate the internal_port = 9 health-check failure." >&2
+    exit 1
+  fi
+  printf '{"outcome":"expected-failure","cause":"internal-port-9-health-check","configuredInternalPort":9,"exitCode":%d}\n' \
+    "$deploy_status" > "$ARTIFACT_DIR/diagnostics/forced-failure-result.json"
 
   bash scripts/fly-deploy-with-retry.sh . \
     --config deploy/fly/rehearsal-frontend.toml --app "$WEB_APP" \
@@ -50,10 +88,14 @@ inject_failure_and_rollback() {
     2>&1 | tee "$ARTIFACT_DIR/commands/web-digest-restore.log"
   node scripts/release-train-image-ref.mjs verify "$WEB_APP" "$baseline_image" \
     > "$ARTIFACT_DIR/diagnostics/web-restored-image.txt"
+  printf '{"outcome":"passed","recordedDigest":"%s","restoredDigest":"%s"}\n' \
+    "$baseline_image" "$(cat "$ARTIFACT_DIR/diagnostics/web-restored-image.txt")" \
+    > "$ARTIFACT_DIR/diagnostics/digest-restoration-result.json"
 }
 
 cleanup() {
   local failed=0 app output status
+  local result_file="${ROSS_STAGING_DEBUG_CLEANUP_RESULT:-$ARTIFACT_DIR/cleanup-result.json}"
   for app in "${WORKER_APP:-}" "${API_APP:-}" "${WEB_APP:-}"; do
     [ -n "$app" ] || continue
     set +e
@@ -74,9 +116,11 @@ cleanup() {
     failed=1
   done
   if [ "$failed" -ne 0 ]; then
+    printf '{"outcome":"failed"}\n' > "$result_file"
     echo "Ephemeral cleanup failed; operator action required." >&2
     exit 1
   fi
+  printf '{"outcome":"passed"}\n' > "$result_file"
 }
 
 case "${1:-}" in
