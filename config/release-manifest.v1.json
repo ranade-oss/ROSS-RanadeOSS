@@ -3,6 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "artifacts": [
+    ".github/actionlint.yaml",
     ".github/actions/setup-ross-node/action.yml",
     ".github/workflows/baseline.yml",
     ".github/workflows/deploy-private-ross.yml",
