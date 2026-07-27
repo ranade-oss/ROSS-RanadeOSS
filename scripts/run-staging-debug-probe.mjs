@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { deployedReleaseTrainProbe } from "./lib/release-train-probe.mjs";
+import { extractDigestImageRef } from "./lib/release-train.mjs";
 
 const required = (name) => {
     const value = process.env[name]?.trim();
@@ -47,7 +48,7 @@ start(apps.worker);
 start(apps.web);
 const deployedWebImage = fly(["image", "show", "--app", apps.web, "--json"], { capture: true });
 const image = JSON.parse(deployedWebImage);
-const actualWebImage = `${image.Registry}/${image.Repository}@${image.Digest}`;
+const actualWebImage = extractDigestImageRef(image, `${apps.web} deployed image`);
 if (actualWebImage !== expectedWebImage) throw new Error(`Candidate web image mismatch: ${actualWebImage}`);
 const webConfig = await import("node:fs").then(({ readFileSync }) => readFileSync(new URL("../deploy/fly/rehearsal-frontend.toml", import.meta.url), "utf8"));
 if (!/internal_port\s*=\s*3000/.test(webConfig) || !/path\s*=\s*"\/login"/.test(webConfig)) {

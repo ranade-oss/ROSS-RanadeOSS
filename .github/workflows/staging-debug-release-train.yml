@@ -112,7 +112,9 @@ jobs:
           flyctl logs --app "$WEB_APP" --no-tail > artifacts/staging-debug/diagnostics/web-candidate.log 2>&1 || true
 
       - name: Run exact complete release-train integration probe
+        shell: bash
         run: |
+          set -euo pipefail
           node scripts/run-staging-debug-probe.mjs rehearsal 2>&1 | tee artifacts/staging-debug/diagnostics/full-probe-before-failure.log
           printf '{"outcome":"passed","image":"%s","port":3000,"routes":["/login","/api/runtime-config"]}\n' "$CANDIDATE_WEB_IMAGE" > artifacts/staging-debug/candidate-deployment-result.json
 
