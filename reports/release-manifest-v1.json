@@ -12,8 +12,8 @@
     },
     {
       "path": ".github/workflows/baseline.yml",
-      "sha256": "c1463c9ddd8cbf19fba988852649f15678dc91bb69a8e9f04f9ee68cd04999df",
-      "sizeBytes": 692
+      "sha256": "d6fd555c31526ee8163106989574491e030cb3ab0af332b6d4893c9d14f3bca3",
+      "sizeBytes": 861
     },
     {
       "path": ".github/workflows/deploy-private-ross.yml",
@@ -42,8 +42,8 @@
     },
     {
       "path": ".github/workflows/staging-debug-release-train.yml",
-      "sha256": "b9f0a7c014d9d4b50699209009c46d9cf68e68787e10baffc324f941cc0edb1d",
-      "sizeBytes": 12070
+      "sha256": "65ce831767a8b0abe2de82dac9d2d606ebc1c101e8fb8e981a3b79943960982f",
+      "sizeBytes": 12074
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
