@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { assertIsolatedStaging, normalizeResourceUrl, stagingDebugNames } from "../../scripts/lib/staging-debug.mjs";
 import { MINIMUM_STAGING_SCHEMA, preflightS3, preflightSupabase, validateSupabaseKeys } from "../../scripts/staging-debug-preflight.mjs";
+import { extractDigestImageRef } from "../../scripts/lib/release-train.mjs";
 
 test("staging debug names are run-scoped and reject production overlap", () => {
   const apps = stagingDebugNames("123", "2");
@@ -41,6 +42,7 @@ test("debug workflow is diagnostic, cleanup-safe, and cannot promote", () => {
   assert.match(workflow, /group: ross-staging-debug$/m);
   assert.match(workflow, /Read-only staging dependency preflights/);
   assert.match(workflow, /Smoke exact candidate web image before deployment[\s\S]*smoke-staging-web-image\.sh/);
+  assert.match(workflow, /Run exact complete release-train integration probe[\s\S]*set -euo pipefail[\s\S]*run-staging-debug-probe\.mjs rehearsal 2>&1 \| tee/);
   assert.match(workflow, /Provision ephemeral staging applications[\s\S]*for app in "\$API_APP" "\$WEB_APP" "\$WORKER_APP"/);
   assert.match(workflow, /cleanup:[\s\S]*needs: debug[\s\S]*staging-debug-lifecycle\.sh cleanup/);
   assert.match(workflow, /Immediate defensive cleanup in approved staging context[\s\S]*if: always\(\)/);
@@ -81,11 +83,22 @@ test("lifecycle accepts the exact Fly health-check timeout from run 30223766400"
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
+test("lifecycle accepts run 30239089646 port-9 connection refusal as the deliberate health-check failure", () => {
+  const fixture = fakeFlyFixture(
+    "debug-web",
+    "",
+    "Error: timeout reached waiting for health checks to pass",
+    "servicecheck-00-http-9: critical\nconnect: connection refused",
+  );
+  const result = runLifecycle(fixture, "inject-failure-and-rollback");
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
 test("lifecycle does not accept health-check wording without machine/check corroboration", () => {
   const fixture = fakeFlyFixture("debug-web", "", "Error: timeout reached waiting for health checks to pass", '{"state":"started"}');
   const result = runLifecycle(fixture, "inject-failure-and-rollback");
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /machine\/check evidence did not corroborate/);
+  assert.match(result.stderr, /machine\/check evidence did not (identify|corroborate)/);
 });
 
 test("lifecycle rejects a pure authentication failure", () => {
@@ -99,7 +112,19 @@ test("lifecycle rejects a pure network failure", () => {
   const fixture = fakeFlyFixture("debug-web", "", "Error: dial tcp: lookup api.fly.io: no such host");
   const result = runLifecycle(fixture, "inject-failure-and-rollback");
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /network, DNS, or control-plane/);
+  assert.match(result.stderr, /DNS, or control-plane/);
+});
+
+test("lifecycle rejects connection refusal without port-9 service-check evidence", () => {
+  const fixture = fakeFlyFixture(
+    "debug-web",
+    "",
+    "Error: dial tcp 203.0.113.10:443: connect: connection refused",
+    '{"state":"started"}',
+  );
+  const result = runLifecycle(fixture, "inject-failure-and-rollback");
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /expected Fly health-check failure|port-9 service-check corroboration/);
 });
 
 test("cleanup succeeds after only one of three apps was provisioned", () => {
@@ -123,10 +148,23 @@ test("cleanup fails on non-not-found Fly errors instead of leaking apps", () => 
 test("staging uses the exact complete release-train integration probe", () => {
   const runner = readFileSync(new URL("../../scripts/run-staging-debug-probe.mjs", import.meta.url), "utf8");
   assert.match(runner, /import \{ deployedReleaseTrainProbe \}/);
+  assert.match(runner, /extractDigestImageRef\(image/);
   assert.match(runner, /"true",\n\];/);
   assert.match(runner, /apps\.worker/);
   assert.match(runner, /apps\.api/);
   assert.match(runner, /apps\.web/);
+});
+
+test("staging probe normalizes the lowercase Fly image payload observed in run 30239089646", () => {
+  const digest = `sha256:${"a".repeat(64)}`;
+  assert.equal(
+    extractDigestImageRef({
+      registry: "registry.fly.io",
+      repository: "debug-web",
+      digest,
+    }),
+    `registry.fly.io/debug-web@${digest}`,
+  );
 });
 
 test("image builds accept explicit isolated namespaces without production aliases", () => {
@@ -237,7 +275,7 @@ test("release manifest governs every staging-debug and shared-probe change", () 
   }
 });
 
-function fakeFlyFixture(existingApps = "debug-web", destroyErrorApp = "", forcedFailureMessage = "Fly health check failed: machine is unhealthy", machineCheckMessage = '{"state":"unhealthy","configuredPort":9}') {
+function fakeFlyFixture(existingApps = "debug-web", destroyErrorApp = "", forcedFailureMessage = "Fly health check failed: machine is unhealthy", machineCheckMessage = "servicecheck-00-http-9: critical\nstate: unhealthy\nconnect: connection refused") {
   const directory = mkdtempSync(join(tmpdir(), "ross-staging-debug-"));
   const bin = join(directory, "bin");
   const artifacts = join(directory, "artifacts");
@@ -261,7 +299,7 @@ if (args[0] === "machine" && args[1] === "list") { process.stdout.write(process.
 if (args[0] === "checks" && args[1] === "list") { process.stdout.write(process.env.FAKE_MACHINE_CHECK_MESSAGE); process.exit(0); }
 if (args[0] === "status") { process.stdout.write('{"status":"unhealthy"}'); process.exit(0); }
 if (args[0] === "logs") process.exit(0);
-if (args[0] === "image" && args[1] === "show") { process.stdout.write(JSON.stringify({ Registry: "registry.fly.io", Repository: "debug-web", Digest: "sha256:${"a".repeat(64)}" })); process.exit(0); }
+if (args[0] === "image" && args[1] === "show") { process.stdout.write(JSON.stringify({ registry: "registry.fly.io", repository: "debug-web", digest: "sha256:${"a".repeat(64)}" })); process.exit(0); }
 process.exit(2);
 `;
   writeFileSync(join(bin, "flyctl"), fake);
