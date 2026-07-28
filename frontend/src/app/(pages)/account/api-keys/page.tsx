@@ -15,6 +15,7 @@ import {
     accountGlassInputClassName,
 } from "../accountStyles";
 import { AccountSection } from "../AccountSection";
+import { ExpandedProviderKeys } from "./ExpandedProviderKeys";
 
 const MODEL_API_KEY_FIELDS = [
     {
@@ -101,6 +102,12 @@ export default function ApiKeysPage() {
                         )}
                     </div>
                 ))}
+                {modelApiKeyFields.length > 0 &&
+                    approvedProviders.some(
+                        (provider) =>
+                            provider === "xai" || provider === "moonshot",
+                    ) && <div className="mx-4 h-px bg-gray-200" />}
+                <ExpandedProviderKeys approvedProviders={approvedProviders} />
             </AccountSection>
 
             <AccountSection className="mt-8">
