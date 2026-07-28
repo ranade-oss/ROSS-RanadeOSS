@@ -85,12 +85,8 @@ jobs:
         uses: ./.github/actions/setup-ross-node
       - name: Install locked dependencies
         run: npm run install:all
-      - name: Regenerate governed artifacts for verification
-        run: |
-          npm run build:public-content
-          npm run build:ross-workflows
-          npm run build:completion-dossier
-          npm run build:release-manifest
+      - name: Regenerate release manifest for verification
+        run: npm run build:release-manifest
       - name: Verify repository and release controls
         run: |
           npm run toolchain:check

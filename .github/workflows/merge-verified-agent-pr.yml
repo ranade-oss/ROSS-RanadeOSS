@@ -55,7 +55,7 @@ jobs:
             }
 
             const query = `
-              query($owner: String!, $repo: String!, $number: Int!) {
+              query($owner: String!, $repo: String!, $number: Int!, $after: String) {
                 repository(owner: $owner, name: $repo) {
                   pullRequest(number: $number) {
                     state
@@ -63,27 +63,55 @@ jobs:
                     headRefOid
                     reviewDecision
                     mergeable
-                    reviewThreads(first: 100) {
+                    reviewThreads(first: 100, after: $after) {
                       nodes { isResolved }
+                      pageInfo { hasNextPage endCursor }
                     }
                   }
                 }
               }
             `;
-            const result = await github.graphql(query, {
-              owner,
-              repo,
-              number: pr.number,
-            });
-            const node = result.repository.pullRequest;
-            const unresolved = node.reviewThreads.nodes.some((thread) => !thread.isResolved);
+
+            const readGate = async () => {
+              let after = null;
+              let pullRequest = null;
+              let unresolved = false;
+
+              do {
+                const result = await github.graphql(query, {
+                  owner,
+                  repo,
+                  number: pr.number,
+                  after,
+                });
+                pullRequest = result.repository.pullRequest;
+                unresolved ||= pullRequest.reviewThreads.nodes.some(
+                  (thread) => !thread.isResolved,
+                );
+                after = pullRequest.reviewThreads.pageInfo.hasNextPage
+                  ? pullRequest.reviewThreads.pageInfo.endCursor
+                  : null;
+              } while (after);
+
+              return { pullRequest, unresolved };
+            };
+
+            let gate;
+            for (let attempt = 1; attempt <= 6; attempt += 1) {
+              gate = await readGate();
+              if (gate.pullRequest.mergeable !== "UNKNOWN") break;
+              core.info(`Mergeability is still UNKNOWN (attempt ${attempt}/6).`);
+              if (attempt < 6) await new Promise((resolve) => setTimeout(resolve, 10000));
+            }
+
+            const node = gate.pullRequest;
             const blocked =
               node.state !== "OPEN" ||
               node.isDraft ||
               node.headRefOid !== pr.head.sha ||
               node.reviewDecision === "CHANGES_REQUESTED" ||
               node.mergeable !== "MERGEABLE" ||
-              unresolved;
+              gate.unresolved;
 
             if (blocked) {
               core.info("PR has changed or has a review/merge blocker; it will not be merged.");
