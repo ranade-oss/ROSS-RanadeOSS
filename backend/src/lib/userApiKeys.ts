@@ -7,6 +7,8 @@ export type ApiKeyProvider =
     | "claude"
     | "gemini"
     | "openai"
+    | "xai"
+    | "moonshot"
     | "openrouter"
     | "courtlistener"
     | "canlii";
@@ -26,6 +28,8 @@ const PROVIDERS: ApiKeyProvider[] = [
     "claude",
     "gemini",
     "openai",
+    "xai",
+    "moonshot",
     "openrouter",
     "courtlistener",
     "canlii",
@@ -43,6 +47,14 @@ function envApiKey(provider: ApiKeyProvider): string | null {
             return process.env.GEMINI_API_KEY?.trim() || null;
         case "openai":
             return process.env.OPENAI_API_KEY?.trim() || null;
+        case "xai":
+            return process.env.XAI_API_KEY?.trim() || null;
+        case "moonshot":
+            return (
+                process.env.MOONSHOT_API_KEY?.trim() ||
+                process.env.KIMI_API_KEY?.trim() ||
+                null
+            );
         case "openrouter":
             return process.env.OPENROUTER_API_KEY?.trim() || null;
         case "courtlistener":
@@ -118,6 +130,8 @@ export async function getUserApiKeyStatus(
         claude: false,
         gemini: false,
         openai: false,
+        xai: false,
+        moonshot: false,
         openrouter: false,
         courtlistener: false,
         canlii: false,
@@ -125,6 +139,8 @@ export async function getUserApiKeyStatus(
             claude: null,
             gemini: null,
             openai: null,
+            xai: null,
+            moonshot: null,
             openrouter: null,
             courtlistener: null,
             canlii: null,
@@ -163,6 +179,8 @@ export async function getUserApiKeys(
         claude: envApiKey("claude"),
         gemini: envApiKey("gemini"),
         openai: envApiKey("openai"),
+        xai: envApiKey("xai"),
+        moonshot: envApiKey("moonshot"),
         openrouter: envApiKey("openrouter"),
         courtlistener: envApiKey("courtlistener"),
         canlii: envApiKey("canlii"),
