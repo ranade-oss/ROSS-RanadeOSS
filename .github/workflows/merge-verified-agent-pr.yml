@@ -1,0 +1,100 @@
+name: Merge verified agent pull requests
+
+on:
+  workflow_run:
+    workflows: ["Baseline verification"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: merge-verified-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.pull_requests[0] != null
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify exact PR head and merge
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const linked = run.pull_requests?.[0];
+            if (!linked) {
+              core.info("No pull request is linked to this Baseline run.");
+              return;
+            }
+
+            const { owner, repo } = context.repo;
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: linked.number,
+            });
+
+            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            const eligible =
+              pr.state === "open" &&
+              !pr.draft &&
+              pr.head.repo?.full_name === `${owner}/${repo}` &&
+              pr.head.ref.startsWith("agent/") &&
+              trustedAssociations.has(pr.author_association) &&
+              pr.head.sha === linked.head.sha;
+
+            if (!eligible) {
+              core.info("PR is not an eligible trusted same-repository agent PR at the verified head.");
+              return;
+            }
+
+            const query = `
+              query($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    state
+                    isDraft
+                    headRefOid
+                    reviewDecision
+                    mergeable
+                    reviewThreads(first: 100) {
+                      nodes { isResolved }
+                    }
+                  }
+                }
+              }
+            `;
+            const result = await github.graphql(query, {
+              owner,
+              repo,
+              number: pr.number,
+            });
+            const node = result.repository.pullRequest;
+            const unresolved = node.reviewThreads.nodes.some((thread) => !thread.isResolved);
+            const blocked =
+              node.state !== "OPEN" ||
+              node.isDraft ||
+              node.headRefOid !== pr.head.sha ||
+              node.reviewDecision === "CHANGES_REQUESTED" ||
+              node.mergeable !== "MERGEABLE" ||
+              unresolved;
+
+            if (blocked) {
+              core.info("PR has changed or has a review/merge blocker; it will not be merged.");
+              return;
+            }
+
+            await github.rest.pulls.merge({
+              owner,
+              repo,
+              pull_number: pr.number,
+              merge_method: "squash",
+              sha: pr.head.sha,
+            });
+            core.notice(`Merged PR #${pr.number} immediately after successful final-head Baseline verification.`);
