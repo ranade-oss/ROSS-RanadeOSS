@@ -147,15 +147,11 @@ jobs:
             echo "Generated release tag unexpectedly already exists." >&2
             exit 1
           fi
-          if [ "$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.permissions.push')" != "true" ]; then
-            echo "The workflow token cannot create the final release record." >&2
-            exit 1
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$ROSS_RELEASE_ID" -m "ROSS public beta release train preflight"
+          trap 'git tag --delete "$ROSS_RELEASE_ID" >/dev/null 2>&1 || true' EXIT
           git push --dry-run origin "refs/tags/${ROSS_RELEASE_ID}"
-          git tag --delete "$ROSS_RELEASE_ID"
 
       - name: Promote the rehearsed digests to public production
         if: inputs.promote_public
