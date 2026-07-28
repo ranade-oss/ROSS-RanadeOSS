@@ -1,9 +1,13 @@
 import { MODEL_CAPABILITIES, type ModelCapability } from "./models";
 import { approvedModelProviders } from "./runtimeModels";
 import { loadRuntimeConfig } from "../../config/runtime";
-import type { UserApiKeys } from "./types";
+import type { Provider, UserApiKeys } from "./types";
 
-const OPENAI_MODELS_URL = "https://api.openai.com/v1/models";
+const MODEL_ENDPOINTS: Partial<Record<Provider, string>> = {
+  openai: "https://api.openai.com/v1/models",
+  xai: "https://api.x.ai/v1/models",
+  moonshot: "https://api.moonshot.ai/v1/models",
+};
 
 export type DiscoveredModel = ModelCapability & {
   available: boolean;
@@ -13,19 +17,24 @@ export type DiscoveredModel = ModelCapability & {
 
 export type ModelDiscoveryResult = {
   models: DiscoveredModel[];
-  approvedProviders: Array<"claude" | "gemini" | "openai">;
+  approvedProviders: Provider[];
   selfHosted: boolean;
   refreshedAt: string;
   warning?: string;
 };
 
-async function discoverOpenAIIds(apiKey: string): Promise<Set<string>> {
-  const response = await fetch(OPENAI_MODELS_URL, {
+async function discoverModelIds(
+  provider: Provider,
+  apiKey: string,
+): Promise<Set<string>> {
+  const url = MODEL_ENDPOINTS[provider];
+  if (!url) return new Set();
+  const response = await fetch(url, {
     headers: { Authorization: `Bearer ${apiKey}` },
     signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) {
-    throw new Error(`OpenAI model discovery failed (${response.status})`);
+    throw new Error(`${provider} model discovery failed (${response.status})`);
   }
   const body = (await response.json()) as { data?: Array<{ id?: unknown }> };
   return new Set(
@@ -43,15 +52,17 @@ export async function discoverCompatibleModels(
   apiKeys: UserApiKeys,
 ): Promise<ModelDiscoveryResult> {
   const approvedProviders = approvedModelProviders();
-  let openAIIds: Set<string> | null = null;
-  let warning: string | undefined;
+  const discovered = new Map<Provider, Set<string> | null>();
+  const warnings: string[] = [];
 
-  if (apiKeys.openai?.trim()) {
+  for (const provider of ["openai", "xai", "moonshot"] as const) {
+    const key = apiKeys[provider]?.trim();
+    if (!key) continue;
     try {
-      openAIIds = await discoverOpenAIIds(apiKeys.openai.trim());
+      discovered.set(provider, await discoverModelIds(provider, key));
     } catch {
-      warning =
-        "OpenAI model availability could not be refreshed. Showing the safe curated fallback.";
+      discovered.set(provider, null);
+      warnings.push(`${providerLabel(provider)} model availability could not be refreshed.`);
     }
   }
 
@@ -69,29 +80,24 @@ export async function discoverCompatibleModels(
         availabilityReason: `Add an API key for ${providerLabel(capability.provider)} to use this model.`,
       };
     }
-    if (capability.provider !== "openai") {
+
+    const ids = discovered.get(capability.provider);
+    if (ids === undefined || ids === null) {
       return {
         ...capability,
         available: true,
-        availability: "configured",
+        availability: ids === null ? "fallback" : "configured",
       };
     }
-    if (!openAIIds) {
-      return {
-        ...capability,
-        available: true,
-        availability: "fallback",
-      };
-    }
+
     return {
       ...capability,
-      available: openAIIds.has(capability.id),
-      availability: openAIIds.has(capability.id) ? "live" : "unavailable",
-      ...(openAIIds.has(capability.id)
+      available: ids.has(capability.id),
+      availability: ids.has(capability.id) ? "live" : "unavailable",
+      ...(ids.has(capability.id)
         ? {}
         : {
-            availabilityReason:
-              "This OpenAI project does not currently list this model as available.",
+            availabilityReason: `This ${providerLabel(capability.provider)} project does not currently list this model as available.`,
           }),
     };
   });
@@ -101,12 +107,14 @@ export async function discoverCompatibleModels(
     approvedProviders,
     selfHosted: loadRuntimeConfig().hostedMode === "self-hosted",
     refreshedAt: new Date().toISOString(),
-    ...(warning ? { warning } : {}),
+    ...(warnings.length ? { warning: warnings.join(" ") } : {}),
   };
 }
 
-function providerLabel(provider: ModelCapability["provider"]) {
+function providerLabel(provider: Provider) {
   if (provider === "openai") return "OpenAI";
   if (provider === "claude") return "Anthropic";
-  return "Google Gemini";
+  if (provider === "gemini") return "Google Gemini";
+  if (provider === "xai") return "xAI";
+  return "Moonshot AI";
 }
