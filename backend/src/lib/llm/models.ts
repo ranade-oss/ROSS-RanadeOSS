@@ -16,6 +16,8 @@ export const GEMINI_MAIN_MODELS = [
   "gemini-3-flash-preview",
 ] as const;
 export const OPENAI_MAIN_MODELS = ["gpt-5.6", "gpt-5.5", "gpt-5.4"] as const;
+export const XAI_MAIN_MODELS = ["grok-4.5"] as const;
+export const MOONSHOT_MAIN_MODELS = ["kimi-k2.5"] as const;
 
 // Mid-tier (used for tabular review) — user picks one in account settings.
 export const CLAUDE_MID_MODELS = ["claude-sonnet-4-6"] as const;
@@ -39,6 +41,8 @@ const ALL_MODELS = new Set<string>([
   ...CLAUDE_MAIN_MODELS,
   ...GEMINI_MAIN_MODELS,
   ...OPENAI_MAIN_MODELS,
+  ...XAI_MAIN_MODELS,
+  ...MOONSHOT_MAIN_MODELS,
   ...CLAUDE_MID_MODELS,
   ...GEMINI_MID_MODELS,
   ...OPENAI_MID_MODELS,
@@ -75,6 +79,20 @@ export const MODEL_CAPABILITIES: readonly ModelCapability[] = [
     id,
     label: id.replace(/^gemini-/, "Gemini ").replaceAll("-", " "),
     provider: "gemini" as const,
+    tier: "main" as const,
+    reasoningEfforts: NO_EFFORTS,
+  })),
+  ...XAI_MAIN_MODELS.map((id) => ({
+    id,
+    label: "Grok 4.5",
+    provider: "xai" as const,
+    tier: "main" as const,
+    reasoningEfforts: NO_EFFORTS,
+  })),
+  ...MOONSHOT_MAIN_MODELS.map((id) => ({
+    id,
+    label: "Kimi K2.5",
+    provider: "moonshot" as const,
     tier: "main" as const,
     reasoningEfforts: NO_EFFORTS,
   })),
@@ -139,6 +157,8 @@ export function providerForModel(model: string): Provider {
   if (model.startsWith("claude")) return "claude";
   if (model.startsWith("gemini")) return "gemini";
   if (model.startsWith("gpt-")) return "openai";
+  if (model.startsWith("grok-")) return "xai";
+  if (model.startsWith("kimi-")) return "moonshot";
   throw new Error(`Unknown model id: ${model}`);
 }
 

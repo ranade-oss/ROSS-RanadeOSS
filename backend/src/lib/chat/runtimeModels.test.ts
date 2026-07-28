@@ -69,11 +69,15 @@ test("self-hosted runtime preserves all supported providers", async () => {
         "gemini",
         "openai",
         "claude",
+        "xai",
+        "moonshot",
       ]);
       assert.equal(
         resolveRuntimeModel("gemini-3-flash-preview", "main"),
         "gemini-3-flash-preview",
       );
+      assert.equal(resolveRuntimeModel("grok-4.5", "main"), "grok-4.5");
+      assert.equal(resolveRuntimeModel("kimi-k2.5", "main"), "kimi-k2.5");
     },
   );
 });

@@ -17,8 +17,8 @@
     },
     {
       "path": ".github/workflows/baseline.yml",
-      "sha256": "d6fd555c31526ee8163106989574491e030cb3ab0af332b6d4893c9d14f3bca3",
-      "sizeBytes": 861
+      "sha256": "37c647cac2f9d1209b1fc719cd8b4b9ac96111754d84fbe1081bf65bcbdaa4b3",
+      "sizeBytes": 1959
     },
     {
       "path": ".github/workflows/deploy-private-ross.yml",
@@ -92,8 +92,8 @@
     },
     {
       "path": "backend/src/config/runtime.ts",
-      "sha256": "14de7b428f2031a915bdf89ce9b79debfeca47f5d91361fc5ba2685047619c5a",
-      "sizeBytes": 7096
+      "sha256": "d87156e4a40b139d8f322a7a68ace0913957dddd7dda568df40ee3fe554ef024",
+      "sizeBytes": 7262
     },
     {
       "path": "backend/src/fileWorker.ts",
@@ -127,8 +127,8 @@
     },
     {
       "path": "backend/src/lib/llm/types.ts",
-      "sha256": "5b80c49dc58ec2eb6e96512feca55ac820c338b58703d44c6bec4fdadb230663",
-      "sizeBytes": 1984
+      "sha256": "a585e8529fcc375be24e558fd5dbce4653a157d8ba43ed31c76cb168cb42cace",
+      "sizeBytes": 2056
     },
     {
       "path": "backend/src/lib/quarantinedUpload.ts",
@@ -147,8 +147,8 @@
     },
     {
       "path": "backend/src/lib/userApiKeys.ts",
-      "sha256": "24e194ed968b418ba22ce8e7e03f1ad8f0dbae23716ac3535a17c26bdd49530e",
-      "sizeBytes": 6086
+      "sha256": "36a12bb7bd532f6d9e885cc1668ad0b454c6c0ee3ece19aeab219c359c9a16bf",
+      "sizeBytes": 6580
     },
     {
       "path": "backend/src/lib/chat/tools/toolDispatcher.ts",
@@ -237,8 +237,8 @@
     },
     {
       "path": "deploy/fly/api.toml",
-      "sha256": "94aeb3208f71ba9075a1247ad24776cb6da2c02a000c11e0e63c7104a1921aa1",
-      "sizeBytes": 606
+      "sha256": "73d492e7f123510834699e813de9ddf71f76b199b468b1425c7fcf81d3f4fe50",
+      "sizeBytes": 668
     },
     {
       "path": "deploy/fly/backend.Dockerfile",
@@ -267,8 +267,8 @@
     },
     {
       "path": "deploy/fly/rehearsal-api.toml",
-      "sha256": "be9080969fe2117d1ff775a8f073e6d5e4e5b020ae00976d85c9a13c335d64d7",
-      "sizeBytes": 606
+      "sha256": "f902ee180809d80f226ba37aef53077f850741a60e093b5390889faeeea3c7d9",
+      "sizeBytes": 669
     },
     {
       "path": "deploy/fly/rehearsal-file-worker.toml",
@@ -407,8 +407,8 @@
     },
     {
       "path": "frontend/src/app/(pages)/account/api-keys/page.tsx",
-      "sha256": "894dd9f6376beb13a84297a97e4433fcdaeba1731f69e02183308473d91da8c8",
-      "sizeBytes": 11004
+      "sha256": "abede1f7d42f209e8003fc324f43688d25cd5794d95a59ef684bc56a237b658c",
+      "sizeBytes": 11420
     },
     {
       "path": "frontend/src/app/(pages)/account/connectors/page.tsx",
