@@ -33,10 +33,10 @@ reviewable, reversible, and verified by Baseline on its exact final head.
 | Upstream change | Classification | ROSS disposition |
 | --- | --- | --- |
 | `cb2306c5` — unify full-screen loading markup | **Adapt** | Ported in ROSS PR #32 while preserving `DataBoundaryGate`, auth redirects, and MFA behaviour. |
-| PR #240 — prevent silently merge-corrupted lockfiles | **Adapt** | Extended across ROSS backend, frontend, website, and governance Baseline partitions in ROSS PR #33. |
-| PR #234 — contributor testing policy and PR template | **Adapt** | Added ROSS-specific final-head, privacy, data-boundary, release, and upstream-provenance requirements in ROSS PR #33. |
-| `fb3ec2d6` — ignore generated local Supabase scaffold | **Adopt** | Added `backend/supabase/` to `.gitignore` in ROSS PR #33. |
-| PR #186 — remove unused `getUserIdFromRequest` helper | **Adopt** | Removed after confirming no repository references in ROSS PR #33. Active Express authentication middleware is unchanged. |
+| PR #240 — prevent silently merge-corrupted lockfiles | **Adapt** | Extended across ROSS backend, frontend, website, and governance Baseline partitions in ROSS PR #34. |
+| PR #234 — contributor testing policy and PR template | **Adapt** | Added ROSS-specific final-head, privacy, data-boundary, release, and upstream-provenance requirements in ROSS PR #34. |
+| `fb3ec2d6` — ignore generated local Supabase scaffold | **Adopt** | Added `backend/supabase/` to `.gitignore` in ROSS PR #34. |
+| PR #186 — remove unused `getUserIdFromRequest` helper | **Adopt** | Removed after confirming no repository references in ROSS PR #34. Active Express authentication middleware is unchanged. |
 | `4728fd19` — pin Turbopack workspace root | **Skip: already implemented** | ROSS already sets `turbopack.root` to its resolved repository root. |
 | PR #270 — discover workflow packs through `pack.yaml` | **Skip: architecture differs** | ROSS discovers governed workflows directly from `mike-workflows/system/*/SKILL.md`; it does not use upstream pack-directory discovery. |
 | PR #258 — synchronize Bun lockfile | **Skip: not applicable** | ROSS uses npm lockfiles for its governed workspaces. |
