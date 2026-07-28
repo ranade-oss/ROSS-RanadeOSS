@@ -34,5 +34,8 @@ jobs:
       - name: Install website dependencies
         run: npm ci --prefix website
 
+      - name: Regenerate release manifest for verification
+        run: npm run build:release-manifest
+
       - name: Verify inherited product baseline
         run: npm run check
