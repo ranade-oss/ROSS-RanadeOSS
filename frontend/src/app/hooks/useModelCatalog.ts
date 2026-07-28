@@ -16,6 +16,8 @@ export function useModelCatalog() {
     "claude",
     "gemini",
     "openai",
+    "xai",
+    "moonshot",
   ]);
   const [selfHosted, setSelfHosted] = useState(false);
 
@@ -31,14 +33,18 @@ export function useModelCatalog() {
             ? ("OpenAI" as const)
             : model.provider === "claude"
               ? ("Anthropic" as const)
-              : ("Google" as const),
+              : model.provider === "xai"
+                ? ("xAI" as const)
+                : model.provider === "moonshot"
+                  ? ("Moonshot" as const)
+                  : ("Google" as const),
         available: model.available,
         availabilityReason: model.availabilityReason,
         reasoningEfforts: [...model.reasoningEfforts],
         defaultReasoningEffort: model.defaultReasoningEffort,
       }));
       if (mapped.length) setModels(mapped);
-      setApprovedProviders(result.approvedProviders);
+      setApprovedProviders(result.approvedProviders as ModelProvider[]);
       setSelfHosted(result.selfHosted);
       setWarning(result.warning ?? null);
     } catch {
