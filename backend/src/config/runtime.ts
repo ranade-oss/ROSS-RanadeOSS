@@ -1,5 +1,11 @@
 export type RossEnvironment = "local" | "test" | "staging" | "production";
 export type RossHostedMode = "self-hosted" | "controlled-beta" | "production";
+export type HostedModelProvider =
+    | "claude"
+    | "gemini"
+    | "openai"
+    | "xai"
+    | "moonshot";
 
 export type RuntimeConfig = {
     environment: RossEnvironment;
@@ -7,7 +13,7 @@ export type RuntimeConfig = {
     allowedOrigins: string[];
     hostedMode: RossHostedMode;
     dataBoundaryVersion: string;
-    hostedModelProviders: Array<"claude" | "gemini" | "openai">;
+    hostedModelProviders: HostedModelProvider[];
     releaseId: string | null;
     releaseManifestSha256: string | null;
 };
@@ -90,7 +96,7 @@ function hostedMode(environment: RossEnvironment): RossHostedMode {
     throw new Error(`Unsupported ROSS_HOSTED_MODE: ${configured}`);
 }
 
-function hostedModelProviders(mode: RossHostedMode) {
+function hostedModelProviders(mode: RossHostedMode): HostedModelProvider[] {
     if (mode === "self-hosted") return [];
     const raw = process.env.HOSTED_MODEL_PROVIDERS?.trim();
     if (!raw)
@@ -100,19 +106,21 @@ function hostedModelProviders(mode: RossHostedMode) {
     const providers = Array.from(
         new Set(raw.split(",").map((value) => value.trim().toLowerCase())),
     );
+    const allowed = new Set<HostedModelProvider>([
+        "claude",
+        "gemini",
+        "openai",
+        "xai",
+        "moonshot",
+    ]);
     if (
         providers.length === 0 ||
-        providers.some(
-            (provider) =>
-                provider !== "claude" &&
-                provider !== "gemini" &&
-                provider !== "openai",
-        )
+        providers.some((provider) => !allowed.has(provider as HostedModelProvider))
     )
         throw new Error(
-            "HOSTED_MODEL_PROVIDERS may contain only claude, gemini, and openai.",
+            "HOSTED_MODEL_PROVIDERS may contain only claude, gemini, openai, xai, and moonshot.",
         );
-    return providers as Array<"claude" | "gemini" | "openai">;
+    return providers as HostedModelProvider[];
 }
 
 export function loadRuntimeConfig(): RuntimeConfig {
