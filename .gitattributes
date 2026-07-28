@@ -1,0 +1,5 @@
+# Lockfiles are generated files. Git's line-level merge can splice concurrent
+# edits into syntactically invalid content without reporting a conflict.
+# Treat them as binary so concurrent edits require explicit regeneration.
+package-lock.json merge=binary
+bun.lock merge=binary
