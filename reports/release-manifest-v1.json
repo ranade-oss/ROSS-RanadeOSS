@@ -17,8 +17,8 @@
     },
     {
       "path": ".github/workflows/baseline.yml",
-      "sha256": "37c647cac2f9d1209b1fc719cd8b4b9ac96111754d84fbe1081bf65bcbdaa4b3",
-      "sizeBytes": 1959
+      "sha256": "06404bb1472ece8816c9b3effbc9c78a449b3575fb5943ae5e04daa0676fb6ce",
+      "sizeBytes": 3817
     },
     {
       "path": ".github/workflows/deploy-private-ross.yml",
@@ -37,8 +37,8 @@
     },
     {
       "path": ".github/workflows/refresh-release-manifest.yml",
-      "sha256": "b940ec3cab4c9d5f8de4db89d3c96cdbfe280ce72084076d599d960750de52de",
-      "sizeBytes": 2540
+      "sha256": "71ed98cf97f57617aa1fde12530a3271d43df467f68457829082f5223a7ce758",
+      "sizeBytes": 2184
     },
     {
       "path": ".github/workflows/release-candidate.yml",
@@ -602,8 +602,8 @@
     },
     {
       "path": "tests/baseline/ross-ci-toolchain.test.mjs",
-      "sha256": "31a3b311d6d68099452a3c4d6d7c35aadd7f2c6300a28fb1d4752ffbadc97ed6",
-      "sizeBytes": 3245
+      "sha256": "fee3ccf92ab0895cd40fef7776f3a3c1763ee82c160ef5c98c5ba6f64dacb6fe",
+      "sizeBytes": 3714
     },
     {
       "path": "tests/baseline/ross-delivery-d.test.mjs",
