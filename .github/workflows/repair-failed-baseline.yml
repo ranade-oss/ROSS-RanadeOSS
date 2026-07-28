@@ -1,0 +1,241 @@
+name: Repair failed Baseline
+
+on:
+  workflow_run:
+    workflows: ["Baseline verification"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: repair-baseline-${{ github.event.workflow_run.pull_requests[0].number || github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.pull_requests[0] != null
+    runs-on: ubuntu-latest
+    outputs:
+      eligible: ${{ steps.gate.outputs.eligible }}
+      pr_number: ${{ steps.gate.outputs.pr_number }}
+      head_sha: ${{ steps.gate.outputs.head_sha }}
+      head_ref: ${{ steps.gate.outputs.head_ref }}
+      reason: ${{ steps.gate.outputs.reason }}
+    steps:
+      - name: Qualify trusted low-risk repair
+        id: gate
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const linked = run.pull_requests?.[0];
+            const { owner, repo } = context.repo;
+            const deny = (reason) => {
+              core.setOutput('eligible', 'false');
+              core.setOutput('reason', reason);
+              core.notice(`Automatic repair skipped: ${reason}`);
+            };
+
+            if (!linked) return deny('no linked pull request');
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: linked.number,
+            });
+            core.setOutput('pr_number', String(pr.number));
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('head_ref', pr.head.ref);
+
+            const trusted = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
+            if (pr.state !== 'open' || pr.draft) return deny('PR is closed or draft');
+            if (pr.head.repo?.full_name !== `${owner}/${repo}`) return deny('fork PR');
+            if (!pr.head.ref.startsWith('agent/')) return deny('branch is not an agent branch');
+            if (!trusted.has(pr.author_association)) return deny('author is not trusted');
+            if (pr.head.sha !== linked.head.sha) return deny('failed run is not for the current head');
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            const protectedPatterns = [
+              /^\.github\//,
+              /(^|\/)migrations?\//i,
+              /(^|\/)(fly|docker|compose|terraform|infra|deploy)/i,
+              /(^|\/)(auth|security|crypto|secrets?|permissions?)(\/|\.|-)/i,
+              /(^|\/)(legal|privacy|governance|release)(\/|\.|-)/i,
+              /package-lock\.json$/,
+              /(^|\/)package\.json$/,
+              /reports\//,
+              /\.env/i,
+            ];
+            const protectedFile = files.find(({ filename }) =>
+              protectedPatterns.some((pattern) => pattern.test(filename)),
+            );
+            if (protectedFile) return deny(`protected file changed: ${protectedFile.filename}`);
+
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner,
+              repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            const repairs = commits.filter(({ commit }) =>
+              commit.message.startsWith('Auto-fix Baseline failure'),
+            ).length;
+            if (repairs >= 2) return deny('two automatic repair attempts already used');
+
+            core.setOutput('eligible', 'true');
+            core.setOutput('reason', 'trusted low-risk PR');
+
+  repair:
+    needs: qualify
+    if: needs.qualify.outputs.eligible == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Require OpenAI API key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: test -n "$OPENAI_API_KEY"
+
+      - name: Check out exact failed head without credentials
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.qualify.outputs.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Capture failed Baseline logs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          gh run view "$RUN_ID" --log-failed > /tmp/baseline-failure.log
+          test -s /tmp/baseline-failure.log
+
+      - name: Prepare bounded repair instructions
+        env:
+          PR_NUMBER: ${{ needs.qualify.outputs.pr_number }}
+          HEAD_SHA: ${{ needs.qualify.outputs.head_sha }}
+        run: |
+          cat > /tmp/repair-prompt.md <<'PROMPT'
+          Diagnose the failed ROSS Baseline from /tmp/baseline-failure.log and make the smallest correct code or test change that resolves the concrete failure.
+
+          You are operating in a deliberately bounded automatic-repair mode:
+          - Do not modify .github/, migrations, deployment or infrastructure files, authentication, security, cryptography, secrets, permissions, legal/privacy/governance/release files, reports, package.json, or package-lock.json.
+          - Do not weaken, skip, delete, or broadly disable tests, audits, lint rules, validation, authorization, privacy controls, or release controls.
+          - Do not add dependencies, change public APIs, alter database schemas, or make architectural refactors.
+          - Prefer a narrow implementation fix. A narrow test expectation correction is allowed only when the log proves the implementation is correct and the expectation is stale.
+          - Make no change if the failure cannot be fixed safely within these limits.
+          - Do not commit or push. Modify the working tree only.
+          PROMPT
+          printf '\nPR: %s\nExact failed head: %s\n' "$PR_NUMBER" "$HEAD_SHA" >> /tmp/repair-prompt.md
+
+      - name: Run bounded Codex repair
+        uses: openai/codex-action@dd78cb653811af44014baa08fe954e28d32c1bf9
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: /tmp/repair-prompt.md
+          safety-strategy: drop-sudo
+          allow-bot-users: github-actions[bot]
+
+      - name: Validate repair scope and create patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -N .
+          mapfile -t changed < <(git status --porcelain | sed -E 's/^...//' | sed -E 's/.* -> //')
+          test "${#changed[@]}" -gt 0
+          for path in "${changed[@]}"; do
+            case "$path" in
+              backend/src/*|backend/tests/*|frontend/src/*|website/src/*|website/tests/*|tests/*|scripts/*) ;;
+              *) echo "Unsafe automatic-repair path: $path" >&2; exit 1 ;;
+            esac
+            if [[ "$path" =~ (^|/)(auth|security|crypto|secret|permission|legal|privacy|governance|release|deploy|migration) ]]; then
+              echo "Protected automatic-repair path: $path" >&2
+              exit 1
+            fi
+          done
+          git diff --binary HEAD > /tmp/ross-autofix.patch
+          test -s /tmp/ross-autofix.patch
+
+      - name: Upload validated repair patch
+        uses: actions/upload-artifact@v7
+        with:
+          name: ross-autofix-${{ needs.qualify.outputs.pr_number }}-${{ needs.qualify.outputs.head_sha }}
+          path: /tmp/ross-autofix.patch
+          if-no-files-found: error
+          retention-days: 1
+
+  commit:
+    needs: [qualify, repair]
+    if: needs.repair.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Check out current PR branch in a clean runner
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.qualify.outputs.head_ref }}
+          fetch-depth: 0
+
+      - name: Confirm exact head is unchanged
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        env:
+          EXPECTED_HEAD: ${{ needs.qualify.outputs.head_sha }}
+          PR_NUMBER: ${{ needs.qualify.outputs.pr_number }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: Number(process.env.PR_NUMBER),
+            });
+            if (pr.state !== 'open' || pr.head.sha !== process.env.EXPECTED_HEAD) {
+              core.setFailed('PR head changed before automatic repair commit.');
+            }
+
+      - name: Download validated patch
+        uses: actions/download-artifact@v7
+        with:
+          name: ross-autofix-${{ needs.qualify.outputs.pr_number }}-${{ needs.qualify.outputs.head_sha }}
+          path: /tmp/ross-autofix
+
+      - name: Apply, revalidate, commit, and push
+        env:
+          HEAD_REF: ${{ needs.qualify.outputs.head_ref }}
+          FAILED_RUN: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+          git apply --index /tmp/ross-autofix/ross-autofix.patch
+          mapfile -t changed < <(git diff --cached --name-only)
+          test "${#changed[@]}" -gt 0
+          for path in "${changed[@]}"; do
+            case "$path" in
+              backend/src/*|backend/tests/*|frontend/src/*|website/src/*|website/tests/*|tests/*|scripts/*) ;;
+              *) echo "Unsafe automatic-repair path: $path" >&2; exit 1 ;;
+            esac
+            if [[ "$path" =~ (^|/)(auth|security|crypto|secret|permission|legal|privacy|governance|release|deploy|migration) ]]; then
+              echo "Protected automatic-repair path: $path" >&2
+              exit 1
+            fi
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Auto-fix Baseline failure from run ${FAILED_RUN}"
+          git push origin "HEAD:${HEAD_REF}"
