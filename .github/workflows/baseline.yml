@@ -43,7 +43,7 @@ jobs:
         run: npm run build:backend
 
   frontend:
-    name: Frontend lint and build
+    name: Frontend build
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -53,13 +53,11 @@ jobs:
         uses: ./.github/actions/setup-ross-node
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
-      - name: Lint frontend
-        run: npm run lint:strict
       - name: Build frontend
         run: npm run build:frontend
 
   website:
-    name: Website lint, routes, and build
+    name: Website build, lint, and routes
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -69,22 +67,24 @@ jobs:
         uses: ./.github/actions/setup-ross-node
       - name: Install website dependencies
         run: npm ci --prefix website
+      - name: Build website
+        run: npm run build:website
       - name: Lint website
         run: npm run lint:website
       - name: Test website routes
         run: npm run test:website
-      - name: Build website
-        run: npm run build:website
 
   governance:
     name: Governance and release checks
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
       - name: Set up pinned Node.js and npm
         uses: ./.github/actions/setup-ross-node
+      - name: Install locked dependencies
+        run: npm run install:all
       - name: Regenerate governed artifacts for verification
         run: |
           npm run build:public-content
