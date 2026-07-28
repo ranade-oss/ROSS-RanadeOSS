@@ -7,7 +7,11 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: baseline-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -16,6 +20,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
 
       - name: Validate GitHub Actions workflows
         uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7
@@ -24,6 +30,25 @@ jobs:
 
       - name: Set up pinned Node.js and npm
         uses: ./.github/actions/setup-ross-node
+
+      - name: Refresh governed release manifest on same-repository PRs
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          npm run build:release-manifest
+          if git diff --quiet -- reports/release-manifest-v1.json; then
+            echo "Release manifest already matches this PR head."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/release-manifest-v1.json
+          git commit -m "Refresh release manifest from exact branch bytes"
+          git push origin "HEAD:${PR_HEAD_REF}"
 
       - name: Install backend dependencies
         run: npm ci --prefix backend
