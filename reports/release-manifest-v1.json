@@ -52,8 +52,8 @@
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
-      "sha256": "69253489fffdf6b220f6ffea764c30e46510dd97730fb23e85400c9eaeba6c11",
-      "sizeBytes": 9544
+      "sha256": "2bae1574be2fd81bf97636e77d3810225ac016122ca463971b17511a9f8951fc",
+      "sizeBytes": 9367
     },
     {
       "path": ".github/workflows/verify-ontario-sources.yml",
