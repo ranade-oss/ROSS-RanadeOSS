@@ -9,33 +9,115 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: baseline-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  verify:
+  workflows:
+    name: Workflow validation
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
-
       - name: Validate GitHub Actions workflows
         uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7
         with:
           version: 1.7.12
 
+  backend:
+    name: Backend build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
       - name: Set up pinned Node.js and npm
         uses: ./.github/actions/setup-ross-node
-
       - name: Install backend dependencies
         run: npm ci --prefix backend
+      - name: Run backend tests
+        run: npm run test:chat --prefix backend && npm run test:legal-sources --prefix backend && npm run test:security --prefix backend
+      - name: Build backend
+        run: npm run build:backend
 
+  frontend:
+    name: Frontend lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up pinned Node.js and npm
+        uses: ./.github/actions/setup-ross-node
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
+      - name: Lint frontend
+        run: npm run lint:strict
+      - name: Build frontend
+        run: npm run build:frontend
 
+  website:
+    name: Website lint, routes, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up pinned Node.js and npm
+        uses: ./.github/actions/setup-ross-node
       - name: Install website dependencies
         run: npm ci --prefix website
+      - name: Lint website
+        run: npm run lint:website
+      - name: Test website routes
+        run: npm run test:website
+      - name: Build website
+        run: npm run build:website
 
-      - name: Regenerate release manifest for verification
-        run: npm run build:release-manifest
+  governance:
+    name: Governance and release checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up pinned Node.js and npm
+        uses: ./.github/actions/setup-ross-node
+      - name: Regenerate governed artifacts for verification
+        run: |
+          npm run build:public-content
+          npm run build:ross-workflows
+          npm run build:completion-dossier
+          npm run build:release-manifest
+      - name: Verify repository and release controls
+        run: |
+          npm run toolchain:check
+          npm run test:workflow-sources
+          npm run test:public-content
+          npm run test:release-manifest
+          npm run test:operations
+          npm run test:evaluation
+          npm run test:final
+          npm run test:baseline
+          npm run audit:high
+          npm run lint:baseline
 
-      - name: Verify inherited product baseline
-        run: npm run check
+  verify:
+    name: verify
+    if: always()
+    needs: [workflows, backend, frontend, website, governance]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every Baseline partition to pass
+        env:
+          WORKFLOWS_RESULT: ${{ needs.workflows.result }}
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+          WEBSITE_RESULT: ${{ needs.website.result }}
+          GOVERNANCE_RESULT: ${{ needs.governance.result }}
+        run: |
+          for result in "$WORKFLOWS_RESULT" "$BACKEND_RESULT" "$FRONTEND_RESULT" "$WEBSITE_RESULT" "$GOVERNANCE_RESULT"; do
+            test "$result" = success
+          done
