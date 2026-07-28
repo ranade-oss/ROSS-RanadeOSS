@@ -23,7 +23,7 @@ const PROVIDERS = [
 type Provider = (typeof PROVIDERS)[number]["provider"];
 type Status = Record<Provider, boolean>;
 
-async function authHeaders() {
+async function authHeaders(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token
     ? { Authorization: `Bearer ${data.session.access_token}` }
