@@ -103,6 +103,8 @@ jobs:
     permissions:
       actions: read
       contents: read
+    outputs:
+      repair_result: ${{ steps.codex.outputs.final-message }}
     steps:
       - name: Require OpenAI API key
         env:
@@ -121,66 +123,60 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          gh run view "$RUN_ID" --log-failed > /tmp/baseline-failure.log
-          test -s /tmp/baseline-failure.log
+          mkdir -p .ross-autofix
+          gh run view "$RUN_ID" --log-failed > .ross-autofix/baseline-failure.log
+          test -s .ross-autofix/baseline-failure.log
 
       - name: Prepare bounded repair instructions
         env:
           PR_NUMBER: ${{ needs.qualify.outputs.pr_number }}
           HEAD_SHA: ${{ needs.qualify.outputs.head_sha }}
         run: |
-          cat > /tmp/repair-prompt.md <<'PROMPT'
-          Diagnose the failed ROSS Baseline from /tmp/baseline-failure.log and make the smallest correct code or test change that resolves the concrete failure.
+          cat > .ross-autofix/repair-prompt.md <<'PROMPT'
+          Diagnose the failed ROSS Baseline using .ross-autofix/baseline-failure.log and the checked-out repository. Return the smallest correct unified git patch that resolves the concrete failure.
 
-          You are operating in a deliberately bounded automatic-repair mode:
+          You are operating in deliberately bounded automatic-repair mode:
           - Do not modify .github/, migrations, deployment or infrastructure files, authentication, security, cryptography, secrets, permissions, legal/privacy/governance/release files, reports, package.json, or package-lock.json.
           - Do not weaken, skip, delete, or broadly disable tests, audits, lint rules, validation, authorization, privacy controls, or release controls.
           - Do not add dependencies, change public APIs, alter database schemas, or make architectural refactors.
           - Prefer a narrow implementation fix. A narrow test expectation correction is allowed only when the log proves the implementation is correct and the expectation is stale.
-          - Make no change if the failure cannot be fixed safely within these limits.
-          - Do not commit or push. Modify the working tree only.
+          - Do not modify the working tree, commit, or push.
+          - If a safe bounded repair is unavailable, return status "unsafe" or "no-fix" with an empty patch.
+          - For status "fix", return a complete unified patch produced against the exact checked-out HEAD, beginning with "diff --git". Do not wrap the patch in Markdown fences.
           PROMPT
-          printf '\nPR: %s\nExact failed head: %s\n' "$PR_NUMBER" "$HEAD_SHA" >> /tmp/repair-prompt.md
+          printf '\nPR: %s\nExact failed head: %s\n' "$PR_NUMBER" "$HEAD_SHA" >> .ross-autofix/repair-prompt.md
 
-      - name: Run bounded Codex repair
+      - name: Produce read-only structured repair
+        id: codex
         uses: openai/codex-action@dd78cb653811af44014baa08fe954e28d32c1bf9
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          prompt-file: /tmp/repair-prompt.md
+          prompt-file: .ross-autofix/repair-prompt.md
+          permission-profile: ":read-only"
           safety-strategy: drop-sudo
           allow-bot-users: github-actions[bot]
-
-      - name: Validate repair scope and create patch
-        shell: bash
-        run: |
-          set -euo pipefail
-          git add -N .
-          mapfile -t changed < <(git status --porcelain | sed -E 's/^...//' | sed -E 's/.* -> //')
-          test "${#changed[@]}" -gt 0
-          for path in "${changed[@]}"; do
-            case "$path" in
-              backend/src/*|backend/tests/*|frontend/src/*|website/src/*|website/tests/*|tests/*|scripts/*) ;;
-              *) echo "Unsafe automatic-repair path: $path" >&2; exit 1 ;;
-            esac
-            if [[ "$path" =~ (^|/)(auth|security|crypto|secret|permission|legal|privacy|governance|release|deploy|migration) ]]; then
-              echo "Protected automatic-repair path: $path" >&2
-              exit 1
-            fi
-          done
-          git diff --binary HEAD > /tmp/ross-autofix.patch
-          test -s /tmp/ross-autofix.patch
-
-      - name: Upload validated repair patch
-        uses: actions/upload-artifact@v7
-        with:
-          name: ross-autofix-${{ needs.qualify.outputs.pr_number }}-${{ needs.qualify.outputs.head_sha }}
-          path: /tmp/ross-autofix.patch
-          if-no-files-found: error
-          retention-days: 1
+          output-schema: |
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["fix", "unsafe", "no-fix"]
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "patch": {
+                  "type": "string"
+                }
+              },
+              "required": ["status", "reason", "patch"]
+            }
 
   commit:
     needs: [qualify, repair]
-    if: needs.repair.result == 'success'
+    if: needs.repair.result == 'success' && needs.repair.outputs.repair_result != ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -210,21 +206,54 @@ jobs:
               core.setFailed('PR head changed before automatic repair commit.');
             }
 
-      - name: Download validated patch
-        uses: actions/download-artifact@v7
-        with:
-          name: ross-autofix-${{ needs.qualify.outputs.pr_number }}-${{ needs.qualify.outputs.head_sha }}
-          path: /tmp/ross-autofix
-
-      - name: Apply, revalidate, commit, and push
+      - name: Parse structured repair in the clean runner
+        id: parse
         env:
-          HEAD_REF: ${{ needs.qualify.outputs.head_ref }}
-          FAILED_RUN: ${{ github.event.workflow_run.id }}
+          REPAIR_RESULT: ${{ needs.repair.outputs.repair_result }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result = json.loads(os.environ["REPAIR_RESULT"])
+          status = result.get("status")
+          reason = str(result.get("reason", ""))
+          patch = str(result.get("patch", ""))
+          apply = status == "fix"
+
+          if apply:
+              if not patch.startswith("diff --git "):
+                  raise SystemExit("Structured repair did not contain a unified git patch")
+              if "\x00" in patch:
+                  raise SystemExit("Structured repair contains a NUL byte")
+              encoded = patch.encode("utf-8")
+              if len(encoded) > 200_000:
+                  raise SystemExit("Automatic repair patch exceeds 200 KB")
+              Path("/tmp/ross-autofix.patch").write_bytes(encoded)
+          elif patch.strip():
+              raise SystemExit("Non-fix structured result must have an empty patch")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"apply={'true' if apply else 'false'}\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write(f"## Automatic repair decision\n\n- Status: `{status}`\n- Reason: {reason}\n")
+          PY
+
+      - name: Apply and validate bounded patch
+        if: steps.parse.outputs.apply == 'true'
         run: |
           set -euo pipefail
-          git apply --index /tmp/ross-autofix/ross-autofix.patch
+          git apply --check --whitespace=error-all /tmp/ross-autofix.patch
+          git apply --index --whitespace=error-all /tmp/ross-autofix.patch
+
           mapfile -t changed < <(git diff --cached --name-only)
           test "${#changed[@]}" -gt 0
+          test "${#changed[@]}" -le 8
+
+          test -z "$(git diff --cached --diff-filter=D --name-only)"
+          test -z "$(git diff --cached --diff-filter=RCTU --name-only)"
+
           for path in "${changed[@]}"; do
             case "$path" in
               backend/src/*|backend/tests/*|frontend/src/*|website/src/*|website/tests/*|tests/*|scripts/*) ;;
@@ -235,6 +264,27 @@ jobs:
               exit 1
             fi
           done
+
+          if git diff --cached --numstat | awk '$1 == "-" || $2 == "-" { found=1 } END { exit !found }'; then
+            echo "Binary automatic repairs are not permitted." >&2
+            exit 1
+          fi
+
+          total_lines="$(git diff --cached --numstat | awk '{ total += $1 + $2 } END { print total + 0 }')"
+          test "$total_lines" -le 800
+
+          if git diff --cached --summary | grep -Eq 'mode change|create mode 100755|create mode 120000|create mode 160000|delete mode'; then
+            echo "File-mode, executable, symlink, submodule, or deletion changes are not permitted." >&2
+            exit 1
+          fi
+
+      - name: Commit and push bounded repair
+        if: steps.parse.outputs.apply == 'true'
+        env:
+          HEAD_REF: ${{ needs.qualify.outputs.head_ref }}
+          FAILED_RUN: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Auto-fix Baseline failure from run ${FAILED_RUN}"
