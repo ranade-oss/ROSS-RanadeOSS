@@ -2,47 +2,34 @@ name: Refresh release manifest
 
 on:
   workflow_dispatch:
-  pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+    paths-ignore:
+      - reports/release-manifest-v1.json
 
 permissions:
-  actions: write
   contents: write
-  pull-requests: read
 
 concurrency:
-  group: release-manifest-${{ github.event.pull_request.number || github.ref }}
+  group: release-manifest-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   refresh:
-    if: >-
-      (github.event_name == 'workflow_dispatch' && github.ref_name != github.event.repository.default_branch) ||
-      (github.event_name == 'pull_request_target' &&
-       github.event.pull_request.head.repo.full_name == github.repository &&
-       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association))
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    env:
-      TARGET_REF: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.ref || github.ref_name }}
+    timeout-minutes: 10
     steps:
-      - name: Check out the target branch
+      - name: Check out main
         uses: actions/checkout@v7
         with:
-          ref: ${{ env.TARGET_REF }}
+          ref: main
           fetch-depth: 0
 
       - name: Set up pinned Node.js and npm
         uses: ./.github/actions/setup-ross-node
 
-      - name: Install locked dependencies
-        run: npm run install:all
-
       - name: Regenerate the exact-byte release manifest
         run: npm run build:release-manifest
-
-      - name: Run the complete verification gate
-        run: npm run check
 
       - name: Confirm only the generated report changed
         shell: bash
@@ -71,23 +58,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add reports/release-manifest-v1.json
-          git commit -m "Refresh release manifest from exact branch bytes"
-          git push origin "HEAD:${TARGET_REF}"
+          git commit -m "Refresh release manifest after merge"
+          git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"
-
-      - name: Dispatch Baseline Verification on the updated branch
-        if: steps.commit.outputs.changed != 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run baseline.yml --ref "${TARGET_REF}"
 
       - name: Summarize
         run: |
           {
-            echo "## Release manifest refreshed"
+            echo "## Release manifest refresh"
             echo
-            echo "- Branch: ${TARGET_REF}"
+            echo "- Branch: main"
             echo "- Report changed: ${{ steps.commit.outputs.changed }}"
-            echo "- Full check: passed"
-            echo "- Baseline Verification: ${{ steps.commit.outputs.changed == 'true' && 'will run from the pushed commit' || 'dispatched' }}"
+            echo "- PR branches are never mutated by this workflow."
           } >> "$GITHUB_STEP_SUMMARY"

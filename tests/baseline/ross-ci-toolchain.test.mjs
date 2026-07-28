@@ -67,13 +67,25 @@ test("the release train uses current artifact actions and pins Fly setup", () =>
   assert.doesNotMatch(deployment, /setup-flyctl@master/);
 });
 
-test("the release train runs the same full gate as baseline CI", () => {
+test("baseline CI partitions the complete gate while release deploys run it serially", () => {
   const baseline = read(".github/workflows/baseline.yml");
   const deployment = read(
     ".github/workflows/verify-and-deploy-public-beta.yml",
   );
 
-  assert.match(baseline, /run: npm run check/);
+  for (const job of ["workflows", "backend", "frontend", "website", "governance"]) {
+    assert.match(baseline, new RegExp(`^  ${job}:`, "m"));
+  }
+  assert.match(baseline, /^  verify:/m);
+  assert.match(
+    baseline,
+    /needs: \[workflows, backend, frontend, website, governance\]/,
+  );
+  assert.match(baseline, /npm run test:baseline/);
+  assert.match(baseline, /npm run audit:high/);
+  assert.match(baseline, /npm run build:frontend/);
+  assert.match(baseline, /npm run build:website/);
+
   assert.match(deployment, /name: Run complete engineering gate/);
   assert.match(deployment, /run: npm run check/);
   assert.doesNotMatch(
