@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-07-26T10:21:51Z",
+  "last_merged_at": "2026-07-27T16:34:42Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -447,6 +447,26 @@
       "decision": "investigate",
       "reason": "Changes authorization behavior for project-folder deletion and therefore requires dedicated security review.",
       "processed_at": "2026-07-29T05:02:17.300207Z"
+    },
+    {
+      "number": 175,
+      "title": "Require review owner for tabular settings edits",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/175",
+      "merged_at": "2026-07-26T17:51:06Z",
+      "merge_commit_sha": "a3ab1b38956e92659566d0ba9c7270ace3f73bdc",
+      "decision": "investigate",
+      "reason": "Changes backend authorization for review title and document membership. This protected, security-sensitive behavior requires ROSS-specific authorization and threat analysis.",
+      "processed_at": "2026-07-29T05:06:58.577327Z"
+    },
+    {
+      "number": 270,
+      "title": "Discover workflow packs from YAML manifests",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/270",
+      "merged_at": "2026-07-27T16:34:42Z",
+      "merge_commit_sha": "e89d3230db40193c540a6b38d8f301ae76377a1a",
+      "decision": "skip",
+      "reason": "Non-portable and already documented as architecturally incompatible: ROSS discovers governed workflows directly from system SKILL.md files, not pack.yaml directories.",
+      "processed_at": "2026-07-29T05:06:58.577345Z"
     }
   ]
 }
