@@ -407,8 +407,8 @@
     },
     {
       "path": "frontend/src/app/(pages)/account/api-keys/page.tsx",
-      "sha256": "abede1f7d42f209e8003fc324f43688d25cd5794d95a59ef684bc56a237b658c",
-      "sizeBytes": 11420
+      "sha256": "2383ffddc6205e3bdf832cae76c5e3c8518740c192040646130a76a1a890af91",
+      "sizeBytes": 11325
     },
     {
       "path": "frontend/src/app/(pages)/account/connectors/page.tsx",
