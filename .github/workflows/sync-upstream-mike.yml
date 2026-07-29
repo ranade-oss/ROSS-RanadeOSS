@@ -74,7 +74,7 @@ jobs:
               const time = new Date(left.merged_at).getTime() - new Date(right.merged_at).getTime();
               return time || left.number - right.number;
             });
-            const batch = candidates.slice(0, 20);
+            const batch = candidates.slice(0, 8);
             if (batch.length === 0) {
               core.setOutput("has_batch", "false");
               core.notice("No unprocessed merged upstream Mike PRs are newer than the sync cursor.");
