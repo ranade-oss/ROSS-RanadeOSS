@@ -1,0 +1,34 @@
+name: Dispatch escalated Mike synchronization requests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/upstream-sync-request.json
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: dispatch-escalated-mike-on-request
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Dispatch escalated synchronization queue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.actions.createWorkflowDispatch({
+              owner,
+              repo,
+              workflow_id: "sync-upstream-mike-escalated.yml",
+              ref: "main",
+            });
+            core.notice("Dispatched the medium/high-risk Mike synchronization queue.");
