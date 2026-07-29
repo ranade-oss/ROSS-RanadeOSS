@@ -27,31 +27,77 @@ const readNpmVersion = () => {
   return result.stdout.trim();
 };
 
+const printResultOutput = (result) => {
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+};
+
+const runBootstrap = async (command, args, label) => {
+  let lastResult;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    console.log(`${label} (attempt ${attempt}/${maxAttempts})...`);
+    const result = spawnSync(command, args, {
+      encoding: "utf8",
+      env: process.env,
+    });
+    lastResult = result;
+
+    if (!result.error && result.status === 0) {
+      printResultOutput(result);
+      return result;
+    }
+
+    const diagnostic = `${result.error?.message ?? ""}\n${result.stderr ?? ""}`;
+    if (/EACCES|permission denied/i.test(diagnostic)) {
+      return result;
+    }
+
+    if (attempt < maxAttempts) {
+      console.warn(`${label} failed transiently; retrying after bounded backoff.`);
+      await pause(attempt * 2_000);
+    }
+  }
+
+  return lastResult;
+};
+
 let npmVersion = readNpmVersion();
 if (npmVersion !== expectedNpm) {
-  console.log(
-    `Installing repository-pinned npm ${expectedNpm} (current: ${npmVersion ?? "unavailable"})...`,
-  );
-  const bootstrap = spawnSync(
+  const bootstrapArgs = [
+    "install",
+    "--global",
+    `npm@${expectedNpm}`,
+    "--no-audit",
+    "--no-fund",
+  ];
+  let bootstrap = await runBootstrap(
     npmCommand,
-    [
-      "install",
-      "--global",
-      `npm@${expectedNpm}`,
-      "--no-audit",
-      "--no-fund",
-    ],
-    {
-      env: process.env,
-      stdio: "inherit",
-    },
+    bootstrapArgs,
+    `Installing repository-pinned npm ${expectedNpm}`,
   );
-  if (bootstrap.error) {
-    console.error("Failed to start npm toolchain bootstrap:", bootstrap.error);
+
+  if (
+    (bootstrap?.status ?? 1) !== 0 &&
+    process.env.GITHUB_ACTIONS === "true" &&
+    process.platform !== "win32"
+  ) {
+    console.warn(
+      "Direct npm activation was not permitted; retrying with the hosted-runner noninteractive privilege boundary.",
+    );
+    bootstrap = await runBootstrap(
+      "sudo",
+      ["-n", npmCommand, ...bootstrapArgs],
+      `Installing repository-pinned npm ${expectedNpm} with hosted-runner privileges`,
+    );
   }
-  if ((bootstrap.status ?? 1) !== 0) {
-    process.exit(bootstrap.status ?? 1);
+
+  if (bootstrap?.error || (bootstrap?.status ?? 1) !== 0) {
+    printResultOutput(bootstrap ?? {});
+    console.error(`Unable to activate repository-pinned npm ${expectedNpm}.`);
+    process.exit(bootstrap?.status ?? 1);
   }
+
   npmVersion = readNpmVersion();
 }
 
