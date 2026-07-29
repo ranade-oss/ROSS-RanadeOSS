@@ -1,11 +1,212 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-01-01T00:00:00Z",
+  "last_merged_at": "2026-06-11T14:24:20Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
     "reason": "Classify the existing 2026 Mike backlog before resuming incremental synchronization."
   },
-  "processed": []
+  "processed": [
+    {
+      "number": 46,
+      "title": "Sync security and backend profile updates",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/46",
+      "merged_at": "2026-05-08T13:12:04Z",
+      "merge_commit_sha": "7f5dd217d74095fe8931357fefad5d9c6dea6c90",
+      "decision": "investigate",
+      "reason": "Large mixed change spanning backend, auth, provider keys, schemas, dependencies, legal pages, and application behavior.",
+      "processed_at": "2026-07-29T03:45:15.646522Z"
+    },
+    {
+      "number": 28,
+      "title": "fix(projects): validate folder ownership before folder mutations",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/28",
+      "merged_at": "2026-05-08T14:55:16Z",
+      "merge_commit_sha": "e5a3d6f22230ca7c9714e118a14cfcd056048657",
+      "decision": "investigate",
+      "reason": "Authorization and project data-boundary fix in protected backend code.",
+      "processed_at": "2026-07-29T03:45:15.646537Z"
+    },
+    {
+      "number": 31,
+      "title": "docs: add safe local testing guide",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/31",
+      "merged_at": "2026-05-08T15:05:16Z",
+      "merge_commit_sha": "adc2cf2370da42ef22aba643d0761d538202cfb7",
+      "decision": "skip",
+      "reason": "Safe local-testing guide and frontend secret guidance are already present in ROSS.",
+      "processed_at": "2026-07-29T03:45:15.646540Z"
+    },
+    {
+      "number": 48,
+      "title": "feat: add OpenAI model support and harden OSS security defaults",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/48",
+      "merged_at": "2026-05-09T07:07:48Z",
+      "merge_commit_sha": "f40c25d07f6dd2d679317b3ec4d4e94bd884f849",
+      "decision": "investigate",
+      "reason": "Large provider, security, schema, dependency, backend, and behavioral change.",
+      "processed_at": "2026-07-29T03:45:15.646542Z"
+    },
+    {
+      "number": 52,
+      "title": "fix: handle JSONB shared_with filters and path-style S3",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/52",
+      "merged_at": "2026-05-10T12:23:13Z",
+      "merge_commit_sha": "029181b2ff3e82bd9f44ba160fbc701a87f3e6e9",
+      "decision": "investigate",
+      "reason": "Changes authorization queries, storage configuration, and production backend behavior.",
+      "processed_at": "2026-07-29T03:45:15.646544Z"
+    },
+    {
+      "number": 51,
+      "title": "fix(security): scope tabular-review document_ids by access (CWE-639)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/51",
+      "merged_at": "2026-05-10T13:03:38Z",
+      "merge_commit_sha": "dbbf19697e9911517155f5396269a87c0ecd7e62",
+      "decision": "investigate",
+      "reason": "High-severity authorization and document data-boundary fix requiring focused review.",
+      "processed_at": "2026-07-29T03:45:15.646546Z"
+    },
+    {
+      "number": 21,
+      "title": "fix(security): fail fast when download HMAC secret is missing (closes #7)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/21",
+      "merged_at": "2026-05-10T18:20:28Z",
+      "merge_commit_sha": "0ac2744a8ebc230cb67bf629c09d8d6614ee38fb",
+      "decision": "investigate",
+      "reason": "Changes cryptographic secret handling and environment configuration.",
+      "processed_at": "2026-07-29T03:45:15.646547Z"
+    },
+    {
+      "number": 56,
+      "title": "Update OSS setup docs and remove app legal pages",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/56",
+      "merged_at": "2026-05-10T19:20:05Z",
+      "merge_commit_sha": "469ee4adeca12d7cd9c1506c84b1e25f4859ae15",
+      "decision": "investigate",
+      "reason": "Includes legal-page removal, secret-related setup instructions, schema guidance, and license wording.",
+      "processed_at": "2026-07-29T03:45:15.646548Z"
+    },
+    {
+      "number": 62,
+      "title": "chore: update Next and Cloudflare dependencies",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/62",
+      "merged_at": "2026-05-12T05:42:56Z",
+      "merge_commit_sha": "56c6051f90ed437efdbaf20d22d48610e05b2925",
+      "decision": "investigate",
+      "reason": "Dependency and lockfile update exceeds permitted automatic scope.",
+      "processed_at": "2026-07-29T03:45:15.646550Z"
+    },
+    {
+      "number": 64,
+      "title": "Deployment and project page fixes",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/64",
+      "merged_at": "2026-05-12T18:38:45Z",
+      "merge_commit_sha": "2e8eafc78e56e6100f395e19e4357961de97f59e",
+      "decision": "investigate",
+      "reason": "Large deployment, schema, backend, and architecture-dependent UI change.",
+      "processed_at": "2026-07-29T03:45:15.646551Z"
+    },
+    {
+      "number": 132,
+      "title": "refactor: enhance error handling and streamline API key management in LLM modules",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/132",
+      "merged_at": "2026-05-14T15:57:23Z",
+      "merge_commit_sha": "9e7046d4aa6d937cb818b9f99b07704373d414b5",
+      "decision": "investigate",
+      "reason": "Primarily backend provider and operational error-handling behavior; frontend portion is coupled to it.",
+      "processed_at": "2026-07-29T03:45:15.646552Z"
+    },
+    {
+      "number": 136,
+      "title": "feat: prevent users from sharing projects and reviews with themselves",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/136",
+      "merged_at": "2026-05-15T16:06:40Z",
+      "merge_commit_sha": "4290104cd07100e4305f311bbd038d225c30bcd2",
+      "decision": "investigate",
+      "reason": "Sharing restrictions affect authorization and data-boundary behavior across frontend and backend.",
+      "processed_at": "2026-07-29T03:45:15.646554Z"
+    },
+    {
+      "number": 137,
+      "title": "fix: update encryption key retrieval to use only USER_API_KEYS_ENCRYPTION_SECRET",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/137",
+      "merged_at": "2026-05-15T16:55:57Z",
+      "merge_commit_sha": "aed8c42e94c2eea021b78dd15c9f20982709fec2",
+      "decision": "investigate",
+      "reason": "Changes encryption-key retrieval in protected backend security code.",
+      "processed_at": "2026-07-29T03:45:15.646557Z"
+    },
+    {
+      "number": 138,
+      "title": "fix: enforce SUPABASE_URL and SUPABASE_SECRET_KEY presence in server-side client; remove unused supabase-server.ts file",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/138",
+      "merged_at": "2026-05-15T17:16:51Z",
+      "merge_commit_sha": "4ba4d53c3834dbff9881bd8e2d06f3a03017d77e",
+      "decision": "investigate",
+      "reason": "Changes Supabase secret enforcement and server-side client behavior.",
+      "processed_at": "2026-07-29T03:45:15.646558Z"
+    },
+    {
+      "number": 139,
+      "title": "docs: add contributing guide",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/139",
+      "merged_at": "2026-05-15T17:48:03Z",
+      "merge_commit_sha": "2f24cae4072073daa6172f6b4fbce8388b084f4a",
+      "decision": "skip",
+      "reason": "ROSS already has a more complete, repository-specific CONTRIBUTING.md.",
+      "processed_at": "2026-07-29T03:45:15.646560Z"
+    },
+    {
+      "number": 146,
+      "title": "fix: require dedicated download signing secret",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/146",
+      "merged_at": "2026-05-16T17:06:53Z",
+      "merge_commit_sha": "2bbb62889155693dab553946032ddd3f42ad017d",
+      "decision": "investigate",
+      "reason": "Changes download-token cryptographic secret requirements.",
+      "processed_at": "2026-07-29T03:45:15.646562Z"
+    },
+    {
+      "number": 148,
+      "title": "Update document UI, tabular reviews, and storage caching",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/148",
+      "merged_at": "2026-05-17T16:25:09Z",
+      "merge_commit_sha": "d39f5806e5d6786706df21a9689dbd669433e100",
+      "decision": "investigate",
+      "reason": "Large mixed backend/storage/schema and architecture-dependent UI change.",
+      "processed_at": "2026-07-29T03:45:15.646564Z"
+    },
+    {
+      "number": 171,
+      "title": "Add courtlistener intergration, liquid glass redesign, UI improvements, version control, various fixes",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/171",
+      "merged_at": "2026-06-08T17:48:41Z",
+      "merge_commit_sha": "15c96b0dd4c34cfb96cc0f1c512dd16c34cf333f",
+      "decision": "investigate",
+      "reason": "Extremely large change spanning schemas, providers, dependencies, backend operations, data boundaries, and UI.",
+      "processed_at": "2026-07-29T03:45:15.646565Z"
+    },
+    {
+      "number": 172,
+      "title": "feat: implement multi-factor authentication (MFA) setup and verification flow and data deletion and export",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/172",
+      "merged_at": "2026-06-10T12:46:45Z",
+      "merge_commit_sha": "a211b92f38fc8d680d2c053443f67573c0ad1cd7",
+      "decision": "investigate",
+      "reason": "Large MFA, authentication, privacy, data export, and deletion implementation.",
+      "processed_at": "2026-07-29T03:45:15.646567Z"
+    },
+    {
+      "number": 178,
+      "title": "Refactor ProjectPageParts and ProjectPageHeader components",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/178",
+      "merged_at": "2026-06-11T14:24:20Z",
+      "merge_commit_sha": "8a2dc05181a1e81dd46bff6eb433e0de2d298e38",
+      "decision": "investigate",
+      "reason": "Large mixed refactor spanning schemas, backend operations, providers, data behavior, and UI.",
+      "processed_at": "2026-07-29T03:45:15.646568Z"
+    }
+  ]
 }
