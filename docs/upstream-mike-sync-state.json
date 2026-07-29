@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-07-19T19:06:16Z",
+  "last_merged_at": "2026-07-22T08:33:53Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -287,6 +287,86 @@
       "decision": "investigate",
       "reason": "Workflow behavior and generation changes include protected backend and script files and depend on upstream architecture.",
       "processed_at": "2026-07-29T04:29:51.511215Z"
+    },
+    {
+      "number": 212,
+      "title": "fix(db): add missing chat_messages.workflow column (user prompts dropped on reload)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/212",
+      "merged_at": "2026-07-21T04:49:07Z",
+      "merge_commit_sha": "0843e2909acc584a28a8b2b493de1c92892af06a",
+      "decision": "investigate",
+      "reason": "Changes database schema and migrations, which are explicitly protected.",
+      "processed_at": "2026-07-29T04:44:58.667836Z"
+    },
+    {
+      "number": 228,
+      "title": "[Testing 05] test: minimal vitest harness for backend and frontend",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/228",
+      "merged_at": "2026-07-21T08:21:12Z",
+      "merge_commit_sha": "8a34a6457fdf65570dffc1bb2fd674102696e6cf",
+      "decision": "investigate",
+      "reason": "Large test-harness change requiring dependency manifests and lockfiles.",
+      "processed_at": "2026-07-29T04:44:58.667855Z"
+    },
+    {
+      "number": 238,
+      "title": "[Fix 01] Batch the directory modal's project fetch (N+1 getProject storm)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/238",
+      "merged_at": "2026-07-21T08:51:36Z",
+      "merge_commit_sha": "eda088e1437b367fd66c642ba09bb06f2a7e40e5",
+      "decision": "investigate",
+      "reason": "Changes authenticated backend APIs, Supabase queries, data boundaries, and production request behavior.",
+      "processed_at": "2026-07-29T04:44:58.667859Z"
+    },
+    {
+      "number": 237,
+      "title": "[Testing 09] test: unit-cover the highest-risk backend libs + raise the coverage ratchet",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/237",
+      "merged_at": "2026-07-21T10:16:41Z",
+      "merge_commit_sha": "948e9bdd4d98380adcdff7deb2a0e6b968e29dac",
+      "decision": "investigate",
+      "reason": "Very large test and dependency change covering access, storage, provider keys, and other protected areas.",
+      "processed_at": "2026-07-29T04:44:58.667861Z"
+    },
+    {
+      "number": 229,
+      "title": "[Testing 06] test: unit tests for access control, storage, user API keys and chat doc resolution",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/229",
+      "merged_at": "2026-07-21T10:16:42Z",
+      "merge_commit_sha": "948e9bdd4d98380adcdff7deb2a0e6b968e29dac",
+      "decision": "investigate",
+      "reason": "Large test-harness and dependency change involving access control, storage, and provider keys.",
+      "processed_at": "2026-07-29T04:44:58.667863Z"
+    },
+    {
+      "number": 234,
+      "title": "[Docs 02] docs: testing policy in CONTRIBUTING + PR template",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/234",
+      "merged_at": "2026-07-21T14:16:02Z",
+      "merge_commit_sha": "39dc609f9545b7b09ced5a9693a7bedb85d5dc3d",
+      "decision": "skip",
+      "reason": "ROSS already has stronger repository-specific testing and PR guidance in CONTRIBUTING.md; the remaining PR-template file is under prohibited .github.",
+      "processed_at": "2026-07-29T04:44:58.667869Z"
+    },
+    {
+      "number": 232,
+      "title": "[CI 03] ci: build and test workflow for backend and frontend",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/232",
+      "merged_at": "2026-07-22T08:07:57Z",
+      "merge_commit_sha": "73b9cd16921d38b0d1f16004bbf6fb025686932a",
+      "decision": "investigate",
+      "reason": "CI and release-control workflow under .github is explicitly protected.",
+      "processed_at": "2026-07-29T04:44:58.667871Z"
+    },
+    {
+      "number": 235,
+      "title": "[Lint 04] fix: burn down frontend eslint errors; make CI lint blocking",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/235",
+      "merged_at": "2026-07-22T08:33:53Z",
+      "merge_commit_sha": "7d2ba4b87ff50cabe0e7d2b0ec992f246477830d",
+      "decision": "investigate",
+      "reason": "Mixed architecture-dependent lint change includes .github CI controls and MFA-related code; automatic partial extraction is unsafe.",
+      "processed_at": "2026-07-29T04:44:58.667873Z"
     }
   ]
 }
