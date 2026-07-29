@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-07-22T08:33:53Z",
+  "last_merged_at": "2026-07-26T10:21:51Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -367,6 +367,86 @@
       "decision": "investigate",
       "reason": "Mixed architecture-dependent lint change includes .github CI controls and MFA-related code; automatic partial extraction is unsafe.",
       "processed_at": "2026-07-29T04:44:58.667873Z"
+    },
+    {
+      "number": 230,
+      "title": "[Testing 07] test: component and hook unit tests for the web app",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/230",
+      "merged_at": "2026-07-22T08:59:39Z",
+      "merge_commit_sha": "2ec89a7c52b1d479cb20abad9b85d6dfa7e09761",
+      "decision": "investigate",
+      "reason": "Oversized test change (23,219 lines) coupled to new dependencies, manifests, lockfiles, and test infrastructure.",
+      "processed_at": "2026-07-29T05:02:17.300175Z"
+    },
+    {
+      "number": 240,
+      "title": "ci: guard against silently merge-corrupted lockfiles",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/240",
+      "merged_at": "2026-07-23T10:27:52Z",
+      "merge_commit_sha": "7460b065e5f159cee56e5fe335c184b9aa00d5ef",
+      "decision": "skip",
+      "reason": "ROSS already has equivalent repository-neutral lockfile merge protection in .gitattributes; the remaining CI change is protected.",
+      "processed_at": "2026-07-29T05:02:17.300191Z"
+    },
+    {
+      "number": 233,
+      "title": "[Testing 08] test: route-level integration tests + real-Supabase auth/RLS suites",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/233",
+      "merged_at": "2026-07-23T13:48:55Z",
+      "merge_commit_sha": "c0ff4404b34f76d2a36a10280f50596a53ad51e9",
+      "decision": "investigate",
+      "reason": "Large integration-test change involving authentication, RLS, schemas, Supabase, backend behavior, manifests, and lockfiles.",
+      "processed_at": "2026-07-29T05:02:17.300196Z"
+    },
+    {
+      "number": 220,
+      "title": "[Testing 12] test: Playwright e2e suite + CI merge gate (auth, chat, projects, tabular, workflows)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/220",
+      "merged_at": "2026-07-25T16:16:20Z",
+      "merge_commit_sha": "dad4b9d21a27d356a1f1230de919f6bd69e9994b",
+      "decision": "investigate",
+      "reason": "Oversized E2E suite spanning authentication, MFA, CI, dependencies, lockfiles, scripts, and application configuration.",
+      "processed_at": "2026-07-29T05:02:17.300198Z"
+    },
+    {
+      "number": 258,
+      "title": "chore(backend): sync bun.lock with vitest/supertest devDeps",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/258",
+      "merged_at": "2026-07-25T16:36:24Z",
+      "merge_commit_sha": "154051ae4498750247d5c9be053bab2b630362a3",
+      "decision": "investigate",
+      "reason": "Lockfile and dependency synchronization is explicitly excluded from automatic inclusion.",
+      "processed_at": "2026-07-29T05:02:17.300201Z"
+    },
+    {
+      "number": 236,
+      "title": "[Docs 13] docs(e2e): exact ANTHROPIC_API_KEY setup to enable the 4 LLM-gated specs",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/236",
+      "merged_at": "2026-07-25T16:49:58Z",
+      "merge_commit_sha": "9b42994a7feb6bd53cbb060292d0a92ea05f03e2",
+      "decision": "investigate",
+      "reason": "Architecture-dependent E2E/CI changes involving provider keys, secrets configuration, models, and protected workflow files.",
+      "processed_at": "2026-07-29T05:02:17.300203Z"
+    },
+    {
+      "number": 186,
+      "title": "[codex] Remove unused Supabase request auth helper",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/186",
+      "merged_at": "2026-07-25T17:49:54Z",
+      "merge_commit_sha": "416b32b17fc33c7e65044677db5c3a2ad29fb592",
+      "decision": "investigate",
+      "reason": "Although framed as dead-code cleanup, it modifies authentication and Supabase code plus related integration mocks.",
+      "processed_at": "2026-07-29T05:02:17.300205Z"
+    },
+    {
+      "number": 193,
+      "title": "Restrict project folder deletion to owners",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/193",
+      "merged_at": "2026-07-26T10:21:51Z",
+      "merge_commit_sha": "4d1b792d6810eb1dd072e789874c9ea6422fd8ac",
+      "decision": "investigate",
+      "reason": "Changes authorization behavior for project-folder deletion and therefore requires dedicated security review.",
+      "processed_at": "2026-07-29T05:02:17.300207Z"
     }
   ]
 }
