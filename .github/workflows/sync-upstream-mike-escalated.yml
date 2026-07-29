@@ -145,7 +145,7 @@ jobs:
 
           Defer anything whose safe ROSS adaptation is unclear, internally inconsistent, too large, obsolete, already implemented, or not adequately testable. An item marked as metadata-only because its patch was unavailable or exceeded the bounded fetch limit must be deferred unless the supplied metadata and current ROSS implementation establish a complete, bounded, testable adaptation without guessing at omitted code.
 
-          Return the smallest complete unified git patch against current ROSS main that safely adapts all medium/high entries that can be implemented together. Preserve ROSS-specific safeguards. Do not modify .github workflows, commit secrets, weaken tests or controls, or bypass validation. Do not modify the working tree, commit, push, or open a pull request.
+          Return the smallest complete unified git patch against current ROSS main that safely adapts all medium/high entries that can be implemented together. The patch must be syntactically valid and apply cleanly to the checked-out current ROSS main. Preserve ROSS-specific safeguards. Do not modify .github workflows, commit secrets, weaken tests or controls, or bypass validation. Do not modify the working tree, commit, push, or open a pull request.
 
           The combined patch may change at most 30 files and 4,000 total lines. If any applied entry is high risk, set highest_risk to high. If all applied entries are medium, set highest_risk to medium. If nothing can be safely applied, set highest_risk to none and return an empty patch.
           PROMPT
@@ -245,15 +245,49 @@ jobs:
               output.write(f"risk={risk}\n")
           PY
 
-      - name: Apply generated adaptation patch
-        if: steps.parse.outputs.has_apply == 'true'
+      - name: Validate and apply generated patch or fail closed
+        id: normalize
+        env:
+          HAS_APPLY: ${{ steps.parse.outputs.has_apply }}
+          RISK: ${{ steps.parse.outputs.risk }}
         run: |
           set -euo pipefail
-          git apply --check --whitespace=error-all /tmp/ross-upstream-escalated.patch
-          git apply --index --whitespace=error-all /tmp/ross-upstream-escalated.patch
+          if [ "$HAS_APPLY" != "true" ]; then
+            echo "has_apply=false" >> "$GITHUB_OUTPUT"
+            echo "risk=$RISK" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git apply --check --whitespace=error-all /tmp/ross-upstream-escalated.patch; then
+            git apply --index --whitespace=error-all /tmp/ross-upstream-escalated.patch
+            echo "has_apply=true" >> "$GITHUB_OUTPUT"
+            echo "risk=$RISK" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Generated escalated patch is malformed or does not apply to current main; recording the batch as deferred." >&2
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("/tmp/escalated-result.json")
+          result = json.loads(path.read_text(encoding="utf-8"))
+          for entry in result.get("entries", []):
+              original = entry.get("reason", "Generated adaptation")
+              entry["risk"] = "defer"
+              entry["reason"] = f"{original} Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied."
+          result["title"] = "Record deferred upstream Mike classifications"
+          result["summary"] = "The generated adaptation patch failed deterministic applicability validation, so the complete batch was converted to state-only deferred classifications."
+          result["highest_risk"] = "none"
+          result["patch"] = ""
+          path.write_text(json.dumps(result), encoding="utf-8")
+          PY
+          rm -f /tmp/ross-upstream-escalated.patch
+          echo "has_apply=false" >> "$GITHUB_OUTPUT"
+          echo "risk=none" >> "$GITHUB_OUTPUT"
 
       - name: Enforce deterministic patch boundaries
-        if: steps.parse.outputs.has_apply == 'true'
+        if: steps.normalize.outputs.has_apply == 'true'
         run: |
           set -euo pipefail
           mapfile -t changed < <(git diff --cached --name-only)
@@ -277,18 +311,15 @@ jobs:
           fi
 
       - name: Update escalation ledger
-        env:
-          SYNC_RESULT: ${{ needs.classify.outputs.result }}
         run: |
           python - <<'PY'
           import json
-          import os
           from datetime import datetime, timezone
           from pathlib import Path
 
           path = Path("docs/upstream-mike-escalation-state.json")
           state = json.loads(path.read_text(encoding="utf-8"))
-          result = json.loads(os.environ["SYNC_RESULT"])
+          result = json.loads(Path("/tmp/escalated-result.json").read_text(encoding="utf-8"))
           now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
           existing = {item["number"] for item in state.get("processed", [])}
           for entry in result["entries"]:
@@ -306,7 +337,7 @@ jobs:
           git add docs/upstream-mike-escalation-state.json
 
       - name: Run complete engineering and container preflight
-        if: steps.parse.outputs.has_apply == 'true'
+        if: steps.normalize.outputs.has_apply == 'true'
         run: |
           set -euo pipefail
           npm run install:all
@@ -318,8 +349,8 @@ jobs:
         id: publish
         env:
           GH_TOKEN: ${{ github.token }}
-          RISK: ${{ steps.parse.outputs.risk }}
-          HAS_APPLY: ${{ steps.parse.outputs.has_apply }}
+          RISK: ${{ steps.normalize.outputs.risk }}
+          HAS_APPLY: ${{ steps.normalize.outputs.has_apply }}
         run: |
           set -euo pipefail
           timestamp="$(date -u +%Y%m%d%H%M%S)"
@@ -355,7 +386,7 @@ jobs:
               echo "The complete engineering gate and Fly container preflight passed before this PR was opened. Exact-head Baseline remains required before merge."
             else
               echo "## State-only classification"
-              echo "No safe code adaptation was produced. This PR records the deferred classifications so the queue can continue without reconsidering the same items."
+              echo "No safe code adaptation was applied. This PR records deferred classifications so the queue can continue without reconsidering the same items."
             fi
           } > /tmp/pr-body.md
 
@@ -368,7 +399,7 @@ jobs:
           echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
 
       - name: Wait for automatic merge and continue escalation queue
-        if: steps.parse.outputs.risk != 'high'
+        if: steps.normalize.outputs.risk != 'high'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.publish.outputs.pr_number }}
