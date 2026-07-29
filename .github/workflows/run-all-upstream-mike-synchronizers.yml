@@ -1,0 +1,165 @@
+name: Run all upstream Mike synchronizers
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - docs/upstream-sync-request.json
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: run-all-upstream-mike-synchronizers
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Dispatch low-risk synchronizer
+        id: low
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const workflowId = "sync-upstream-mike.yml";
+            const { data: workflow } = await github.rest.actions.getWorkflow({
+              owner,
+              repo,
+              workflow_id: workflowId,
+            });
+            const { data: existing } = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: workflow.id,
+              event: "workflow_dispatch",
+              per_page: 1,
+            });
+            core.setOutput("previous_run_id", String(existing.workflow_runs[0]?.id || 0));
+            core.setOutput("dispatched_at", new Date().toISOString());
+            await github.rest.actions.createWorkflowDispatch({
+              owner,
+              repo,
+              workflow_id: workflow.id,
+              ref: "main",
+            });
+
+      - name: Wait for low-risk synchronization and ledger merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIOUS_RUN_ID: ${{ steps.low.outputs.previous_run_id }}
+          DISPATCHED_AT: ${{ steps.low.outputs.dispatched_at }}
+        run: |
+          set -euo pipefail
+
+          run_id=""
+          deadline=$((SECONDS + 1800))
+          while [ -z "$run_id" ] && [ "$SECONDS" -lt "$deadline" ]; do
+            response="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/sync-upstream-mike.yml/runs?event=workflow_dispatch&per_page=20")"
+            run_id="$(jq -r \
+              --arg previous "$PREVIOUS_RUN_ID" \
+              --arg started "$DISPATCHED_AT" \
+              '[.workflow_runs[] | select((.id | tostring) != $previous and .created_at >= $started)] | sort_by(.created_at) | last | .id // empty' \
+              <<<"$response")"
+            [ -n "$run_id" ] || sleep 5
+          done
+          test -n "$run_id"
+          echo "Watching low-risk synchronization run ${run_id}."
+          gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
+
+          low_pr=""
+          discovery_deadline=$((SECONDS + 180))
+          while [ -z "$low_pr" ] && [ "$SECONDS" -lt "$discovery_deadline" ]; do
+            prs="$(gh pr list \
+              --repo "$GITHUB_REPOSITORY" \
+              --state open \
+              --base main \
+              --limit 100 \
+              --json number,headRefName,body,createdAt)"
+            low_pr="$(jq -r \
+              --arg started "$DISPATCHED_AT" \
+              '[.[] | select(.createdAt >= $started and (.headRefName | startswith("agent/upstream-sync-")) and ((.body // "") | contains("Automated-Upstream-Mike-Sync: true")))] | sort_by(.createdAt) | first | .number // empty' \
+              <<<"$prs")"
+            [ -n "$low_pr" ] || sleep 10
+          done
+
+          if [ -z "$low_pr" ]; then
+            echo "The low-risk run created no synchronization PR; continuing to the escalation ledger."
+            exit 0
+          fi
+
+          echo "Waiting for low-risk synchronization PR #${low_pr} to settle."
+          settle_deadline=$((SECONDS + 7200))
+          while [ "$SECONDS" -lt "$settle_deadline" ]; do
+            pr="$(gh pr view "$low_pr" --repo "$GITHUB_REPOSITORY" --json state,mergedAt)"
+            state="$(jq -r '.state' <<<"$pr")"
+            merged_at="$(jq -r '.mergedAt // empty' <<<"$pr")"
+            if [ -n "$merged_at" ]; then
+              echo "Low-risk synchronization PR #${low_pr} merged at ${merged_at}."
+              exit 0
+            fi
+            if [ "$state" != "OPEN" ]; then
+              echo "Low-risk synchronization PR #${low_pr} closed without merging." >&2
+              exit 1
+            fi
+            sleep 20
+          done
+
+          echo "Timed out waiting for low-risk synchronization PR #${low_pr}." >&2
+          exit 1
+
+      - name: Dispatch medium/high-risk synchronizer
+        id: escalated
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const workflowId = "sync-upstream-mike-escalated.yml";
+            const { data: workflow } = await github.rest.actions.getWorkflow({
+              owner,
+              repo,
+              workflow_id: workflowId,
+            });
+            const { data: existing } = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: workflow.id,
+              event: "workflow_dispatch",
+              per_page: 1,
+            });
+            core.setOutput("previous_run_id", String(existing.workflow_runs[0]?.id || 0));
+            core.setOutput("dispatched_at", new Date().toISOString());
+            await github.rest.actions.createWorkflowDispatch({
+              owner,
+              repo,
+              workflow_id: workflow.id,
+              ref: "main",
+            });
+
+      - name: Wait for medium/high-risk synchronization
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIOUS_RUN_ID: ${{ steps.escalated.outputs.previous_run_id }}
+          DISPATCHED_AT: ${{ steps.escalated.outputs.dispatched_at }}
+        run: |
+          set -euo pipefail
+
+          run_id=""
+          deadline=$((SECONDS + 1800))
+          while [ -z "$run_id" ] && [ "$SECONDS" -lt "$deadline" ]; do
+            response="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/sync-upstream-mike-escalated.yml/runs?event=workflow_dispatch&per_page=20")"
+            run_id="$(jq -r \
+              --arg previous "$PREVIOUS_RUN_ID" \
+              --arg started "$DISPATCHED_AT" \
+              '[.workflow_runs[] | select((.id | tostring) != $previous and .created_at >= $started)] | sort_by(.created_at) | last | .id // empty' \
+              <<<"$response")"
+            [ -n "$run_id" ] || sleep 5
+          done
+          test -n "$run_id"
+          echo "Watching medium/high-risk synchronization run ${run_id}."
+          gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
