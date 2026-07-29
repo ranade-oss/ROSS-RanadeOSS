@@ -1,0 +1,352 @@
+name: Synchronize low-risk upstream Mike changes
+
+on:
+  schedule:
+    - cron: "17 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: synchronize-upstream-mike
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      has_batch: ${{ steps.scan.outputs.has_batch }}
+      batch_json: ${{ steps.scan.outputs.batch_json }}
+      last_merged_at: ${{ steps.scan.outputs.last_merged_at }}
+    steps:
+      - name: Check out current ROSS main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Select merged upstream batch
+        id: scan
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const fs = require("fs");
+            const state = JSON.parse(
+              fs.readFileSync("docs/upstream-mike-sync-state.json", "utf8"),
+            );
+            const cursor = new Date(state.last_merged_at).getTime();
+            const candidates = [];
+
+            for (let page = 1; page <= 3; page += 1) {
+              const { data } = await github.rest.pulls.list({
+                owner: "Open-Legal-Products",
+                repo: "mike",
+                state: "closed",
+                sort: "updated",
+                direction: "desc",
+                per_page: 100,
+                page,
+              });
+              if (data.length === 0) break;
+              for (const pr of data) {
+                if (!pr.merged_at) continue;
+                const mergedAt = new Date(pr.merged_at).getTime();
+                if (mergedAt <= cursor) continue;
+                candidates.push({
+                  number: pr.number,
+                  title: pr.title,
+                  url: pr.html_url,
+                  merged_at: pr.merged_at,
+                  merge_commit_sha: pr.merge_commit_sha,
+                });
+              }
+            }
+
+            candidates.sort(
+              (left, right) =>
+                new Date(left.merged_at).getTime() - new Date(right.merged_at).getTime(),
+            );
+            const batch = candidates.slice(0, 20);
+            if (batch.length === 0) {
+              core.setOutput("has_batch", "false");
+              core.notice("No merged upstream Mike PRs are newer than the sync cursor.");
+              return;
+            }
+
+            core.setOutput("has_batch", "true");
+            core.setOutput("batch_json", JSON.stringify(batch));
+            core.setOutput("last_merged_at", batch[batch.length - 1].merged_at);
+            core.notice(`Selected ${batch.length} merged upstream Mike PRs for bulk review.`);
+
+  classify:
+    needs: scan
+    if: needs.scan.outputs.has_batch == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.codex.outputs.final-message }}
+    steps:
+      - name: Require OpenAI API key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: test -n "$OPENAI_API_KEY"
+
+      - name: Check out current ROSS main without credentials
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch upstream batch metadata and patches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BATCH_JSON: ${{ needs.scan.outputs.batch_json }}
+        run: |
+          set -euo pipefail
+          mkdir -p .ross-upstream
+          printf '%s' "$BATCH_JSON" > .ross-upstream/batch.json
+          : > .ross-upstream/bundle.md
+
+          jq -r '.[].number' .ross-upstream/batch.json | while read -r number; do
+            gh api "/repos/Open-Legal-Products/mike/pulls/${number}" > ".ross-upstream/pr-${number}.json"
+            gh api "/repos/Open-Legal-Products/mike/pulls/${number}/files?per_page=100" > ".ross-upstream/files-${number}.json"
+
+            file_count="$(jq 'length' ".ross-upstream/files-${number}.json")"
+            total_changes="$(jq '[.[].changes] | add // 0' ".ross-upstream/files-${number}.json")"
+            title="$(jq -r '.title' ".ross-upstream/pr-${number}.json")"
+            url="$(jq -r '.html_url' ".ross-upstream/pr-${number}.json")"
+
+            {
+              printf '\n## Upstream Mike PR #%s\n\n' "$number"
+              printf -- '- Title: %s\n- URL: %s\n- Files: %s\n- Changed lines: %s\n' "$title" "$url" "$file_count" "$total_changes"
+              printf -- '- File list:\n'
+              jq -r '.[] | "  - " + .filename + " (" + .status + ", " + (.changes|tostring) + " changes)"' ".ross-upstream/files-${number}.json"
+            } >> .ross-upstream/bundle.md
+
+            if (( file_count <= 12 && total_changes <= 1200 )); then
+              gh api -H "Accept: application/vnd.github.v3.patch" "/repos/Open-Legal-Products/mike/pulls/${number}" > ".ross-upstream/patch-${number}.diff"
+              {
+                printf '\n### Patch\n\n'
+                cat ".ross-upstream/patch-${number}.diff"
+                printf '\n'
+              } >> .ross-upstream/bundle.md
+            else
+              printf '\n### Mechanical gate\n\nToo large for automatic adoption; classify as investigate.\n' >> .ross-upstream/bundle.md
+            fi
+          done
+
+      - name: Prepare bounded bulk synchronization instructions
+        run: |
+          cat > .ross-upstream/prompt.md <<'PROMPT'
+          Review every merged upstream Mike pull request in .ross-upstream/bundle.md against the checked-out current ROSS main branch.
+
+          Produce one classification entry for every upstream PR, in the same order: adopt, adapt, skip, or investigate.
+
+          Adopt or adapt only changes that are clearly low risk and relevant to ROSS: documentation, repository hygiene, tests, dead-code cleanup, accessibility, loading-state markup, wording, or presentation-only UI. Never automatically include changes affecting authentication, authorization, MFA, security, cryptography, secrets, provider keys, legal/privacy/governance/release controls, schemas, migrations, Supabase, deployment, infrastructure, dependencies, lockfiles, public APIs, data boundaries, billing, or production operational behaviour.
+
+          Combine all safe adopt/adapt changes into one smallest complete unified git patch against current ROSS main. Preserve ROSS-specific architecture and controls. The combined patch may change at most 20 files and 2,000 total lines. It must begin with "diff --git" and may modify only documentation, README/CONTRIBUTING, .gitignore/.gitattributes, frontend presentation components/app markup, or tests. It must not modify .github, backend/src, scripts, reports, manifests, package files, lockfiles, migrations, schema, Supabase, deployment, infrastructure, auth, security, provider, legal, privacy, governance, release, billing, or environment files.
+
+          Classify uncertain, architecture-dependent, large, protected, or potentially dangerous changes as investigate with no corresponding patch content. Classify irrelevant, already implemented, superseded, or non-portable changes as skip. Do not modify the working tree, commit, push, or open a pull request.
+          PROMPT
+
+      - name: Produce read-only structured bulk synchronization
+        id: codex
+        uses: openai/codex-action@dd78cb653811af44014baa08fe954e28d32c1bf9
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .ross-upstream/prompt.md
+          permission-profile: ":read-only"
+          safety-strategy: drop-sudo
+          allow-bot-users: github-actions[bot]
+          output-schema: |
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "title": { "type": "string" },
+                "summary": { "type": "string" },
+                "entries": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "number": { "type": "integer" },
+                      "decision": {
+                        "type": "string",
+                        "enum": ["adopt", "adapt", "skip", "investigate"]
+                      },
+                      "reason": { "type": "string" }
+                    },
+                    "required": ["number", "decision", "reason"]
+                  }
+                },
+                "patch": { "type": "string" }
+              },
+              "required": ["title", "summary", "entries", "patch"]
+            }
+
+  propose:
+    needs: [scan, classify]
+    if: needs.classify.result == 'success' && needs.classify.outputs.result != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out current main in a clean runner
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Parse structured synchronization result
+        id: parse
+        env:
+          SYNC_RESULT: ${{ needs.classify.outputs.result }}
+          BATCH_JSON: ${{ needs.scan.outputs.batch_json }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result = json.loads(os.environ["SYNC_RESULT"])
+          batch = json.loads(os.environ["BATCH_JSON"])
+          entries = result.get("entries", [])
+          expected = [item["number"] for item in batch]
+          received = [item.get("number") for item in entries]
+          if received != expected:
+              raise SystemExit(f"Classification entries do not match batch order: {received} != {expected}")
+
+          title = str(result.get("title", "")).strip() or "Synchronize low-risk upstream Mike changes"
+          summary = str(result.get("summary", "")).strip()
+          patch = str(result.get("patch", ""))
+          has_apply = any(item.get("decision") in {"adopt", "adapt"} for item in entries)
+
+          if has_apply:
+              if not patch.startswith("diff --git "):
+                  raise SystemExit("Adopt/adapt entries require a unified git patch")
+              encoded = patch.encode("utf-8")
+              if b"\x00" in encoded or len(encoded) > 400_000:
+                  raise SystemExit("Bulk synchronization patch is invalid or too large")
+              Path("/tmp/ross-upstream.patch").write_bytes(encoded)
+          elif patch.strip():
+              raise SystemExit("A batch without adopt/adapt entries must have an empty patch")
+
+          Path("/tmp/sync-entries.json").write_text(json.dumps(entries), encoding="utf-8")
+          Path("/tmp/sync-summary.txt").write_text(summary, encoding="utf-8")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"apply={'true' if has_apply else 'false'}\n")
+              output.write(f"title={title[:120]}\n")
+          PY
+
+      - name: Apply and validate combined low-risk patch
+        if: steps.parse.outputs.apply == 'true'
+        run: |
+          set -euo pipefail
+          git apply --check --whitespace=error-all /tmp/ross-upstream.patch
+          git apply --index --whitespace=error-all /tmp/ross-upstream.patch
+
+          mapfile -t changed < <(git diff --cached --name-only)
+          test "${#changed[@]}" -gt 0
+          test "${#changed[@]}" -le 20
+          test -z "$(git diff --cached --diff-filter=D --name-only)"
+          test -z "$(git diff --cached --diff-filter=RCTU --name-only)"
+
+          for path in "${changed[@]}"; do
+            case "$path" in
+              docs/*|README*|CONTRIBUTING.md|.gitignore|.gitattributes|frontend/src/components/*|frontend/src/app/*|frontend/test/*|frontend/tests/*|frontend/__tests__/*|tests/*) ;;
+              *) echo "Unsafe bulk-sync path: $path" >&2; exit 1 ;;
+            esac
+            if [[ "$path" =~ (^|/)(auth|mfa|security|crypto|secret|permission|provider|api-key|migration|schema|supabase|deploy|docker|infra|legal|privacy|governance|release|billing) ]]; then
+              echo "Protected bulk-sync path: $path" >&2
+              exit 1
+            fi
+          done
+
+          if git diff --cached --numstat | awk '$1 == "-" || $2 == "-" { found=1 } END { exit !found }'; then
+            echo "Binary synchronization changes are not permitted." >&2
+            exit 1
+          fi
+          total_lines="$(git diff --cached --numstat | awk '{ total += $1 + $2 } END { print total + 0 }')"
+          test "$total_lines" -le 2000
+
+      - name: Advance durable upstream synchronization state
+        env:
+          BATCH_JSON: ${{ needs.scan.outputs.batch_json }}
+          LAST_MERGED_AT: ${{ needs.scan.outputs.last_merged_at }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          state_path = Path("docs/upstream-mike-sync-state.json")
+          state = json.loads(state_path.read_text(encoding="utf-8"))
+          batch = json.loads(os.environ["BATCH_JSON"])
+          entries = json.loads(Path("/tmp/sync-entries.json").read_text(encoding="utf-8"))
+          by_number = {entry["number"]: entry for entry in entries}
+
+          processed = list(state.get("processed", []))
+          for item in batch:
+              entry = by_number[item["number"]]
+              processed.append({
+                  "number": item["number"],
+                  "title": item["title"],
+                  "url": item["url"],
+                  "merged_at": item["merged_at"],
+                  "merge_commit_sha": item["merge_commit_sha"],
+                  "decision": entry["decision"],
+                  "reason": entry["reason"],
+                  "processed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+              })
+
+          state["last_merged_at"] = os.environ["LAST_MERGED_AT"]
+          state["processed"] = processed[-500:]
+          state_path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+          PY
+          git add docs/upstream-mike-sync-state.json
+
+      - name: Commit, push, and open synchronization PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_TITLE: ${{ steps.parse.outputs.title }}
+          BATCH_JSON: ${{ needs.scan.outputs.batch_json }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          branch="agent/upstream-sync-${RUN_ID}"
+          git switch -c "$branch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Synchronize low-risk upstream Mike batch"
+          git push origin "$branch"
+
+          {
+            printf 'Automated-Upstream-Mike-Sync: true\n\n'
+            printf '## Summary\n\n'
+            cat /tmp/sync-summary.txt
+            printf '\n\n## Upstream classifications\n\n'
+            jq -r --argjson batch "$BATCH_JSON" '
+              . as $entries |
+              $batch[] as $item |
+              ($entries[] | select(.number == $item.number)) as $entry |
+              "- Upstream-Mike-PR: \($item.number) — **\($entry.decision)** — \($entry.reason)"
+            ' /tmp/sync-entries.json
+            printf '\n\n## Safety\n\nOnly mechanically permitted low-risk paths are included. Baseline, bounded repair, exact-head review gates, and mergeability checks remain authoritative.\n'
+          } > /tmp/pr-body.md
+
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "$PR_TITLE" \
+            --body-file /tmp/pr-body.md
