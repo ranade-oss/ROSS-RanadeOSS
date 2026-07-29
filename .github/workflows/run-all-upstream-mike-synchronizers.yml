@@ -75,14 +75,16 @@ jobs:
           low_pr=""
           discovery_deadline=$((SECONDS + 180))
           while [ -z "$low_pr" ] && [ "$SECONDS" -lt "$discovery_deadline" ]; do
-            low_pr="$(gh pr list \
+            prs="$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
               --state open \
               --base main \
               --limit 100 \
-              --json number,headRefName,body,createdAt \
-              --jq --arg started "$DISPATCHED_AT" \
-              '[.[] | select(.createdAt >= $started and (.headRefName | startswith("agent/upstream-sync-")) and (.body | contains("Automated-Upstream-Mike-Sync: true")))] | sort_by(.createdAt) | first | .number // empty')"
+              --json number,headRefName,body,createdAt)"
+            low_pr="$(jq -r \
+              --arg started "$DISPATCHED_AT" \
+              '[.[] | select(.createdAt >= $started and (.headRefName | startswith("agent/upstream-sync-")) and ((.body // "") | contains("Automated-Upstream-Mike-Sync: true")))] | sort_by(.createdAt) | first | .number // empty' \
+              <<<"$prs")"
             [ -n "$low_pr" ] || sleep 10
           done
 
