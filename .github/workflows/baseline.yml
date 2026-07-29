@@ -90,7 +90,7 @@ jobs:
       - name: Set up pinned Node.js and npm
         uses: ./.github/actions/setup-ross-node
       - name: Validate all package manifests
-        run: node -e "const fs=require('fs'); for (const d of ['.','backend','frontend','website']) for (const f of ['package.json','package-lock.json']) JSON.parse(fs.readFileSync(d === '.' ? f : d + '/' + f, 'utf8'))"
+        run: node -e "const fs=require('fs'); for (const f of ['package.json','backend/package.json','backend/package-lock.json','frontend/package.json','frontend/package-lock.json','website/package.json','website/package-lock.json']) JSON.parse(fs.readFileSync(f, 'utf8'))"
       - name: Install locked dependencies
         run: npm run install:all
       - name: Regenerate release manifest for verification
