@@ -1,58 +1,83 @@
-# ROSS (fork of Mike)
+# ROSS
 
-ROSS (Ranade OSS, fork of Mike OSS) is a legal document assistant with a Next.js frontend, an Express backend, Supabase Auth/Postgres, and Cloudflare R2-compatible object storage.
+**Ontario-first legal work, built in the open.**
 
-The ROSS public website source is in `website/`. Its current hosted checkpoint
-is owner-only and no-index; placeholder production domains and owners remain in
-`config/ross-brand.json` until independently approved.
+ROSS (Ranade OSS) is an independently governed, Ontario-focused legal AI workspace for lawyers, paralegals, legal technologists, and open-source contributors. It combines document-assisted work, multiple model providers, legal-source tooling, and controlled release safeguards in a self-hostable application.
 
-Upstream project: [Mike source](https://github.com/Open-Legal-Products/mike) and
-[Mike website](https://mikeoss.com). ROSS is independently developed and is not
-endorsed by the upstream maintainers, governments, courts, or source providers.
-See [NOTICE.md](NOTICE.md) for attribution and licence information.
+> **Public beta:** [Launch ROSS](https://ross-ranadeoss-public.fly.dev)
+>
+> Verified account required. Use synthetic or affirmatively non-confidential materials only. The hosted beta is not approved for unrestricted confidential or production legal work.
 
-The current ROSS hosted-beta boundary permits synthetic or non-confidential
-materials only. Architecture decisions and their approval status are indexed in
-`docs/architecture/README.md`.
+[Project website](https://ross-ontario.augustmaat.chatgpt.site) · [Service status](https://ross-ontario.augustmaat.chatgpt.site/status) · [Report a security issue](https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new) · [Documentation](docs/)
 
-## Contents
+ROSS is a modified fork of [Mike](https://github.com/Open-Legal-Products/mike), licensed under AGPL-3.0. It is independently developed and is not endorsed by Mike's maintainers, governments, courts, or legal-source providers. See [NOTICE.md](NOTICE.md) for attribution and licence information.
 
-- `frontend/` - Next.js application
-- `backend/` - Express API, Supabase access, document processing, and database schema
-- `backend/schema.sql` - Supabase schema for fresh databases
-- `backend/migrations/` - dated, incremental schema migrations; on an existing database, apply the files dated after the Mike version you deployed
-- `website/` - separate public website with governed Ontario, trust, coverage,
-  status, and launch-readiness content
-- `config/` and `reports/` - versioned policy, approval, evaluation,
-  source-health, and immutable release-manifest records
+## Current status
+
+ROSS is under active development. Self-hosted local development is available, and a restricted public beta is online. Production promotion remains fail-closed while required operational, legal, vendor, source-health, review, and launch approvals are incomplete.
+
+| Area | Current status |
+| --- | --- |
+| Public beta | Available with verified registration |
+| Permitted hosted-beta material | Synthetic or affirmatively non-confidential material only |
+| Ontario legal-source coverage | Limited and reviewed, not comprehensive |
+| Confidential production use | Not approved |
+| Production release | Blocked until governed approvals and checks pass |
+| Government or court affiliation | None |
+
+Do not use the hosted beta as a substitute for professional judgment, independent source verification, confidentiality analysis, or applicable professional obligations.
+
+## What ROSS includes
+
+- Document-assisted legal workspaces and conversations
+- Next.js application frontend and Express API backend
+- Supabase authentication and PostgreSQL persistence
+- Cloudflare R2-compatible object storage
+- Anthropic, Google Gemini, and OpenAI model-provider support
+- Optional CourtListener tools for United States case-law lookup and citation verification
+- Ontario-focused evaluation, source-health, public-content, and launch-readiness controls
+- A separate governed public website in `website/`
+- Deterministic release records and fail-closed production promotion checks
+
+## Repository map
+
+- `frontend/` — Next.js application
+- `backend/` — Express API, Supabase access, document processing, legal-source integrations, and database schema
+- `backend/schema.sql` — current schema for fresh Supabase databases
+- `backend/migrations/` — dated incremental migrations for existing databases
+- `website/` — governed public website, status, trust, coverage, and launch-readiness content
+- `config/` — versioned branding, policy, approval, evaluation, and release-control records
+- `reports/` — generated evaluation, source-health, completion, and release-manifest records
+- `docs/architecture/` — architecture decisions and approval status
+- `docs/operations/` — operational and release runbooks
+- `.github/workflows/` — partitioned verification, synchronization, repair, and exact-head merge automation
 
 ## Prerequisites
 
-- Node.js 20 or newer
-- npm
+ROSS uses a repository-pinned toolchain:
+
+- Node.js `>=22.13.0 <25`
+- npm `11.9.0`
 - git
 - A Supabase project
 - A Cloudflare R2 bucket, MinIO bucket, or another S3-compatible bucket
-- At least one supported model provider API key: Anthropic, Google Gemini, or OpenAI
-- Optional: a CourtListener API token for case law lookup and citation verification
-- LibreOffice installed locally if you need DOC/DOCX to PDF conversion
+- At least one supported model-provider API key: Anthropic, Google Gemini, or OpenAI
+- Optional: a CourtListener API token
+- Optional: LibreOffice for DOC/DOCX-to-PDF conversion
 
-## Database Setup
+The root `package.json` is authoritative for the supported Node.js and npm versions.
 
-For a new Supabase database, open the Supabase SQL editor and run:
+## Quick start
 
-```sql
--- copy and run the contents of:
--- backend/schema.sql
+### 1. Install dependencies
+
+```bash
+npm run install:all
 ```
 
-The schema file is for fresh deployments and already includes the latest database shape.
+This installs the backend, frontend, and website workspaces using the pinned repository toolchain.
 
-For an existing database, do not run the full schema file over production data. Instead, apply the incremental files in `backend/migrations/`: run the migrations dated **after** the version of Mike you currently have deployed, in filename order. Each file is named `YYYYMMDD_<name>.sql` (the date is also recorded in a comment at the top of the file) and is written to be safe to re-run, so when unsure you can re-apply the most recent migrations without harm.
-
-## Environment
-
-Create local env files:
+### 2. Create local environment files
 
 ```bash
 touch backend/.env
@@ -71,7 +96,7 @@ SUPABASE_SECRET_KEY=your-supabase-service-role-key
 R2_ENDPOINT_URL=https://your-account-id.r2.cloudflarestorage.com
 R2_ACCESS_KEY_ID=your-r2-access-key
 R2_SECRET_ACCESS_KEY=your-r2-secret-key
-R2_BUCKET_NAME=mike
+R2_BUCKET_NAME=ross
 
 GEMINI_API_KEY=your-gemini-key
 ANTHROPIC_API_KEY=your-anthropic-key
@@ -79,10 +104,8 @@ OPENAI_API_KEY=your-openai-key
 RESEND_API_KEY=your-resend-key
 USER_API_KEYS_ENCRYPTION_SECRET=your-long-random-secret
 
-# Optional: enables CourtListener case law and citation tools.
+# Optional CourtListener integration
 COURTLISTENER_API_TOKEN=your-courtlistener-token
-
-# Optional: use locally imported CourtListener bulk data for faster case reads.
 COURTLISTENER_BULK_DATA_ENABLED=false
 ```
 
@@ -94,37 +117,19 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-supabase-anon-key
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
 ```
 
-Supabase values come from the project dashboard. Use the project URL for `SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_URL`, the service role key for the backend `SUPABASE_SECRET_KEY`, and the anon/public key for `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`. If your Supabase project shows multiple key formats, use the legacy JWT-style anon and service role keys expected by the Supabase client libraries.
+Use the Supabase project URL, backend service-role key, and frontend anon/public key expected by the installed Supabase client libraries. Provider keys may be configured globally in `backend/.env` or, where supported, per user under **Account > Models & API Keys**.
 
-Provider keys are only needed for the models, legal research, and email features you plan to use. Model provider keys and the CourtListener token can be configured in `backend/.env` for the whole instance, or per user in **Account > Models & API Keys**. If a provider key is present in `backend/.env`, that provider is available by default and the matching browser API key field is read-only.
+### 3. Initialize the database
 
-## CourtListener Integration
+For a fresh database, run the contents of:
 
-Mike can use CourtListener for US case law citation verification, case fetching, targeted opinion search, and case-law panels in assistant responses.
-
-To enable live CourtListener access, set `COURTLISTENER_API_TOKEN` in `backend/.env` and restart the backend. Users can also add their own CourtListener token from **Account > Models & API Keys** when the instance does not provide one globally.
-
-Fresh databases created from `backend/schema.sql` already include the CourtListener support tables. Existing deployments should apply the matching dated migration in `backend/migrations/` before enabling the feature.
-
-Bulk data is optional. When `COURTLISTENER_BULK_DATA_ENABLED=true`, Mike first tries local Supabase/R2 data before falling back to CourtListener's API:
-
-- citation metadata is read from `public.courtlistener_citation_index`
-- case cluster metadata is read from `public.courtlistener_opinion_cluster_index`
-- cached opinion JSON is read from the R2 prefix `courtlistener/opinions/by-cluster/{clusterId}/{opinionId}.json`
-
-If you do not import bulk data, leave `COURTLISTENER_BULK_DATA_ENABLED=false`; live CourtListener tools still work with a valid token, subject to CourtListener rate limits.
-
-## Install
-
-Install each app package:
-
-```bash
-npm install --prefix backend
-npm install --prefix frontend
-npm install --prefix website
+```text
+backend/schema.sql
 ```
 
-## Run Locally
+For an existing database, do not apply the complete schema over production data. Apply the dated files in `backend/migrations/` that are newer than the deployed version, in filename order.
+
+### 4. Run locally
 
 Start the backend:
 
@@ -132,59 +137,89 @@ Start the backend:
 npm run dev --prefix backend
 ```
 
-Start the main app:
+Start the application frontend in a second terminal:
 
 ```bash
 npm run dev --prefix frontend
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`, create an account, configure any required provider keys, and create or open a project.
 
-## First Run
+## Verification
 
-1. Sign up in the app.
-2. If you did not set provider keys in `backend/.env`, open **Account > Models & API Keys** and add an Anthropic, Gemini, or OpenAI API key.
-3. To use legal research tools, add a CourtListener token in `backend/.env` or **Account > Models & API Keys**.
-4. Create or open a project and start chatting with documents.
-
-## Troubleshooting
-
-**Sign-up confirmation email never arrives.** Confirmation emails are sent by Supabase Auth, not by Mike. For local development, the simplest fix is to disable email confirmation in **Supabase > Authentication > Providers > Email**. For production, configure custom SMTP in Supabase; the built-in mailer is heavily rate-limited and may be restricted on newer projects.
-
-**The model picker shows a missing-key warning.** Add a key for that provider in **Account > Models & API Keys**, or configure the provider key in `backend/.env` and restart the backend.
-
-**CourtListener tools say the API token is missing.** Set `COURTLISTENER_API_TOKEN` in `backend/.env`, or add a CourtListener token in **Account > Models & API Keys** for the signed-in user. Restart the backend after changing `.env`.
-
-**CourtListener bulk lookup is not returning local results.** Confirm `COURTLISTENER_BULK_DATA_ENABLED=true`, the two CourtListener tables have been populated, and opinion JSON exists in R2 under `courtlistener/opinions/by-cluster/`. If bulk data is unavailable, Mike falls back to the live API when a token is configured.
-
-**DOC or DOCX conversion fails.** Install LibreOffice locally and restart the backend so document conversion commands are available on the process path.
-
-## Useful Checks
+Run the repository-level verification suite before submitting a change:
 
 ```bash
-npm run install:all
 npm run check
 ```
 
-Use `npm run lint:strict` to inspect the inherited frontend lint debt separately
-from the non-regression gate.
+The check includes the pinned-toolchain contract, workflow-source verification, public-content generation, release-manifest checks, operations and evaluation tests, backend legal-source and security tests, dependency auditing, deterministic builds, linting, and website route tests.
 
-## Production and controlled-beta release boundary
+Useful focused commands include:
 
-Self-hosted local development remains available. An operator-hosted beta is
-limited to synthetic or affirmatively non-confidential material. Production is
-not approved and fails closed while the operator, domains, vendors, effective
-legal notices, independent reviews, live source health, and operational
-exercises are pending.
+```bash
+npm run toolchain:check
+npm test
+npm run build
+npm run lint
+npm run test:website
+npm run audit:high
+npm run release:check
+```
 
-Start with these records and runbooks:
+`npm run lint:strict` reports inherited frontend lint debt separately from the repository's non-regression gate.
 
-- `config/release-approvals.v1.json`
-- `config/operations-readiness.v1.json`
-- `config/launch-readiness.v1.json`
-- `docs/operations/release-runbook.md`
-- `docs/operations/launch-checklist.md`
+## Governance and release model
 
-`npm run release:check` is the production promotion gate. Do not replace a
-blocked result with an environment flag or deploy a different artifact from the
-one reviewed in `reports/release-manifest-v1.json`.
+ROSS treats verification and release state as governed repository data rather than informal deployment convention.
+
+- Pull requests must be verified against their exact current head commit before merge.
+- A successful run for an earlier commit does not verify a changed head.
+- High-risk or security-sensitive application changes remain draft until human review.
+- Automated repair and synchronization paths are bounded and fail closed.
+- Deterministic generated artifacts must match their governed source records.
+- Production promotion requires `npm run release:check` to succeed.
+- A blocked release check must not be bypassed with an environment flag or by deploying an artifact different from the reviewed release manifest.
+
+Start with:
+
+- [Architecture decisions](docs/architecture/README.md)
+- [Release runbook](docs/operations/release-runbook.md)
+- [Launch checklist](docs/operations/launch-checklist.md)
+- [`config/release-approvals.v1.json`](config/release-approvals.v1.json)
+- [`config/operations-readiness.v1.json`](config/operations-readiness.v1.json)
+- [`config/launch-readiness.v1.json`](config/launch-readiness.v1.json)
+- [`reports/release-manifest-v1.json`](reports/release-manifest-v1.json)
+
+## CourtListener integration
+
+With a valid `COURTLISTENER_API_TOKEN`, ROSS can use CourtListener for United States case-law citation verification, case retrieval, targeted opinion search, and case-law panels in assistant responses.
+
+Existing deployments must apply the corresponding dated database migration before enabling the integration. Optional bulk-data mode reads citation and cluster metadata from Supabase and cached opinion JSON from R2 before falling back to the live CourtListener API.
+
+ROSS does not authorize CanLII scraping. Ontario source integrations must comply with applicable access terms, technical controls, and repository governance records.
+
+## Troubleshooting
+
+**Sign-up confirmation email does not arrive.** Confirmation email is handled by Supabase Auth. For local development, email confirmation may be disabled under **Supabase > Authentication > Providers > Email**. For an operated deployment, configure appropriate SMTP rather than relying on Supabase's limited built-in mailer.
+
+**The model picker reports a missing key.** Add the provider key under **Account > Models & API Keys**, or configure it in `backend/.env` and restart the backend.
+
+**CourtListener reports a missing token.** Configure `COURTLISTENER_API_TOKEN` globally or add a supported per-user token, then restart the backend after changing `.env`.
+
+**DOC or DOCX conversion fails.** Install LibreOffice and restart the backend so its conversion commands are available on the process path.
+
+**Toolchain verification fails.** Confirm that Node.js and npm match the exact versions declared in the root `package.json`.
+
+## Security
+
+Please report vulnerabilities privately through [GitHub Security Advisories](https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new). Do not disclose confidential client information, credentials, tokens, or exploitable vulnerability details in a public issue.
+
+## Attribution and licence
+
+ROSS is a modified fork of Mike and is licensed under [AGPL-3.0](LICENSE). Upstream source and website:
+
+- [Open Legal Products / Mike](https://github.com/Open-Legal-Products/mike)
+- [Mike website](https://mikeoss.com)
+
+See [NOTICE.md](NOTICE.md) for complete attribution and licence notices.
