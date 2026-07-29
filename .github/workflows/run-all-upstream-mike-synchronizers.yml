@@ -2,10 +2,6 @@ name: Run all upstream Mike synchronizers
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - docs/upstream-sync-request.json
 
 permissions:
   actions: write
