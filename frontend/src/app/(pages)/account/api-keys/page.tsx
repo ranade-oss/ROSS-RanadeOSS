@@ -60,10 +60,8 @@ const OTHER_API_KEY_FIELDS = [
 export default function ApiKeysPage() {
     const { profile, updateApiKey } = useUserProfile();
     const { approvedProviders, selfHosted } = useModelCatalog();
-    const modelApiKeyFields = MODEL_API_KEY_FIELDS.filter((field) =>
-        field.provider === "openrouter"
-            ? selfHosted
-            : approvedProviders.includes(field.provider),
+    const modelApiKeyFields = MODEL_API_KEY_FIELDS.filter(
+        (field) => field.provider !== "openrouter" || selfHosted,
     );
 
     return (
@@ -283,7 +281,7 @@ function ApiKeyField({
                                 type="button"
                                 onClick={handleRemove}
                                 disabled={isSaving}
-                                className="text-xs font-medium text-red-600 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:text-red-300"
+                                className="text-xs font-medium text-red-600 transition-colors hover:text-red-700 disabled:text-red-300"
                             >
                                 Remove
                             </button>
