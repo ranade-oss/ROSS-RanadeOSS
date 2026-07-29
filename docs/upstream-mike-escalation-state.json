@@ -61,6 +61,66 @@
       "risk": "defer",
       "reason": "API-key validation, async error handling, email normalization, and self-sharing prevention already exist; workflow sharing remains a high-risk authorization boundary.",
       "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 136,
+      "risk": "defer",
+      "reason": "Already implemented and subsequently preserved on current main.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 137,
+      "risk": "defer",
+      "reason": "Already implemented; dedicated USER_API_KEYS_ENCRYPTION_SECRET is enforced.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 138,
+      "risk": "defer",
+      "reason": "Already implemented; Supabase server credentials are required and the obsolete frontend helper is absent.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 146,
+      "risk": "defer",
+      "reason": "Already implemented; download signing requires its dedicated secret.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 148,
+      "risk": "defer",
+      "reason": "Already implemented and subsequently evolved on current main.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 171,
+      "risk": "defer",
+      "reason": "Oversized metadata-only item, but its upstream implementation commit is already an ancestor of current main.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 172,
+      "risk": "defer",
+      "reason": "Already implemented and subsequently evolved on current main.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 178,
+      "risk": "defer",
+      "reason": "Already implemented and subsequently evolved on current main.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 180,
+      "risk": "defer",
+      "reason": "Already implemented and subsequently evolved on current main.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 183,
+      "risk": "defer",
+      "reason": "Bounded patch was omitted, but its upstream implementation commit is already an ancestor of current main.",
+      "processed_at": "2026-07-29T05:21:06.903867Z"
     }
   ]
 }
