@@ -121,6 +121,66 @@
       "risk": "defer",
       "reason": "Bounded patch was omitted, but its upstream implementation commit is already an ancestor of current main.",
       "processed_at": "2026-07-29T05:21:06.903867Z"
+    },
+    {
+      "number": 206,
+      "risk": "defer",
+      "reason": "Metadata-only, mechanically oversized, and includes schemas, migrations, authentication, MFA, storage, and broad architectural changes; omitted code prevents bounded adaptation. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 215,
+      "risk": "defer",
+      "reason": "Metadata-only and includes schema, migration, library storage, and broad UI/runtime changes; omitted code prevents complete review. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 216,
+      "risk": "defer",
+      "reason": "The 27-file UI patch targets missing or substantially divergent components, making a safe and adequately testable ROSS adaptation unclear. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 219,
+      "risk": "defer",
+      "reason": "Depends on upstream workflow/library structure absent or divergent in ROSS and conflicts with ROSS-specific documentation and workflow governance. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 212,
+      "risk": "defer",
+      "reason": "High-risk schema/migration change already implemented in ROSS schema.sql and migration 20260717_01_chat_message_workflow.sql. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 228,
+      "risk": "defer",
+      "reason": "The Vitest dependency/lockfile harness conflicts with ROSS's existing governed Node test setup and cannot be safely adopted without broader dependency review. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 238,
+      "risk": "defer",
+      "reason": "Bounded, testable runtime optimization: batches documents into the access-controlled project listing and removes per-project frontend requests. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 237,
+      "risk": "defer",
+      "reason": "Exceeds the batch line limit, overlaps earlier cumulative test patches, and targets substantially divergent access, storage, credential, and coverage infrastructure. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 229,
+      "risk": "defer",
+      "reason": "Tests security-sensitive access, storage, and API-key boundaries against divergent implementations and cumulatively duplicates the unavailable Vitest foundation. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 232,
+      "risk": "defer",
+      "reason": "High-risk CI/deployment-control change, and modifying .github workflows is explicitly prohibited. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-29T05:45:56.034501Z"
     }
   ]
 }
