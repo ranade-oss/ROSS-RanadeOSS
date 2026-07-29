@@ -13,6 +13,8 @@ concurrency:
   group: apply-upstream-sync-batch-size
   cancel-in-progress: false
 
+# This one-shot workflow is externally triggered because Actions-token merges do
+# not recursively start push workflows.
 jobs:
   apply:
     runs-on: ubuntu-latest
