@@ -19,3 +19,7 @@ next-env.d.ts
 .DS_Store
 .vercel
 coverage
+
+# Generated local Supabase CLI scaffold. CI and production build their own
+# database state from the governed schema and migrations.
+backend/supabase/

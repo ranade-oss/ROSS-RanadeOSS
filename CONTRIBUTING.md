@@ -30,6 +30,26 @@ Mike functionality recorded in the baseline contract.
     - changes
     - why
     - testing
+    - tradeoffs and risk
+    - upstream provenance, when applicable
+
+## Testing Expectations
+
+- Add a regression test at the lowest practical layer for each feature or bug
+  fix. Prefer a focused unit test, then a route or integration test, and use an
+  end-to-end test only when a browser or deployed service is necessary to prove
+  the behaviour.
+- Do not weaken, skip, broadly disable, or delete an existing test merely to
+  make a change pass. Correct stale expectations only when the implementation
+  and governing contract demonstrate that the expectation is obsolete.
+- Record the exact commands run in the PR description. Baseline verification is
+  required on the final PR head; a successful run on an earlier commit is not
+  sufficient.
+- Tests requiring live Supabase, provider keys, or deployed URLs must be
+  explicitly environment-gated and must not expose secrets or real client data.
+- Changes to authentication, authorization, privacy, data boundaries,
+  migrations, deployment, or release mechanics require focused verification in
+  addition to the normal Baseline.
 
 ## System Workflows
 
