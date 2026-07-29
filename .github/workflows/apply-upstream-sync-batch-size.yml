@@ -1,0 +1,58 @@
+name: Apply upstream sync batch-size fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-upstream-sync-batch-size.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-upstream-sync-batch-size
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Reduce classification batch from twenty to eight
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/sync-upstream-mike.yml')
+          text = path.read_text(encoding='utf-8')
+          old = 'const batch = candidates.slice(0, 20);'
+          new = 'const batch = candidates.slice(0, 8);'
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected exactly one batch-size target, found {text.count(old)}')
+          if new in text:
+              raise SystemExit('Eight-item batch size is already installed')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+
+      - name: Validate the exact workflow change
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7
+
+      - name: Commit corrected synchronizer
+        run: |
+          set -euo pipefail
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = '.github/workflows/sync-upstream-mike.yml'
+          git diff --check
+          git diff --exit-code -- . ':!.github/workflows/sync-upstream-mike.yml'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/sync-upstream-mike.yml
+          git commit -m 'Reduce upstream Mike classification batches to eight'
+          git push origin HEAD:main
