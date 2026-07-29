@@ -472,8 +472,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "593419efc71656734dfccf139b0d992f7b4bdf03bd5ae0f7a391bd1dbf7f1197",
-      "sizeBytes": 3688
+      "sha256": "8cc009f9994f71a6fbe4653ff58b07b926d7c2296570d351137be4a38b347604",
+      "sizeBytes": 3638
     },
     {
       "path": "reports/legal-source-health-v1.json",
