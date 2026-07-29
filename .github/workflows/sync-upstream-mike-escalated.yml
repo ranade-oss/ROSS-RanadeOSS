@@ -1,0 +1,333 @@
+name: Synchronize escalated upstream Mike changes
+
+on:
+  schedule:
+    - cron: "43 15 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: synchronize-escalated-upstream-mike
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      has_batch: ${{ steps.scan.outputs.has_batch }}
+      batch_json: ${{ steps.scan.outputs.batch_json }}
+    steps:
+      - name: Check out current ROSS main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Select unprocessed investigate entries
+        id: scan
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const fs = require("fs");
+            const low = JSON.parse(
+              fs.readFileSync("docs/upstream-mike-sync-state.json", "utf8"),
+            );
+            const escalated = JSON.parse(
+              fs.readFileSync("docs/upstream-mike-escalation-state.json", "utf8"),
+            );
+            const done = new Set((escalated.processed || []).map((item) => item.number));
+            const candidates = (low.processed || [])
+              .filter((item) => item.decision === "investigate" && !done.has(item.number))
+              .slice(0, 10);
+
+            if (candidates.length === 0) {
+              core.setOutput("has_batch", "false");
+              core.notice("No unprocessed medium/high-risk upstream items are available.");
+              return;
+            }
+
+            core.setOutput("has_batch", "true");
+            core.setOutput("batch_json", JSON.stringify(candidates));
+            core.notice(`Selected ${candidates.length} escalated upstream items.`);
+
+  classify:
+    needs: scan
+    if: needs.scan.outputs.has_batch == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.codex.outputs.final-message }}
+    steps:
+      - name: Require OpenAI API key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: test -n "$OPENAI_API_KEY"
+
+      - name: Check out current ROSS main without credentials
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch upstream metadata and patches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BATCH_JSON: ${{ needs.scan.outputs.batch_json }}
+        run: |
+          set -euo pipefail
+          mkdir -p .ross-upstream-escalated
+          printf '%s' "$BATCH_JSON" > .ross-upstream-escalated/batch.json
+          : > .ross-upstream-escalated/bundle.md
+
+          jq -r '.[].number' .ross-upstream-escalated/batch.json | while read -r number; do
+            gh api "/repos/Open-Legal-Products/mike/pulls/${number}" > ".ross-upstream-escalated/pr-${number}.json"
+            gh api "/repos/Open-Legal-Products/mike/pulls/${number}/files?per_page=100" > ".ross-upstream-escalated/files-${number}.json"
+            gh api -H "Accept: application/vnd.github.v3.patch" "/repos/Open-Legal-Products/mike/pulls/${number}" > ".ross-upstream-escalated/patch-${number}.diff"
+
+            title="$(jq -r '.title' ".ross-upstream-escalated/pr-${number}.json")"
+            url="$(jq -r '.html_url' ".ross-upstream-escalated/pr-${number}.json")"
+            file_count="$(jq 'length' ".ross-upstream-escalated/files-${number}.json")"
+            total_changes="$(jq '[.[].changes] | add // 0' ".ross-upstream-escalated/files-${number}.json")"
+
+            {
+              printf '\n## Upstream Mike PR #%s\n\n' "$number"
+              printf -- '- Title: %s\n- URL: %s\n- Files: %s\n- Changed lines: %s\n' "$title" "$url" "$file_count" "$total_changes"
+              printf -- '- File list:\n'
+              jq -r '.[] | "  - " + .filename + " (" + .status + ", " + (.changes|tostring) + " changes)"' ".ross-upstream-escalated/files-${number}.json"
+              printf '\n### Patch\n\n'
+              cat ".ross-upstream-escalated/patch-${number}.diff"
+              printf '\n'
+            } >> .ross-upstream-escalated/bundle.md
+          done
+
+      - name: Prepare escalated synchronization instructions
+        run: |
+          cat > .ross-upstream-escalated/prompt.md <<'PROMPT'
+          Review every upstream Mike pull request in .ross-upstream-escalated/bundle.md against current ROSS main. Produce one combined ROSS adaptation batch.
+
+          Classify each item as medium, high, or defer.
+
+          Medium risk may include bounded backend runtime changes, dependency updates, public API adjustments, broader tests, or architectural changes that do not alter authentication, authorization, MFA, secrets, cryptography, schemas, migrations, Supabase/RLS, deployment, infrastructure, legal/privacy/governance/release controls, billing, or production data boundaries.
+
+          High risk includes authentication, authorization, MFA, security boundaries, secrets or provider credentials, schemas, migrations, Supabase/RLS, tenant isolation, deployment, infrastructure, legal/privacy/governance/release controls, billing, storage boundaries, or other changes with material production blast radius.
+
+          Defer anything whose safe ROSS adaptation is unclear, internally inconsistent, too large, or not adequately testable.
+
+          Return the smallest complete unified git patch against current ROSS main that safely adapts all medium/high entries that can be implemented together. Preserve ROSS-specific safeguards. Do not modify .github workflows, commit secrets, weaken tests or controls, or bypass validation. Do not modify the working tree, commit, push, or open a pull request.
+
+          The combined patch may change at most 30 files and 4,000 total lines. If any applied entry is high risk, set highest_risk to high. If all applied entries are medium, set highest_risk to medium. If nothing can be safely applied, set highest_risk to none and return an empty patch.
+          PROMPT
+
+      - name: Produce read-only structured escalated synchronization
+        id: codex
+        uses: openai/codex-action@dd78cb653811af44014baa08fe954e28d32c1bf9
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .ross-upstream-escalated/prompt.md
+          permission-profile: ":read-only"
+          safety-strategy: drop-sudo
+          allow-bot-users: github-actions[bot]
+          output-schema: |
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "title": { "type": "string" },
+                "summary": { "type": "string" },
+                "highest_risk": {
+                  "type": "string",
+                  "enum": ["none", "medium", "high"]
+                },
+                "entries": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "number": { "type": "integer" },
+                      "risk": {
+                        "type": "string",
+                        "enum": ["medium", "high", "defer"]
+                      },
+                      "reason": { "type": "string" }
+                    },
+                    "required": ["number", "risk", "reason"]
+                  }
+                },
+                "patch": { "type": "string" }
+              },
+              "required": ["title", "summary", "highest_risk", "entries", "patch"]
+            }
+
+  propose:
+    needs: [scan, classify]
+    if: needs.classify.result == 'success' && needs.classify.outputs.result != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out current main in a clean runner
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Parse structured batch
+        id: parse
+        env:
+          SYNC_RESULT: ${{ needs.classify.outputs.result }}
+          BATCH_JSON: ${{ needs.scan.outputs.batch_json }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result = json.loads(os.environ["SYNC_RESULT"])
+          batch = json.loads(os.environ["BATCH_JSON"])
+          entries = result.get("entries", [])
+          expected = [item["number"] for item in batch]
+          received = [item.get("number") for item in entries]
+          if received != expected:
+              raise SystemExit(f"Escalated entries do not match batch order: {received} != {expected}")
+
+          risk = result.get("highest_risk")
+          patch = str(result.get("patch", ""))
+          applied = [entry for entry in entries if entry.get("risk") in {"medium", "high"}]
+          if applied:
+              if risk not in {"medium", "high"} or not patch.startswith("diff --git "):
+                  raise SystemExit("Applied escalated entries require a valid risk and unified patch")
+              data = patch.encode("utf-8")
+              if b"\x00" in data or len(data) > 800_000:
+                  raise SystemExit("Escalated patch is invalid or too large")
+              Path("/tmp/ross-upstream-escalated.patch").write_bytes(data)
+          elif patch.strip() or risk != "none":
+              raise SystemExit("A no-apply batch must have risk none and an empty patch")
+
+          Path("/tmp/escalated-result.json").write_text(json.dumps(result), encoding="utf-8")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"has_apply={'true' if applied else 'false'}\n")
+              output.write(f"risk={risk}\n")
+          PY
+
+      - name: Apply generated adaptation patch
+        if: steps.parse.outputs.has_apply == 'true'
+        run: |
+          set -euo pipefail
+          git apply --check --whitespace=error-all /tmp/ross-upstream-escalated.patch
+          git apply --index --whitespace=error-all /tmp/ross-upstream-escalated.patch
+
+      - name: Enforce deterministic patch boundaries
+        if: steps.parse.outputs.has_apply == 'true'
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --cached --name-only)
+          test "${#changed[@]}" -gt 0
+          test "${#changed[@]}" -le 30
+          test -z "$(git diff --cached --diff-filter=RCTU --name-only)"
+          test -z "$(git diff --cached --name-only -- .github)"
+          test -z "$(git diff --cached --name-only | grep -Ei '(^|/)(\.env|secrets?)(/|\.|$)' || true)"
+
+          if git diff --cached --numstat | awk '$1 == "-" || $2 == "-" { found=1 } END { exit !found }'; then
+            echo "Binary escalated synchronization changes are not permitted." >&2
+            exit 1
+          fi
+
+          total_lines="$(git diff --cached --numstat | awk '{ total += $1 + $2 } END { print total + 0 }')"
+          test "$total_lines" -le 4000
+
+          if git diff --cached --summary | grep -Eq 'mode change|create mode 100755|create mode 120000|create mode 160000'; then
+            echo "Executable, symlink, or submodule changes are not permitted." >&2
+            exit 1
+          fi
+
+      - name: Update escalation ledger
+        if: steps.parse.outputs.has_apply == 'true'
+        env:
+          SYNC_RESULT: ${{ needs.classify.outputs.result }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          path = Path("docs/upstream-mike-escalation-state.json")
+          state = json.loads(path.read_text(encoding="utf-8"))
+          result = json.loads(os.environ["SYNC_RESULT"])
+          now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+          existing = {item["number"] for item in state.get("processed", [])}
+          for entry in result["entries"]:
+              if entry["number"] in existing:
+                  continue
+              state.setdefault("processed", []).append({
+                  "number": entry["number"],
+                  "risk": entry["risk"],
+                  "reason": entry["reason"],
+                  "processed_at": now,
+              })
+          state["processed"] = state.get("processed", [])[-500:]
+          path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+          PY
+          git add docs/upstream-mike-escalation-state.json
+
+      - name: Run complete engineering and container preflight
+        if: steps.parse.outputs.has_apply == 'true'
+        run: |
+          set -euo pipefail
+          npm run install:all
+          npm run check
+          npm run preflight:fly
+          git diff --exit-code
+
+      - name: Create synchronization branch and pull request
+        if: steps.parse.outputs.has_apply == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RISK: ${{ steps.parse.outputs.risk }}
+        run: |
+          set -euo pipefail
+          timestamp="$(date -u +%Y%m%d%H%M%S)"
+          branch="agent/upstream-sync-${RISK}-${timestamp}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -m "Prepare ${RISK}-risk upstream Mike synchronization"
+          git push origin "HEAD:${branch}"
+
+          title="$(jq -r '.title // empty' /tmp/escalated-result.json)"
+          summary="$(jq -r '.summary // empty' /tmp/escalated-result.json)"
+          [ -n "$title" ] || title="Synchronize ${RISK}-risk upstream Mike changes"
+
+          {
+            echo "Automated-Upstream-Mike-Sync: true"
+            echo "Upstream-Risk: ${RISK}"
+            echo
+            echo "$summary"
+            echo
+            echo "## Classified upstream items"
+            jq -r '.entries[] | "- Mike PR #" + (.number|tostring) + ": **" + .risk + "** — " + .reason' /tmp/escalated-result.json
+            echo
+            if [ "$RISK" = "high" ]; then
+              echo "## Required human action"
+              echo "This PR is intentionally a draft. Mark it ready only after reviewing the high-risk adaptation and its operational implications. That single action permits exact-head Baseline verification and the existing merge gate."
+            else
+              echo "## Automated qualification"
+              echo "The complete engineering gate and Fly container preflight passed before this PR was opened. Exact-head Baseline remains required before merge."
+            fi
+          } > /tmp/pr-body.md
+
+          if [ "$RISK" = "high" ]; then
+            gh pr create --base main --head "$branch" --title "$title" --body-file /tmp/pr-body.md --draft
+          else
+            gh pr create --base main --head "$branch" --title "$title" --body-file /tmp/pr-body.md
+          fi
