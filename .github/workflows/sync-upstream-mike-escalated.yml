@@ -181,13 +181,12 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Parse and apply structured batch
-        id: apply
+      - name: Parse structured batch
+        id: parse
         env:
           SYNC_RESULT: ${{ needs.classify.outputs.result }}
           BATCH_JSON: ${{ needs.scan.outputs.batch_json }}
         run: |
-          set -euo pipefail
           python - <<'PY'
           import json
           import os
@@ -220,13 +219,15 @@ jobs:
               output.write(f"risk={risk}\n")
           PY
 
-          if [ "${{ steps.apply.outputs.has_apply }}" = "true" ]; then
-            git apply --check --whitespace=error-all /tmp/ross-upstream-escalated.patch
-            git apply --index --whitespace=error-all /tmp/ross-upstream-escalated.patch
-          fi
+      - name: Apply generated adaptation patch
+        if: steps.parse.outputs.has_apply == 'true'
+        run: |
+          set -euo pipefail
+          git apply --check --whitespace=error-all /tmp/ross-upstream-escalated.patch
+          git apply --index --whitespace=error-all /tmp/ross-upstream-escalated.patch
 
       - name: Enforce deterministic patch boundaries
-        if: steps.apply.outputs.has_apply == 'true'
+        if: steps.parse.outputs.has_apply == 'true'
         run: |
           set -euo pipefail
           mapfile -t changed < <(git diff --cached --name-only)
@@ -250,7 +251,7 @@ jobs:
           fi
 
       - name: Update escalation ledger
-        if: steps.apply.outputs.has_apply == 'true'
+        if: steps.parse.outputs.has_apply == 'true'
         env:
           SYNC_RESULT: ${{ needs.classify.outputs.result }}
         run: |
@@ -280,7 +281,7 @@ jobs:
           git add docs/upstream-mike-escalation-state.json
 
       - name: Run complete engineering and container preflight
-        if: steps.apply.outputs.has_apply == 'true'
+        if: steps.parse.outputs.has_apply == 'true'
         run: |
           set -euo pipefail
           npm run install:all
@@ -289,11 +290,10 @@ jobs:
           git diff --exit-code
 
       - name: Create synchronization branch and pull request
-        if: steps.apply.outputs.has_apply == 'true'
+        if: steps.parse.outputs.has_apply == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          SYNC_RESULT: ${{ needs.classify.outputs.result }}
-          RISK: ${{ steps.apply.outputs.risk }}
+          RISK: ${{ steps.parse.outputs.risk }}
         run: |
           set -euo pipefail
           timestamp="$(date -u +%Y%m%d%H%M%S)"
