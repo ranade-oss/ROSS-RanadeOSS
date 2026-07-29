@@ -11,13 +11,16 @@ const json = (path) => JSON.parse(read(path));
 test("the public website is a separate build target", () => {
   const rootPackage = json("package.json");
   const websitePackage = json("website/package.json");
+  const installer = read("scripts/install-all.mjs");
   assert.equal(existsSync(resolve(root, "website/.openai/hosting.json")), true);
   assert.equal(
     existsSync(resolve(root, "website/build/sites-vite-plugin.ts")),
     true,
   );
   assert.equal(websitePackage.name, "ross-ontario");
-  assert.match(rootPackage.scripts["install:all"], /--prefix website/);
+  assert.match(rootPackage.scripts["install:all"], /scripts\/install-all\.mjs/);
+  assert.match(installer, /\["backend", "frontend", "website"\]/);
+  assert.match(installer, /\["ci", "--prefix", workspace\]/);
   assert.match(rootPackage.scripts.build, /build:website/);
   assert.match(rootPackage.scripts.lint, /lint:website/);
   assert.match(rootPackage.scripts.check, /test:website/);
@@ -87,7 +90,7 @@ test("the website scaffold exposes every governed public route", () => {
     "readiness",
   ];
   for (const key of requiredKeys) {
-    assert.match(content, new RegExp(`[\"']?${key}[\"']?\\s*:`), key);
+    assert.match(content, new RegExp(`["']?${key}["']?\\s*:`), key);
   }
 
   const route = read("website/app/[...slug]/page.tsx");
