@@ -29,3 +29,23 @@ test("core model-provider API key fields remain visible after catalog loading", 
     "catalog approval must not remove core credential inputs after hydration",
   );
 });
+
+test("OpenAI model discovery recognizes the GPT-5.6 API alias", () => {
+  const discovery = read("backend/src/lib/llm/modelDiscovery.ts");
+
+  assert.match(
+    discovery,
+    /["']gpt-5\.6["']:\s*\[["']gpt-5\.6-sol["']\]/,
+    "the public gpt-5.6 alias must map to the provider-listed gpt-5.6-sol identifier",
+  );
+  assert.match(
+    discovery,
+    /isModelListed\(capability\.id, ids\)/,
+    "availability must use alias-aware model discovery",
+  );
+  assert.doesNotMatch(
+    discovery,
+    /available:\s*ids\.has\(capability\.id\)/,
+    "literal-only discovery would incorrectly disable supported aliases",
+  );
+});
