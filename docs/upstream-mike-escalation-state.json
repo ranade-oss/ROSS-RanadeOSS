@@ -1,5 +1,66 @@
 {
   "schema_version": 1,
   "upstream": "Open-Legal-Products/mike",
-  "processed": []
+  "processed": [
+    {
+      "number": 46,
+      "risk": "defer",
+      "reason": "Broad schema, authentication, secrets, legal, and backend rewrite; ROSS already contains hardened equivalents and safeguards.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 28,
+      "risk": "defer",
+      "reason": "Folder ownership checks are already implemented on current main.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 48,
+      "risk": "defer",
+      "reason": "OpenAI support and security defaults already exist in more advanced ROSS-specific forms; upstream schema/key changes are high-risk.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 52,
+      "risk": "defer",
+      "reason": "JSONB access filters and path-style S3 configuration are already implemented.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 51,
+      "risk": "defer",
+      "reason": "Document authorization filtering is already implemented at all identified tabular-review boundaries.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 21,
+      "risk": "defer",
+      "reason": "ROSS already requires a dedicated download-signing secret and additionally supports controlled key rotation.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 56,
+      "risk": "defer",
+      "reason": "Legal-page removal and Mike-specific documentation conflict with ROSS governance and branding.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 62,
+      "risk": "defer",
+      "reason": "ROSS already uses newer Next.js versions and the same or newer Cloudflare tooling, with additional dependency safeguards.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 64,
+      "risk": "defer",
+      "reason": "Includes deployment/schema changes that remove RLS protections and conflicts with ROSS architecture; remaining changes are too entangled to adapt safely.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    },
+    {
+      "number": 132,
+      "risk": "defer",
+      "reason": "API-key validation, async error handling, email normalization, and self-sharing prevention already exist; workflow sharing remains a high-risk authorization boundary.",
+      "processed_at": "2026-07-29T04:30:08.580300Z"
+    }
+  ]
 }
