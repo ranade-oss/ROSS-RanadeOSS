@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-06-11T14:24:20Z",
+  "last_merged_at": "2026-07-19T19:06:16Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -207,6 +207,86 @@
       "decision": "investigate",
       "reason": "Large mixed refactor spanning schemas, backend operations, providers, data behavior, and UI.",
       "processed_at": "2026-07-29T03:45:15.646568Z"
+    },
+    {
+      "number": 180,
+      "title": "Modal, header, mobile display and workflow UI updates",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/180",
+      "merged_at": "2026-06-11T14:44:35Z",
+      "merge_commit_sha": "01dfcfe0d489f861a4653dff0a827bf50662d654",
+      "decision": "investigate",
+      "reason": "Large, architecture-dependent UI/workflow change spanning 34 files and backend production behavior.",
+      "processed_at": "2026-07-29T04:29:51.511181Z"
+    },
+    {
+      "number": 183,
+      "title": "refactor: add table primitive and migrations by date; feat: add mcp connectors",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/183",
+      "merged_at": "2026-06-15T09:45:32Z",
+      "merge_commit_sha": "457d4a18a4a0a8b60f1a8bb03d33770b6cf9b90d",
+      "decision": "investigate",
+      "reason": "Large protected change involving migrations, schemas, authentication, provider keys, dependencies, APIs, and MCP connectors.",
+      "processed_at": "2026-07-29T04:29:51.511200Z"
+    },
+    {
+      "number": 147,
+      "title": "docs: add security reporting guidance",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/147",
+      "merged_at": "2026-06-26T19:01:04Z",
+      "merge_commit_sha": "93f921be907f8339096e0c718febdd6971e70565",
+      "decision": "skip",
+      "reason": "Already implemented in CONTRIBUTING.md with the correct ROSS-specific private-reporting URL and upstream coordination guidance.",
+      "processed_at": "2026-07-29T04:29:51.511204Z"
+    },
+    {
+      "number": 206,
+      "title": "Workflows UI excel ppt updates",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/206",
+      "merged_at": "2026-07-08T10:30:54Z",
+      "merge_commit_sha": "e32daad5a4c64a5561e04c53ee12411e3c5e7238",
+      "decision": "investigate",
+      "reason": "Very large change affecting authentication, migrations, schemas, dependencies, backend behavior, workflows, and frontend architecture.",
+      "processed_at": "2026-07-29T04:29:51.511206Z"
+    },
+    {
+      "number": 215,
+      "title": "feat: add library and refresh shared table UI",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/215",
+      "merged_at": "2026-07-16T12:09:55Z",
+      "merge_commit_sha": "1d61634a37fd112ef57f746e204be48f3d22fea9",
+      "decision": "investigate",
+      "reason": "Large library feature crossing migrations, schema, backend APIs, data boundaries, and extensive frontend architecture.",
+      "processed_at": "2026-07-29T04:29:51.511208Z"
+    },
+    {
+      "number": 216,
+      "title": "feat: refine liquid surfaces and document review panels",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/216",
+      "merged_at": "2026-07-16T17:25:02Z",
+      "merge_commit_sha": "81590ea13769b6429aa63f43012ad6edbf61a5e0",
+      "decision": "investigate",
+      "reason": "Architecture-dependent presentation refactor touching 27 files, exceeding the 20-file patch limit and relying on earlier upstream UI changes.",
+      "processed_at": "2026-07-29T04:29:51.511211Z"
+    },
+    {
+      "number": 218,
+      "title": "docs: update readme",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/218",
+      "merged_at": "2026-07-17T08:19:04Z",
+      "merge_commit_sha": "0ed5050b21dade66feddc807d9fc5894bb147072",
+      "decision": "skip",
+      "reason": "Mike-specific branding and remote image are not portable; current ROSS README already has appropriate fork-specific wording and attribution.",
+      "processed_at": "2026-07-29T04:29:51.511213Z"
+    },
+    {
+      "number": 219,
+      "title": "feat: refresh workflows and workflow editor UI",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/219",
+      "merged_at": "2026-07-19T19:06:16Z",
+      "merge_commit_sha": "dafac6b0a449a99c4280988e22feaf160eb6fbb9",
+      "decision": "investigate",
+      "reason": "Workflow behavior and generation changes include protected backend and script files and depend on upstream architecture.",
+      "processed_at": "2026-07-29T04:29:51.511215Z"
     }
   ]
 }
