@@ -76,7 +76,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Fetch upstream metadata and patches
+      - name: Fetch upstream metadata and bounded patches
         env:
           GH_TOKEN: ${{ github.token }}
           BATCH_JSON: ${{ needs.scan.outputs.batch_json }}
@@ -87,23 +87,46 @@ jobs:
           : > .ross-upstream-escalated/bundle.md
 
           jq -r '.[].number' .ross-upstream-escalated/batch.json | while read -r number; do
-            gh api "/repos/Open-Legal-Products/mike/pulls/${number}" > ".ross-upstream-escalated/pr-${number}.json"
-            gh api "/repos/Open-Legal-Products/mike/pulls/${number}/files?per_page=100" > ".ross-upstream-escalated/files-${number}.json"
-            gh api -H "Accept: application/vnd.github.v3.patch" "/repos/Open-Legal-Products/mike/pulls/${number}" > ".ross-upstream-escalated/patch-${number}.diff"
+            pr_file=".ross-upstream-escalated/pr-${number}.json"
+            files_file=".ross-upstream-escalated/files-${number}.json"
+            patch_file=".ross-upstream-escalated/patch-${number}.diff"
 
-            title="$(jq -r '.title' ".ross-upstream-escalated/pr-${number}.json")"
-            url="$(jq -r '.html_url' ".ross-upstream-escalated/pr-${number}.json")"
-            file_count="$(jq 'length' ".ross-upstream-escalated/files-${number}.json")"
-            total_changes="$(jq '[.[].changes] | add // 0' ".ross-upstream-escalated/files-${number}.json")"
+            gh api "/repos/Open-Legal-Products/mike/pulls/${number}" > "$pr_file"
+            gh api --paginate "/repos/Open-Legal-Products/mike/pulls/${number}/files?per_page=100" --slurp \
+              | jq 'add' > "$files_file"
+
+            title="$(jq -r '.title' "$pr_file")"
+            url="$(jq -r '.html_url' "$pr_file")"
+            file_count="$(jq 'length' "$files_file")"
+            total_changes="$(jq '[.[].changes] | add // 0' "$files_file")"
+            patch_status="available"
+
+            if (( file_count > 100 || total_changes > 12000 )); then
+              patch_status="omitted: mechanically oversized"
+              : > "$patch_file"
+            elif ! gh api -H "Accept: application/vnd.github.v3.patch" \
+              "/repos/Open-Legal-Products/mike/pulls/${number}" > "$patch_file" 2> ".ross-upstream-escalated/patch-${number}.error"; then
+              patch_status="omitted: GitHub patch API unavailable"
+              : > "$patch_file"
+            elif (( $(wc -l < "$patch_file") > 12000 )) || (( $(wc -c < "$patch_file") > 600000 )); then
+              patch_status="omitted: bounded patch limit exceeded"
+              : > "$patch_file"
+            fi
 
             {
               printf '\n## Upstream Mike PR #%s\n\n' "$number"
-              printf -- '- Title: %s\n- URL: %s\n- Files: %s\n- Changed lines: %s\n' "$title" "$url" "$file_count" "$total_changes"
+              printf -- '- Title: %s\n- URL: %s\n- Files: %s\n- Changed lines: %s\n- Patch: %s\n' \
+                "$title" "$url" "$file_count" "$total_changes" "$patch_status"
               printf -- '- File list:\n'
-              jq -r '.[] | "  - " + .filename + " (" + .status + ", " + (.changes|tostring) + " changes)"' ".ross-upstream-escalated/files-${number}.json"
-              printf '\n### Patch\n\n'
-              cat ".ross-upstream-escalated/patch-${number}.diff"
-              printf '\n'
+              jq -r '.[] | "  - " + .filename + " (" + .status + ", " + (.changes|tostring) + " changes)"' "$files_file"
+              if [ -s "$patch_file" ]; then
+                printf '\n### Patch\n\n'
+                cat "$patch_file"
+                printf '\n'
+              else
+                printf '\n### Metadata-only review\n\n'
+                printf 'The full patch was intentionally omitted. Treat this item as defer unless the metadata and current ROSS implementation establish a complete, bounded, testable adaptation.\n'
+              fi
             } >> .ross-upstream-escalated/bundle.md
           done
 
@@ -120,7 +143,7 @@ jobs:
 
           High risk includes authentication, authorization, MFA, security boundaries, secrets or provider credentials, schemas, migrations, Supabase/RLS, tenant isolation, deployment, infrastructure, legal/privacy/governance/release controls, billing, storage boundaries, or other changes with material production blast radius.
 
-          Defer anything whose safe ROSS adaptation is unclear, internally inconsistent, too large, obsolete, already implemented, or not adequately testable.
+          Defer anything whose safe ROSS adaptation is unclear, internally inconsistent, too large, obsolete, already implemented, or not adequately testable. An item marked as metadata-only because its patch was unavailable or exceeded the bounded fetch limit must be deferred unless the supplied metadata and current ROSS implementation establish a complete, bounded, testable adaptation without guessing at omitted code.
 
           Return the smallest complete unified git patch against current ROSS main that safely adapts all medium/high entries that can be implemented together. Preserve ROSS-specific safeguards. Do not modify .github workflows, commit secrets, weaken tests or controls, or bypass validation. Do not modify the working tree, commit, push, or open a pull request.
 
