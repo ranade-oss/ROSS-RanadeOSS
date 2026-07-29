@@ -8,7 +8,7 @@ ROSS (Ranade OSS) is an independently governed, Ontario-focused legal AI workspa
 >
 > Verified account required. Use synthetic or affirmatively non-confidential materials only. The hosted beta is not approved for unrestricted confidential or production legal work.
 
-[Project website](https://ross-ontario.augustmaat.chatgpt.site) · [Service status](https://ross-ontario.augustmaat.chatgpt.site/status) · [Report a security issue](https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new) · [Documentation](docs/)
+[Project website](https://ross.soundmarklaw.com) · [Service status](https://ross.soundmarklaw.com/status) · [Report a security issue](https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new) · [Documentation](docs/)
 
 ROSS is a modified fork of [Mike](https://github.com/Open-Legal-Products/mike), licensed under AGPL-3.0. It is independently developed and is not endorsed by Mike's maintainers, governments, courts, or legal-source providers. See [NOTICE.md](NOTICE.md) for attribution and licence information.
 
