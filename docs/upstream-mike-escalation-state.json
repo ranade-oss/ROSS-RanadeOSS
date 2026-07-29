@@ -181,6 +181,60 @@
       "risk": "defer",
       "reason": "High-risk CI/deployment-control change, and modifying .github workflows is explicitly prohibited. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
       "processed_at": "2026-07-29T05:45:56.034501Z"
+    },
+    {
+      "number": 235,
+      "risk": "defer",
+      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR\u2019s blocking-CI objective and includes MFA-sensitive code.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
+    },
+    {
+      "number": 230,
+      "risk": "defer",
+      "reason": "Metadata-only, mechanically oversized patch; omitted implementation cannot be safely reconstructed.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
+    },
+    {
+      "number": 233,
+      "risk": "defer",
+      "reason": "Large schema, Supabase/RLS, authentication, and test-infrastructure change with material security and production-boundary risk.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
+    },
+    {
+      "number": 220,
+      "risk": "defer",
+      "reason": "Large authentication/E2E/deployment batch, including prohibited workflow changes, credentials, and infrastructure assumptions.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
+    },
+    {
+      "number": 258,
+      "risk": "defer",
+      "reason": "Obsolete on current ROSS: the lockfile sync targets vitest/supertest dependencies that are not present.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
+    },
+    {
+      "number": 236,
+      "risk": "defer",
+      "reason": "Depends on the absent E2E suite and changes workflows and provider-secret handling.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
+    },
+    {
+      "number": 186,
+      "risk": "defer",
+      "reason": "Already implemented: the unused Supabase request-auth helper and related integration-test mocks are absent.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
+    },
+    {
+      "number": 193,
+      "risk": "defer",
+      "reason": "Authorization-boundary change lacks an existing focused test harness capable of adequately verifying owner-only folder deletion.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
+    },
+    {
+      "number": 175,
+      "risk": "defer",
+      "reason": "Authorization-boundary change lacks an existing focused test harness capable of adequately verifying all tabular settings-edit paths.",
+      "processed_at": "2026-07-29T12:40:21.110349Z"
     }
   ]
 }
