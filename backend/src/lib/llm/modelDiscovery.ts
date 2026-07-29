@@ -9,6 +9,10 @@ const MODEL_ENDPOINTS: Partial<Record<Provider, string>> = {
   moonshot: "https://api.moonshot.ai/v1/models",
 };
 
+const MODEL_DISCOVERY_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  "gpt-5.6": ["gpt-5.6-sol"],
+};
+
 export type DiscoveredModel = ModelCapability & {
   available: boolean;
   availability: "live" | "configured" | "unavailable" | "fallback";
@@ -42,6 +46,11 @@ async function discoverModelIds(
       .map((entry) => (typeof entry.id === "string" ? entry.id.trim() : ""))
       .filter(Boolean),
   );
+}
+
+function isModelListed(modelId: string, ids: ReadonlySet<string>): boolean {
+  if (ids.has(modelId)) return true;
+  return (MODEL_DISCOVERY_ALIASES[modelId] ?? []).some((id) => ids.has(id));
 }
 
 /**
@@ -90,11 +99,12 @@ export async function discoverCompatibleModels(
       };
     }
 
+    const available = isModelListed(capability.id, ids);
     return {
       ...capability,
-      available: ids.has(capability.id),
-      availability: ids.has(capability.id) ? "live" : "unavailable",
-      ...(ids.has(capability.id)
+      available,
+      availability: available ? "live" : "unavailable",
+      ...(available
         ? {}
         : {
             availabilityReason: `This ${providerLabel(capability.provider)} project does not currently list this model as available.`,
