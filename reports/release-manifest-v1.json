@@ -17,8 +17,8 @@
     },
     {
       "path": ".github/workflows/baseline.yml",
-      "sha256": "06404bb1472ece8816c9b3effbc9c78a449b3575fb5943ae5e04daa0676fb6ce",
-      "sizeBytes": 3817
+      "sha256": "aeb78f74493b6e87bab5444983f6272b8d4e09d79be61345e1042b3d10eda798",
+      "sizeBytes": 3682
     },
     {
       "path": ".github/workflows/deploy-private-ross.yml",
