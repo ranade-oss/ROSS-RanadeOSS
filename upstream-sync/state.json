@@ -1,0 +1,16 @@
+{
+  "upstream_repository": "Open-Legal-Products/mike",
+  "upstream_branch": "main",
+  "mode": "bounded-bulk-low-risk",
+  "last_scanned_sha": "e89d3230db40193c540a6b38d8f301ae76377a1a",
+  "last_scanned_at": "2026-07-29T00:00:00Z",
+  "last_batch": {
+    "from_exclusive": "e89d3230db40193c540a6b38d8f301ae76377a1a",
+    "to_inclusive": "e89d3230db40193c540a6b38d8f301ae76377a1a",
+    "commits": 0,
+    "included": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "synthesis_status": "initialized"
+  }
+}
