@@ -17,8 +17,8 @@ jobs:
   merge:
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.pull_requests[0] != null
+      (github.event.workflow_run.event == 'pull_request' ||
+       github.event.workflow_run.event == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -27,18 +27,52 @@ jobs:
         with:
           script: |
             const run = context.payload.workflow_run;
-            const linked = run.pull_requests?.[0];
-            if (!linked) {
-              core.info("No pull request is linked to this Baseline run.");
+            const { owner, repo } = context.repo;
+
+            const resolvePullRequest = async () => {
+              const linked = run.pull_requests?.[0];
+              if (run.event === "pull_request" && linked) {
+                const { data: pr } = await github.rest.pulls.get({
+                  owner,
+                  repo,
+                  pull_number: linked.number,
+                });
+                return { pr, verifiedHead: linked.head.sha };
+              }
+
+              if (run.event !== "workflow_dispatch" || !run.head_branch) {
+                return null;
+              }
+
+              const candidates = await github.paginate(github.rest.pulls.list, {
+                owner,
+                repo,
+                state: "open",
+                base: "main",
+                head: `${owner}:${run.head_branch}`,
+                per_page: 100,
+              });
+              const matches = candidates.filter(
+                (pr) =>
+                  pr.head.repo?.full_name === `${owner}/${repo}` &&
+                  pr.head.ref === run.head_branch &&
+                  pr.head.sha === run.head_sha,
+              );
+              if (matches.length !== 1) {
+                core.info(
+                  `Dispatched Baseline resolved ${matches.length} exact open PRs; expected one.`,
+                );
+                return null;
+              }
+              return { pr: matches[0], verifiedHead: run.head_sha };
+            };
+
+            const resolved = await resolvePullRequest();
+            if (!resolved) {
+              core.info("No exact pull request is linked to this Baseline run.");
               return;
             }
-
-            const { owner, repo } = context.repo;
-            const { data: pr } = await github.rest.pulls.get({
-              owner,
-              repo,
-              pull_number: linked.number,
-            });
+            const { pr, verifiedHead } = resolved;
 
             const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
             const eligible =
@@ -47,7 +81,7 @@ jobs:
               pr.head.repo?.full_name === `${owner}/${repo}` &&
               pr.head.ref.startsWith("agent/") &&
               trustedAssociations.has(pr.author_association) &&
-              pr.head.sha === linked.head.sha;
+              pr.head.sha === verifiedHead;
 
             if (!eligible) {
               core.info("PR is not an eligible trusted same-repository agent PR at the verified head.");
@@ -108,7 +142,7 @@ jobs:
             const blocked =
               node.state !== "OPEN" ||
               node.isDraft ||
-              node.headRefOid !== pr.head.sha ||
+              node.headRefOid !== verifiedHead ||
               node.reviewDecision === "CHANGES_REQUESTED" ||
               node.mergeable !== "MERGEABLE" ||
               gate.unresolved;
@@ -123,6 +157,6 @@ jobs:
               repo,
               pull_number: pr.number,
               merge_method: "squash",
-              sha: pr.head.sha,
+              sha: verifiedHead,
             });
             core.notice(`Merged PR #${pr.number} immediately after successful final-head Baseline verification.`);

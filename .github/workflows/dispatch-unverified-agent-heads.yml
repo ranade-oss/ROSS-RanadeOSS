@@ -1,0 +1,82 @@
+name: Dispatch unverified agent heads
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: dispatch-unverified-agent-heads
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch Baseline for unverified exact heads
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+
+            const { data: workflow } = await github.rest.actions.getWorkflow({
+              owner,
+              repo,
+              workflow_id: "baseline.yml",
+            });
+
+            const pullRequests = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: "open",
+              base: "main",
+              per_page: 100,
+            });
+
+            for (const pr of pullRequests) {
+              const eligible =
+                !pr.draft &&
+                pr.head.repo?.full_name === `${owner}/${repo}` &&
+                pr.head.ref.startsWith("agent/") &&
+                trustedAssociations.has(pr.author_association);
+
+              if (!eligible) continue;
+
+              const runs = await github.paginate(
+                github.rest.actions.listWorkflowRuns,
+                {
+                  owner,
+                  repo,
+                  workflow_id: workflow.id,
+                  branch: pr.head.ref,
+                  per_page: 100,
+                },
+              );
+
+              const exactHeadRun = runs.find((run) => run.head_sha === pr.head.sha);
+              if (exactHeadRun) {
+                core.info(
+                  `PR #${pr.number} already has Baseline run ${exactHeadRun.id} for ${pr.head.sha} (${exactHeadRun.status}/${exactHeadRun.conclusion || "none"}).`,
+                );
+                continue;
+              }
+
+              await github.rest.actions.createWorkflowDispatch({
+                owner,
+                repo,
+                workflow_id: workflow.id,
+                ref: pr.head.ref,
+              });
+              core.notice(
+                `Dispatched Baseline for PR #${pr.number} exact head ${pr.head.sha}.`,
+              );
+            }
