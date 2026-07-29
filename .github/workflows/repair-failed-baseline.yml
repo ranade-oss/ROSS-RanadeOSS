@@ -11,15 +11,15 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: repair-baseline-${{ github.event.workflow_run.pull_requests[0].number || github.event.workflow_run.id }}
+  group: repair-baseline-${{ github.event.workflow_run.head_branch || github.event.workflow_run.id }}
   cancel-in-progress: false
 
 jobs:
   qualify:
     if: >-
       github.event.workflow_run.conclusion == 'failure' &&
-      github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.pull_requests[0] != null
+      (github.event.workflow_run.event == 'pull_request' ||
+       github.event.workflow_run.event == 'workflow_dispatch')
     runs-on: ubuntu-latest
     outputs:
       eligible: ${{ steps.gate.outputs.eligible }}
@@ -34,7 +34,6 @@ jobs:
         with:
           script: |
             const run = context.payload.workflow_run;
-            const linked = run.pull_requests?.[0];
             const { owner, repo } = context.repo;
             const deny = (reason) => {
               core.setOutput('eligible', 'false');
@@ -42,14 +41,46 @@ jobs:
               core.notice(`Automatic repair skipped: ${reason}`);
             };
 
-            if (!linked) return deny('no linked pull request');
-            const { data: pr } = await github.rest.pulls.get({
-              owner,
-              repo,
-              pull_number: linked.number,
-            });
+            const resolvePullRequest = async () => {
+              const linked = run.pull_requests?.[0];
+              if (run.event === 'pull_request' && linked) {
+                const { data: pr } = await github.rest.pulls.get({
+                  owner,
+                  repo,
+                  pull_number: linked.number,
+                });
+                return { pr, verifiedHead: linked.head.sha };
+              }
+
+              if (run.event !== 'workflow_dispatch' || !run.head_branch) {
+                return null;
+              }
+
+              const candidates = await github.paginate(github.rest.pulls.list, {
+                owner,
+                repo,
+                state: 'open',
+                base: 'main',
+                head: `${owner}:${run.head_branch}`,
+                per_page: 100,
+              });
+              const matches = candidates.filter(
+                (pr) =>
+                  pr.head.repo?.full_name === `${owner}/${repo}` &&
+                  pr.head.ref === run.head_branch &&
+                  pr.head.sha === run.head_sha,
+              );
+              return matches.length === 1
+                ? { pr: matches[0], verifiedHead: run.head_sha }
+                : null;
+            };
+
+            const resolved = await resolvePullRequest();
+            if (!resolved) return deny('no exact linked pull request');
+            const { pr, verifiedHead } = resolved;
+
             core.setOutput('pr_number', String(pr.number));
-            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('head_sha', verifiedHead);
             core.setOutput('head_ref', pr.head.ref);
 
             const trusted = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
@@ -57,7 +88,7 @@ jobs:
             if (pr.head.repo?.full_name !== `${owner}/${repo}`) return deny('fork PR');
             if (!pr.head.ref.startsWith('agent/')) return deny('branch is not an agent branch');
             if (!trusted.has(pr.author_association)) return deny('author is not trusted');
-            if (pr.head.sha !== linked.head.sha) return deny('failed run is not for the current head');
+            if (pr.head.sha !== verifiedHead) return deny('failed run is not for the current head');
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner,
