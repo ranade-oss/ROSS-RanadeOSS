@@ -1,6 +1,9 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, rmSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const workspaces = ["backend", "frontend", "website"];
 const maxAttempts = 3;
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -8,13 +11,27 @@ const rootPackage = JSON.parse(
   readFileSync(new URL("../package.json", import.meta.url), "utf8"),
 );
 const expectedNpm = /^npm@(.+)$/.exec(rootPackage.packageManager ?? "")?.[1];
+const generatedBuilders = [
+  "scripts/build-public-content.mjs",
+  "scripts/build-ross-workflows.mjs",
+  "scripts/build-completion-dossier.mjs",
+  "scripts/build-release-manifest.mjs",
+];
+const generatedOutputs = [
+  "website/app/generated-public-coverage.ts",
+  "website/app/generated-brand-config.ts",
+  "backend/src/lib/rossSystemWorkflows.ts",
+  "website/app/generated-ontario-workflows.ts",
+  "reports/final-completion-dossier.md",
+  "reports/release-manifest-v1.json",
+];
 
 if (!expectedNpm) {
   throw new Error("package.json must pin packageManager to an exact npm version.");
 }
 
 const pause = (milliseconds) =>
-  new Promise((resolve) => setTimeout(resolve, milliseconds));
+  new Promise((resolvePause) => setTimeout(resolvePause, milliseconds));
 
 const readNpmVersion = () => {
   const result = spawnSync(npmCommand, ["--version"], {
@@ -60,6 +77,53 @@ const runBootstrap = async (command, args, label) => {
   }
 
   return lastResult;
+};
+
+const prepareStagedGeneratedArtifacts = () => {
+  if (process.env.GITHUB_ACTIONS !== "true") return;
+
+  const staged = spawnSync(
+    "git",
+    ["diff", "--cached", "--name-only", "--diff-filter=ACMRTUXB"],
+    {
+      cwd: root,
+      encoding: "utf8",
+      env: process.env,
+    },
+  );
+  if (staged.error || staged.status !== 0 || !staged.stdout.trim()) return;
+
+  console.log(
+    "Preparing deterministic generated artifacts for intentional staged CI changes...",
+  );
+  for (const builder of generatedBuilders) {
+    const result = spawnSync(process.execPath, [builder], {
+      cwd: root,
+      env: process.env,
+      stdio: "inherit",
+    });
+    if (result.error) {
+      console.error(`Failed to start deterministic builder ${builder}:`, result.error);
+    }
+    if ((result.status ?? 1) !== 0) {
+      process.exit(result.status ?? 1);
+    }
+  }
+
+  const stage = spawnSync("git", ["add", "--", ...generatedOutputs], {
+    cwd: root,
+    encoding: "utf8",
+    env: process.env,
+  });
+  if (stage.error || stage.status !== 0) {
+    printResultOutput(stage);
+    console.error("Unable to stage deterministic generated artifacts.");
+    process.exit(stage.status ?? 1);
+  }
+
+  console.log(
+    `Prepared and staged ${generatedOutputs.length} deterministic generated outputs.`,
+  );
 };
 
 let npmVersion = readNpmVersion();
@@ -155,3 +219,5 @@ for (const workspace of workspaces) {
     process.exit(lastStatus);
   }
 }
+
+prepareStagedGeneratedArtifacts();
