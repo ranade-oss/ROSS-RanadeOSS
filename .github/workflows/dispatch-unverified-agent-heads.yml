@@ -89,11 +89,15 @@ jobs:
             });
 
             for (const pr of pullRequests) {
+              const markedSyncBot =
+                pr.user?.login === "github-actions[bot]" &&
+                pr.head.ref.startsWith("agent/upstream-sync-") &&
+                pr.body?.includes("Automated-Upstream-Mike-Sync: true");
               const eligible =
                 !pr.draft &&
                 pr.head.repo?.full_name === `${owner}/${repo}` &&
                 pr.head.ref.startsWith("agent/") &&
-                trustedAssociations.has(pr.author_association);
+                (trustedAssociations.has(pr.author_association) || markedSyncBot);
 
               if (!eligible) continue;
 

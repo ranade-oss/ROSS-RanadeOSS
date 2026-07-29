@@ -75,12 +75,16 @@ jobs:
             const { pr, verifiedHead } = resolved;
 
             const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            const markedSyncBot =
+              pr.user?.login === "github-actions[bot]" &&
+              pr.head.ref.startsWith("agent/upstream-sync-") &&
+              pr.body?.includes("Automated-Upstream-Mike-Sync: true");
             const eligible =
               pr.state === "open" &&
               !pr.draft &&
               pr.head.repo?.full_name === `${owner}/${repo}` &&
               pr.head.ref.startsWith("agent/") &&
-              trustedAssociations.has(pr.author_association) &&
+              (trustedAssociations.has(pr.author_association) || markedSyncBot) &&
               pr.head.sha === verifiedHead;
 
             if (!eligible) {
