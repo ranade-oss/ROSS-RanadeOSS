@@ -114,10 +114,12 @@ jobs:
 
           protected = re.compile(
               r"(^|/)(?:"
-              r"auth|authorization|security|crypto|secret|permission|legal|privacy|"
-              r"governance|release|deploy|deployment|migration|schema|database|rls|"
-              r"supabase|tenant|session|token|credential|provider|connector|storage|"
-              r"upload|download|middleware|billing|payment|telemetry|docker|fly|infra|"
+              r"auth|authentication|authorization|security|crypto|secret|secrets|"
+              r"permission|permissions|legal|privacy|governance|release|deploy|deployment|"
+              r"migration|migrations|schema|schemas|database|databases|rls|supabase|"
+              r"tenant|tenants|session|sessions|token|tokens|credential|credentials|"
+              r"provider|providers|connector|connectors|storage|upload|uploads|"
+              r"download|downloads|middleware|billing|payment|telemetry|docker|fly|infra|"
               r"terraform"
               r")(?:/|\.|-|_)",
               re.IGNORECASE,
@@ -154,7 +156,6 @@ jobs:
               )
 
           entries = []
-          candidate_dir = output / "commits"
           for sha in commits:
               parent = git("rev-parse", f"{sha}^1")
               subject = git("show", "-s", "--format=%s", sha)
@@ -250,6 +251,7 @@ jobs:
               handle.write(f"base_sha={base_sha}\n")
               handle.write(f"upstream_sha={latest}\n")
           PY
+
       - name: Upload upstream discovery
         if: steps.scan.outputs.has_changes == 'true'
         uses: actions/upload-artifact@v7
@@ -402,7 +404,6 @@ jobs:
           path: .ross-upstream/input
 
       - name: Parse and apply bounded bulk adaptation
-        id: apply
         env:
           SYNTH_RESULT: ${{ needs.synthesize.outputs.result }}
         shell: bash
@@ -478,7 +479,7 @@ jobs:
               frontend/src/*|frontend/tests/*|website/src/*|website/tests/*|backend/src/lib/*|backend/src/utils/*|backend/tests/*|tests/*|docs/*|README.md|CONTRIBUTING.md) ;;
               *) echo "Unsupported bulk synchronization path: $path" >&2; exit 1 ;;
             esac
-            if [[ "$path" =~ (^|/)(auth|authorization|security|crypto|secret|permission|legal|privacy|governance|release|deploy|migration|schema|database|rls|supabase|tenant|session|token|credential|provider|connector|storage|upload|download|middleware|billing|payment|telemetry)(/|\.|-|_) ]]; then
+            if [[ "$path" =~ (^|/)(auth|authentication|authorization|security|crypto|secret|secrets|permission|permissions|legal|privacy|governance|release|deploy|deployment|migration|migrations|schema|schemas|database|databases|rls|supabase|tenant|tenants|session|sessions|token|tokens|credential|credentials|provider|providers|connector|connectors|storage|upload|uploads|download|downloads|middleware|billing|payment|telemetry)(/|\.|-|_) ]]; then
               echo "Protected bulk synchronization path: $path" >&2
               exit 1
             fi
@@ -590,8 +591,6 @@ jobs:
           cp /tmp/ross-upstream-sync/approved.patch /tmp/ross-upstream-sync/approved.patch.saved
           git reset --hard HEAD
           git clean -fd .ross-upstream >/dev/null 2>&1 || true
-          mkdir -p .ross-upstream/input
-          cp /tmp/ross-upstream-sync/synthesis.json /tmp/ross-upstream-sync/synthesis.saved.json
 
           python - <<'PY'
           import json
