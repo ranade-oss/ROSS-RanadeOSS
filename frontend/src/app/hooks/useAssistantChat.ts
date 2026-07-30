@@ -649,6 +649,12 @@ export function useAssistantChat({
                 query: typeof data.query === "string" ? data.query : "",
                 result_count:
                   typeof data.result_count === "number" ? data.result_count : 0,
+                providers: Array.isArray(data.providers)
+                  ? (data.providers as Extract<
+                      AssistantEvent,
+                      { type: "legal_source_search" }
+                    >["providers"])
+                  : undefined,
                 coverage_warning:
                   typeof data.coverage_warning === "string"
                     ? data.coverage_warning

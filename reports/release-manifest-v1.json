@@ -127,8 +127,8 @@
     },
     {
       "path": "backend/src/lib/llm/types.ts",
-      "sha256": "a585e8529fcc375be24e558fd5dbce4653a157d8ba43ed31c76cb168cb42cace",
-      "sizeBytes": 2056
+      "sha256": "d4f0f4b57456bb44ac77d6b45d7bde61ac6036a98d551baf4ad62fbc1a633ceb",
+      "sizeBytes": 2290
     },
     {
       "path": "backend/src/lib/quarantinedUpload.ts",
@@ -152,8 +152,8 @@
     },
     {
       "path": "backend/src/lib/chat/tools/toolDispatcher.ts",
-      "sha256": "b8e1cdc5f8d083582299d81a82080f8c5c1ea48fdc751dbca12595ef980982a8",
-      "sizeBytes": 78933
+      "sha256": "c0e2560cbc2907b88d308ec20c22f28950708394ec229dcbadd02ac379493174",
+      "sizeBytes": 81126
     },
     {
       "path": "backend/src/middleware/dataBoundary.test.ts",
@@ -502,8 +502,8 @@
     },
     {
       "path": "scripts/lib/live-source-observer.mjs",
-      "sha256": "602d07e0d1a4db162e8760e940efdfa338c7869f7324427d125b741203dc1601",
-      "sizeBytes": 6751
+      "sha256": "fd5b45219305cacbba1bbab1fc056ec38d712d71636c8b85105caa0286609c9c",
+      "sizeBytes": 10713
     },
     {
       "path": "scripts/lib/release-train.mjs",

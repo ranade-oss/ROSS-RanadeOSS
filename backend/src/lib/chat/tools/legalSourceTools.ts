@@ -103,6 +103,14 @@ export type LegalSourceToolEvent =
       provider_name: string | null;
       query: string;
       result_count: number;
+      providers?: Array<{
+        provider_id: string;
+        provider_name: string;
+        status: "succeeded" | "failed";
+        result_count: number;
+        error_code?: string;
+        error?: string;
+      }>;
       coverage_warning?: string;
       error?: string;
     }

@@ -122,3 +122,29 @@ test("official providers fail closed for inferred historical versions", async ()
         /historical-version retrieval/,
     );
 });
+
+test("official provider health exercises the production retrieval path", async () => {
+    let ontarioRequests = 0;
+    const ontario = new OntarioELawsProvider(async (input) => {
+        ontarioRequests += 1;
+        const url = String(input);
+        return new Response(
+            url.endsWith("/currency-date")
+                ? "July 10, 2026"
+                : syntheticOntarioDocument,
+            { status: 200 },
+        );
+    });
+    const justice = new JusticeLawsProvider(async () =>
+        new Response(syntheticFederalXml, { status: 200 }),
+    );
+
+    assert.equal((await ontario.health()).ok, true);
+    assert.equal(ontarioRequests, 2);
+    assert.equal((await justice.health()).ok, true);
+
+    const failed = new OntarioELawsProvider(async () =>
+        new Response("unavailable", { status: 503 }),
+    );
+    assert.equal((await failed.health()).ok, false);
+});

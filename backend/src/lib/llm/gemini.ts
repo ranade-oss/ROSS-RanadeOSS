@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { FunctionCallingConfigMode, GoogleGenAI } from "@google/genai";
 import type {
   StreamChatParams,
   StreamChatResult,
@@ -196,6 +196,18 @@ export async function streamGemini(
             tools: toolsEnabled && functionDeclarations.length
               ? [{ functionDeclarations } as never]
               : undefined,
+            ...(iter === 0 &&
+            toolsEnabled &&
+            params.requiredFirstToolName
+              ? {
+                  toolConfig: {
+                    functionCallingConfig: {
+                      mode: FunctionCallingConfigMode.ANY,
+                      allowedFunctionNames: [params.requiredFirstToolName],
+                    },
+                  },
+                }
+              : {}),
             // When enabled, ask Gemini to surface thought summaries.
             // When disabled, explicitly zero the thinking budget so the
             // model skips thinking entirely (saves tokens and latency

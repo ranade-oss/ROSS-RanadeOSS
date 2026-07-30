@@ -154,10 +154,31 @@ export class OntarioELawsProvider implements LegalSourceProvider {
     constructor(private readonly fetchImpl: typeof fetch = fetch) {}
 
     async health() {
-        return {
-            ok: true,
-            detail: "Official Ontario e-Laws links and permitted live retrieval are configured.",
-        };
+        try {
+            const document = await this.fetchLegislation(
+                "ontario-statute-90c43",
+                { section: "1" },
+            );
+            return document.fullText && document.currentToDate
+                ? {
+                      ok: true,
+                      detail:
+                          "Ontario e-Laws document and currency APIs returned current legislation.",
+                  }
+                : {
+                      ok: false,
+                      detail:
+                          "Ontario e-Laws retrieval did not return legislation text and currency metadata.",
+                  };
+        } catch (error) {
+            return {
+                ok: false,
+                detail:
+                    error instanceof Error
+                        ? error.message.slice(0, 300)
+                        : "Ontario e-Laws retrieval failed.",
+            };
+        }
     }
 
     async searchLegislation(input: {
@@ -243,10 +264,30 @@ export class JusticeLawsProvider implements LegalSourceProvider {
     constructor(private readonly fetchImpl: typeof fetch = fetch) {}
 
     async health() {
-        return {
-            ok: true,
-            detail: "Department of Justice XML repository and official stable links are configured.",
-        };
+        try {
+            const document = await this.fetchLegislation("federal-act-d-3.4", {
+                section: "1",
+            });
+            return document.fullText && document.currentToDate
+                ? {
+                      ok: true,
+                      detail:
+                          "Justice Laws production XML path returned current legislation.",
+                  }
+                : {
+                      ok: false,
+                      detail:
+                          "Justice Laws retrieval did not return legislation text and currency metadata.",
+                  };
+        } catch (error) {
+            return {
+                ok: false,
+                detail:
+                    error instanceof Error
+                        ? error.message.slice(0, 300)
+                        : "Justice Laws retrieval failed.",
+            };
+        }
     }
 
     async searchLegislation(input: {

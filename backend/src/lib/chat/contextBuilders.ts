@@ -98,6 +98,54 @@ export async function enrichWithPriorEvents(
           );
         }
       }
+    } else if (ev?.type === "legal_source_search") {
+      const attempts = Array.isArray(ev.providers)
+        ? (ev.providers as Record<string, unknown>[])
+        : [];
+      if (attempts.length > 0) {
+        for (const attempt of attempts) {
+          const name =
+            typeof attempt.provider_name === "string"
+              ? attempt.provider_name
+              : typeof attempt.provider_id === "string"
+                ? attempt.provider_id
+                : "unknown provider";
+          const status =
+            attempt.status === "succeeded" ? "succeeded" : "failed";
+          const count =
+            typeof attempt.result_count === "number"
+              ? `, ${attempt.result_count} result${attempt.result_count === 1 ? "" : "s"}`
+              : "";
+          const code =
+            typeof attempt.error_code === "string"
+              ? `, reason ${attempt.error_code}`
+              : "";
+          lines.push(
+            `- legal-source search → ${name}: ${status}${count}${code}`,
+          );
+        }
+      } else {
+        const provider =
+          typeof ev.provider_name === "string"
+            ? ev.provider_name
+            : "legal sources";
+        const count =
+          typeof ev.result_count === "number" ? ev.result_count : 0;
+        lines.push(
+          `- legal-source search → ${provider}: ${ev.error ? "failed" : "completed"}, ${count} result${count === 1 ? "" : "s"}`,
+        );
+      }
+    } else if (ev?.type === "legal_authority") {
+      const provider =
+        typeof ev.provider_name === "string"
+          ? ev.provider_name
+          : typeof ev.provider_id === "string"
+            ? ev.provider_id
+            : "unknown provider";
+      const action = typeof ev.action === "string" ? ev.action : "used";
+      lines.push(
+        `- legal authority → ${provider}: ${ev.error ? `${action} failed` : action}`,
+      );
     }
   }
   if (lines.length === 0) return messages;
