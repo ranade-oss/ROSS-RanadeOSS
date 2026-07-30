@@ -23,6 +23,12 @@ const PROVIDERS = [
 type Provider = (typeof PROVIDERS)[number]["provider"];
 type Status = Record<Provider, boolean>;
 
+function emptyStatus(): Status {
+  return Object.fromEntries(
+    PROVIDERS.map(({ provider }) => [provider, false]),
+  ) as Status;
+}
+
 async function authHeaders(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token
@@ -30,12 +36,8 @@ async function authHeaders(): Promise<Record<string, string>> {
     : {};
 }
 
-export function ExpandedProviderKeys({
-  approvedProviders,
-}: {
-  approvedProviders: string[];
-}) {
-  const [status, setStatus] = useState<Status>({ xai: false, moonshot: false });
+export function ExpandedProviderKeys() {
+  const [status, setStatus] = useState<Status>(emptyStatus);
 
   useEffect(() => {
     void (async () => {
@@ -45,18 +47,17 @@ export function ExpandedProviderKeys({
       });
       if (!response.ok) return;
       const body = (await response.json()) as Partial<Status>;
-      setStatus({ xai: !!body.xai, moonshot: !!body.moonshot });
+      setStatus(
+        Object.fromEntries(
+          PROVIDERS.map(({ provider }) => [provider, !!body[provider]]),
+        ) as Status,
+      );
     })();
   }, []);
 
-  const visible = PROVIDERS.filter((entry) =>
-    approvedProviders.includes(entry.provider),
-  );
-  if (!visible.length) return null;
-
   return (
     <>
-      {visible.map((entry, index) => (
+      {PROVIDERS.map((entry, index) => (
         <div key={entry.provider}>
           <DirectKeyField
             label={entry.label}
@@ -82,7 +83,7 @@ export function ExpandedProviderKeys({
               return response.ok;
             }}
           />
-          {index < visible.length - 1 && (
+          {index < PROVIDERS.length - 1 && (
             <div className="mx-4 h-px bg-gray-200" />
           )}
         </div>
