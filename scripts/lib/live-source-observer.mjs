@@ -6,8 +6,8 @@ const REQUIRED_TARGETS = [
   },
   {
     id: "ontario-elaws",
-    url: "https://www.ontario.ca/laws/statute/90c43",
-    kind: "nonempty-text",
+    url: "https://www.ontario.ca/laws/api/v2/legislation/en",
+    kind: "ontario-runtime",
   },
   {
     id: "justice-laws-canada",
@@ -32,6 +32,18 @@ const a2ajRows = (payload) => {
   return [];
 };
 
+const a2ajSearchRows = (payload) =>
+  Array.isArray(payload?.results)
+    ? payload.results
+    : Array.isArray(payload)
+      ? payload
+      : [];
+
+const a2ajCitation = (row) =>
+  [row?.citation_en, row?.citation_fr, row?.citation2_en, row?.citation2_fr]
+    .find((value) => typeof value === "string" && value.trim())
+    ?.trim() ?? null;
+
 const reasonCode = (error) => {
   if (error?.name === "TimeoutError") return "timeout";
   const status = Number(error?.status);
@@ -46,6 +58,8 @@ const requestHeaders = (target) => ({
   Accept:
     target.kind === "a2aj-split-coverage"
       ? "application/json"
+      : target.kind === "ontario-runtime"
+        ? "application/json, text/plain"
       : "text/html, application/xml, text/xml",
   "User-Agent": "ROSS-RanadeOSS-source-observer/1.0",
 });
@@ -128,11 +142,123 @@ async function inspectA2ajCoverage(fetchImpl, target, timeoutMs) {
   const versions = groups
     .map((group) => responseVersion(group.response, null))
     .filter(Boolean);
+  const apiBase = target.url.replace(/\/coverage$/, "");
+  for (const probe of [
+    { docType: "cases", dataset: "ONCA", query: "law" },
+    {
+      docType: "laws",
+      dataset: "LEGISLATION-ON",
+      query: "Act",
+    },
+  ]) {
+    const searchParams = new URLSearchParams({
+      query: probe.query,
+      doc_type: probe.docType,
+      dataset: probe.dataset,
+      size: "1",
+    });
+    const searchResponse = await fetchResponse(
+      fetchImpl,
+      `${apiBase}/search?${searchParams}`,
+      target,
+      timeoutMs,
+    );
+    if (!searchResponse.ok) {
+      const error = new Error("A2AJ production search returned an error.");
+      error.status = searchResponse.status;
+      throw error;
+    }
+    const result = a2ajSearchRows(await searchResponse.json())[0];
+    const citation = a2ajCitation(result);
+    if (!citation) {
+      const error = new Error("A2AJ production search returned no citation.");
+      error.code = "invalid-payload";
+      throw error;
+    }
+    const fetchParams = new URLSearchParams({
+      citation,
+      doc_type: probe.docType,
+    });
+    const documentResponse = await fetchResponse(
+      fetchImpl,
+      `${apiBase}/fetch?${fetchParams}`,
+      target,
+      timeoutMs,
+    );
+    if (!documentResponse.ok) {
+      const error = new Error("A2AJ production fetch returned an error.");
+      error.status = documentResponse.status;
+      throw error;
+    }
+    const document = await documentResponse.json();
+    const row =
+      document?.result ??
+      (Array.isArray(document?.results) ? document.results[0] : document);
+    const text = [row?.unofficial_text_en, row?.unofficial_text_fr].find(
+      (value) => typeof value === "string" && value.trim(),
+    );
+    if (!text) {
+      const error = new Error("A2AJ production fetch returned no source text.");
+      error.code = "invalid-payload";
+      throw error;
+    }
+  }
   return {
     sourceVersion:
       versions.length === groups.length
         ? versions.join("|")
-        : `coverage-${cases.rows.length}-cases-${laws.rows.length}-laws`,
+        : `coverage-${cases.rows.length}-cases-${laws.rows.length}-laws-search-fetch-ok`,
+  };
+}
+
+async function inspectOntarioRuntime(fetchImpl, target, timeoutMs) {
+  const [documentResponse, currencyResponse] = await Promise.all([
+    fetchResponse(
+      fetchImpl,
+      `${target.url}/doc-search/statute/90c43`,
+      target,
+      timeoutMs,
+    ),
+    fetchResponse(
+      fetchImpl,
+      `${target.url}/currency-date`,
+      target,
+      timeoutMs,
+    ),
+  ]);
+  if (!documentResponse.ok || !currencyResponse.ok) {
+    const error = new Error("Ontario e-Laws production API returned an error.");
+    error.status = !documentResponse.ok
+      ? documentResponse.status
+      : currencyResponse.status;
+    throw error;
+  }
+  const documentBody = await documentResponse.text();
+  const currencyBody = await currencyResponse.text();
+  let documentPayload;
+  try {
+    documentPayload = JSON.parse(documentBody);
+  } catch {
+    const error = new Error("Ontario e-Laws document response was invalid.");
+    error.code = "invalid-payload";
+    throw error;
+  }
+  if (
+    typeof documentPayload?.content !== "string" ||
+    documentPayload.content.trim().length < 500 ||
+    !/\b(?:18|19|20)\d{2}\b/.test(currencyBody)
+  ) {
+    const error = new Error(
+      "Ontario e-Laws production APIs returned incomplete content.",
+    );
+    error.code = "invalid-payload";
+    throw error;
+  }
+  return {
+    sourceVersion: [
+      responseVersion(documentResponse, `document-${documentBody.length}`),
+      responseVersion(currencyResponse, currencyBody.trim().slice(0, 40)),
+    ].join("|"),
   };
 }
 
@@ -151,6 +277,8 @@ export async function observeLiveLegalSources({
       const observation =
         target.kind === "a2aj-split-coverage"
           ? await inspectA2ajCoverage(fetchImpl, target, timeoutMs)
+          : target.kind === "ontario-runtime"
+            ? await inspectOntarioRuntime(fetchImpl, target, timeoutMs)
           : await (async () => {
               const response = await fetchResponse(
                 fetchImpl,

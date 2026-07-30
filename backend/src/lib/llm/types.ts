@@ -60,6 +60,12 @@ export type StreamChatParams = {
   systemPrompt: string;
   messages: LlmMessage[];
   tools?: OpenAIToolSchema[];
+  /**
+   * Require this function on the first tool-enabled model round. Later rounds
+   * return to automatic tool selection so the model can fetch, find passages,
+   * and synthesize normally.
+   */
+  requiredFirstToolName?: string;
   maxIterations?: number;
   callbacks?: StreamCallbacks;
   runTools?: (calls: NormalizedToolCall[]) => Promise<NormalizedToolResult[]>;

@@ -512,6 +512,18 @@ export function AssistantMessage({
                 >
                     <span className="font-medium">Searched legal sources</span>{" "}
                     <span>{detail}</span>
+                    {event.providers && event.providers.length > 1 && (
+                        <ul className="mt-1 list-disc pl-5 text-xs">
+                            {event.providers.map((provider) => (
+                                <li key={provider.provider_id}>
+                                    {provider.provider_name}:{" "}
+                                    {provider.status === "succeeded"
+                                        ? `${provider.result_count} ${provider.result_count === 1 ? "result" : "results"}`
+                                        : `failed${provider.error_code ? ` (${provider.error_code})` : ""}`}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                     {event.coverage_warning && (
                         <p className="mt-1 text-xs text-amber-700">
                             {event.coverage_warning}

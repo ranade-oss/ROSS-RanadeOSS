@@ -493,6 +493,39 @@ function cleanLegalAuthority(
   };
 }
 
+function legalSourceFailure(error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message.slice(0, 500)
+      : "Legal source request failed.";
+  const status = Number((error as { status?: unknown })?.status);
+  const errorCode =
+    Number.isInteger(status) && status >= 400
+      ? `http-${status}`
+      : error instanceof Error && error.name === "TimeoutError"
+        ? "timeout"
+        : /not configured|api key|credential|token/i.test(message)
+          ? "not-configured"
+          : /not enabled|disabled|entitlement|authorized/i.test(message)
+            ? "not-authorized"
+            : /invalid|unexpected|no legislation content/i.test(message)
+              ? "invalid-response"
+              : "provider-request-failed";
+  const publicMessage =
+    errorCode === "timeout"
+      ? "The provider request timed out."
+      : errorCode === "not-configured"
+        ? "The provider is not configured for this user."
+        : errorCode === "not-authorized"
+          ? "The provider is not authorized for this request."
+          : errorCode === "invalid-response"
+            ? "The provider returned an invalid response."
+            : errorCode.startsWith("http-")
+              ? `The provider returned HTTP status ${errorCode.slice(5)}.`
+              : "The provider request failed.";
+  return { message: publicMessage, errorCode };
+}
+
 async function executeLegalSourceTool(args: {
   name: string;
   input: Record<string, unknown>;
@@ -614,11 +647,14 @@ async function executeLegalSourceTool(args: {
                     )
                   : [];
             return { provider: target.descriptor, results, available: true };
-          } catch {
+          } catch (error) {
+            const failure = legalSourceFailure(error);
             return {
               provider: target.descriptor,
               results: [],
               available: false,
+              errorCode: failure.errorCode,
+              error: failure.message,
             };
           }
         }),
@@ -644,6 +680,13 @@ async function executeLegalSourceTool(args: {
           providers: searched.map((entry) => ({
             ...entry.provider,
             available: entry.available,
+            result_count: entry.results.length,
+            ...(entry.available
+              ? {}
+              : {
+                  error_code: entry.errorCode,
+                  error: entry.error,
+                }),
           })),
           results,
           ...(coverageWarning ? { coverage_warning: coverageWarning } : {}),
@@ -662,6 +705,18 @@ async function executeLegalSourceTool(args: {
               : "Multiple legal sources",
           query,
           result_count: results.length,
+          providers: searched.map((entry) => ({
+            provider_id: entry.provider.id,
+            provider_name: entry.provider.name,
+            status: entry.available ? "succeeded" : "failed",
+            result_count: entry.results.length,
+            ...(entry.available
+              ? {}
+              : {
+                  error_code: entry.errorCode,
+                  error: entry.error,
+                }),
+          })),
           ...(coverageWarning ? { coverage_warning: coverageWarning } : {}),
         },
       };
@@ -678,6 +733,8 @@ async function executeLegalSourceTool(args: {
       const results = await verifyCanadianCitations(
         parseCanadianCitations(text),
         providers,
+        (item) =>
+          legalSourceProviderContext(item.descriptor.id, db, apiKeys),
       );
       return {
         content: JSON.stringify({
@@ -784,10 +841,7 @@ async function executeLegalSourceTool(args: {
       },
     };
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message.slice(0, 500)
-        : "Legal source request failed.";
+    const { message } = legalSourceFailure(error);
     return {
       content: JSON.stringify({ error: message }),
       event: {

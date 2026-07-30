@@ -83,3 +83,61 @@ test("OpenAI tool limit performs a final synthesis turn", async () => {
     globalThis.fetch = originalFetch;
   }
 });
+
+test("OpenAI can require legal-source discovery on only the first round", async () => {
+  const originalFetch = globalThis.fetch;
+  const requestBodies: Array<Record<string, unknown>> = [];
+  globalThis.fetch = async (_input, init) => {
+    requestBodies.push(
+      JSON.parse(String(init?.body)) as Record<string, unknown>,
+    );
+    return requestBodies.length === 1
+      ? sse([
+          {
+            type: "response.output_item.done",
+            item: {
+              type: "function_call",
+              call_id: "search-1",
+              name: "search_legal_sources",
+              arguments:
+                '{"query":"summary judgment","jurisdiction":"CA-ON","material_type":"decision"}',
+            },
+          },
+        ])
+      : sse([
+          { type: "response.output_text.delta", delta: "Researched answer." },
+        ]);
+  };
+
+  try {
+    await streamOpenAI({
+      model: "gpt-5.6",
+      systemPrompt: "Research before answering.",
+      messages: [{ role: "user", content: "Research summary judgment." }],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "search_legal_sources",
+            description: "Search authorized legal sources.",
+            parameters: { type: "object", properties: {} },
+          },
+        },
+      ],
+      requiredFirstToolName: "search_legal_sources",
+      maxIterations: 1,
+      apiKeys: { openai: "sk-synthetic" },
+      runTools: async () => [
+        { tool_use_id: "search-1", content: '{"results":[]}' },
+      ],
+    });
+
+    assert.deepEqual(requestBodies[0].tool_choice, {
+      type: "function",
+      name: "search_legal_sources",
+    });
+    assert.equal(requestBodies[1].tool_choice, undefined);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

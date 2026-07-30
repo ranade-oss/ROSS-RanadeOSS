@@ -187,3 +187,38 @@ test("verification keeps citation, passage, currency, and treatment states separ
     assert.equal(statuteResult.passageVerification, "verified");
     assert.equal(statuteResult.currencyVerification, "verified");
 });
+
+test("passes per-user provider context through citation verification", async () => {
+    let receivedToken: string | null | undefined;
+    const provider: LegalSourceProvider = {
+        descriptor: {
+            id: "canlii-licensed",
+            name: "CanLII metadata",
+            jurisdictions: ["CA-ON"],
+            kinds: ["decision"],
+            official: false,
+            fullTextStatus: "metadata-only",
+            enabledByDefault: false,
+        },
+        health: async () => ({ ok: true }),
+        verifyCitations: async (_citations, context) => {
+            receivedToken = context?.apiToken;
+            return [
+                {
+                    input: "2024 ONCA 123",
+                    providerId: "canlii-licensed",
+                    status: "verified",
+                    sourceId: "synthetic",
+                    canonicalUrl: "https://www.canlii.org/",
+                },
+            ];
+        },
+    };
+    const [result] = await verifyCanadianCitations(
+        parseCanadianCitations("2024 ONCA 123"),
+        [provider],
+        () => ({ apiToken: "SYNTHETIC-USER-KEY" }),
+    );
+    assert.equal(receivedToken, "SYNTHETIC-USER-KEY");
+    assert.equal(result.citationVerification, "verified");
+});

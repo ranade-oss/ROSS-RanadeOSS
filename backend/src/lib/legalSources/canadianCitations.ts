@@ -1,5 +1,6 @@
 import type {
     JurisdictionCode,
+    LegalSourceContext,
     LegalSourceProvider,
     VerificationState,
 } from "./types";
@@ -248,15 +249,23 @@ export function renderCanadianCitation(
 export async function verifyCanadianCitations(
     citations: ParsedCanadianCitation[],
     providers: LegalSourceProvider[],
+    contextForProvider: (
+        provider: LegalSourceProvider,
+    ) => LegalSourceContext | undefined = () => undefined,
 ): Promise<CanadianCitationVerification[]> {
     return Promise.all(
-        citations.map((citation) => verifyOne(citation, providers)),
+        citations.map((citation) =>
+            verifyOne(citation, providers, contextForProvider),
+        ),
     );
 }
 
 async function verifyOne(
     citation: ParsedCanadianCitation,
     providers: LegalSourceProvider[],
+    contextForProvider: (
+        provider: LegalSourceProvider,
+    ) => LegalSourceContext | undefined,
 ): Promise<CanadianCitationVerification> {
     const base: CanadianCitationVerification = {
         citation,
@@ -280,7 +289,7 @@ async function verifyOne(
                 const result = (
                     await provider.verifyCitations!([
                         stripPinpoint(citation.normalized),
-                    ])
+                    ], contextForProvider(provider))
                 )[0];
                 if (
                     result?.status === "verified" ||
@@ -307,11 +316,14 @@ async function verifyOne(
             item.descriptor.jurisdictions.includes(citation.jurisdiction),
     )) {
         try {
-            const matches = await provider.searchLegislation!({
-                query: stripPinpoint(citation.normalized),
-                jurisdiction: citation.jurisdiction,
-                limit: 10,
-            });
+            const matches = await provider.searchLegislation!(
+                {
+                    query: stripPinpoint(citation.normalized),
+                    jurisdiction: citation.jurisdiction,
+                    limit: 10,
+                },
+                contextForProvider(provider),
+            );
             const match = matches.find((item) =>
                 citationEquivalent(item.citation, citation.normalized),
             );
@@ -322,6 +334,7 @@ async function verifyOne(
                     citation.pinpoint?.type === "rule"
                     ? { section: citation.pinpoint.start }
                     : undefined,
+                contextForProvider(provider),
             );
             return {
                 ...base,

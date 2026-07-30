@@ -100,6 +100,7 @@ async function createChatCompletion(params: {
   model: string;
   messages: ChatMessage[];
   tools?: OpenAIToolSchema[];
+  requiredToolName?: string;
   stream: boolean;
   maxTokens?: number;
   apiKey: string;
@@ -116,7 +117,14 @@ async function createChatCompletion(params: {
       model: params.model,
       messages: params.messages,
       tools: params.tools?.length ? normalizedTools(params.tools) : undefined,
-      tool_choice: params.tools?.length ? "auto" : undefined,
+      tool_choice: params.tools?.length
+        ? params.requiredToolName
+          ? {
+              type: "function",
+              function: { name: params.requiredToolName },
+            }
+          : "auto"
+        : undefined,
       stream: params.stream,
       max_tokens: params.maxTokens ?? 16_384,
     }),
@@ -150,6 +158,10 @@ export async function streamOpenAICompatible(
       model: params.model,
       messages,
       tools: toolsEnabled ? params.tools : [],
+      requiredToolName:
+        iteration === 0 && toolsEnabled
+          ? params.requiredFirstToolName
+          : undefined,
       stream: true,
       apiKey: key,
       signal: params.abortSignal,

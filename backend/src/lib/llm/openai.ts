@@ -172,6 +172,7 @@ async function createResponse(params: {
   previousResponseId?: string;
   reasoningSummary?: boolean;
   reasoningEffort?: ReasoningEffort;
+  requiredToolName?: string;
   apiKey: string;
   signal?: AbortSignal;
 }): Promise<Response> {
@@ -186,6 +187,10 @@ async function createResponse(params: {
       instructions: params.instructions || undefined,
       input: params.input,
       tools: params.tools?.length ? params.tools : undefined,
+      tool_choice:
+        params.tools?.length && params.requiredToolName
+          ? { type: "function", name: params.requiredToolName }
+          : undefined,
       stream: params.stream,
       max_output_tokens: params.maxTokens ?? MAX_OUTPUT_TOKENS,
       previous_response_id: params.previousResponseId,
@@ -256,6 +261,10 @@ export async function streamOpenAI(
         previousResponseId,
         reasoningSummary: !!enableThinking,
         reasoningEffort,
+        requiredToolName:
+          iter === 0 && toolsEnabled
+            ? params.requiredFirstToolName
+            : undefined,
         apiKey: key,
         signal: params.abortSignal,
       });

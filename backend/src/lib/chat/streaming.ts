@@ -16,9 +16,11 @@ import {
   type CourtlistenerToolEvent,
 } from "./tools/courtlistenerTools";
 import {
+  LEGAL_SOURCE_TOOL_NAMES,
   LEGAL_SOURCE_TOOLS,
   type LegalSourceToolEvent,
 } from "./tools/legalSourceTools";
+import { requiresLegalSourceSearch } from "./legalResearchGate";
 import {
   type DocStore,
   type DocIndex,
@@ -207,6 +209,10 @@ export async function runLLMStream(params: {
       role: m.role === "assistant" ? "assistant" : "user",
       content: m.content ?? "",
     }));
+  const requiredFirstToolName =
+    includeResearchTools && requiresLegalSourceSearch(chatMessages)
+      ? LEGAL_SOURCE_TOOL_NAMES.search
+      : undefined;
 
   const events: AssistantEvent[] = [];
   // One assistant turn produces at most one document_versions row per
@@ -339,6 +345,7 @@ export async function runLLMStream(params: {
       systemPrompt,
       messages: chatMessages,
       tools: activeTools as OpenAIToolSchema[],
+      requiredFirstToolName,
       maxIterations: 10,
       apiKeys,
       enableThinking: true,

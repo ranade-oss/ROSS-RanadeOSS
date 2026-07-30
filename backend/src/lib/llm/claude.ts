@@ -137,6 +137,17 @@ export async function streamClaude(
         tools: toolsEnabled && claudeTools.length
           ? (claudeTools as unknown as Tool[])
           : undefined,
+        ...(iter === 0 &&
+        toolsEnabled &&
+        params.requiredFirstToolName
+          ? {
+              tool_choice: {
+                type: "tool",
+                name: params.requiredFirstToolName,
+                disable_parallel_tool_use: true,
+              },
+            }
+          : {}),
         max_tokens: MAX_TOKENS,
         // Claude 4.x models require `thinking.type: "adaptive"` and
         // drive effort via `output_config.effort` rather than a fixed
