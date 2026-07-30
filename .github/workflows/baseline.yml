@@ -110,7 +110,7 @@ jobs:
 
   verify:
     name: verify
-    if: always()
+    if: ${{ always() && !cancelled() }}
     needs: [workflows, backend, frontend, website, governance]
     runs-on: ubuntu-latest
     steps:
