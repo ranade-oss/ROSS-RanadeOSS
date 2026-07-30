@@ -691,6 +691,22 @@ export function useAssistantChat({
                   typeof data.passage_count === "number"
                     ? data.passage_count
                     : undefined,
+                citation_count:
+                  typeof data.citation_count === "number"
+                    ? data.citation_count
+                    : undefined,
+                verified_count:
+                  typeof data.verified_count === "number"
+                    ? data.verified_count
+                    : undefined,
+                partial_count:
+                  typeof data.partial_count === "number"
+                    ? data.partial_count
+                    : undefined,
+                unverified_count:
+                  typeof data.unverified_count === "number"
+                    ? data.unverified_count
+                    : undefined,
                 error: typeof data.error === "string" ? data.error : undefined,
               });
               pushThinkingPlaceholder();

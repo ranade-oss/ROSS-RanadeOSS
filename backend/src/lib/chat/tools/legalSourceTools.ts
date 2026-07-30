@@ -29,6 +29,25 @@ export function normalizeLegalMaterialType(
   return materialType;
 }
 
+export function summarizeCitationVerification(
+  results: Array<{
+    citationVerification: "verified" | "partial" | "unverified" | "unavailable";
+  }>,
+) {
+  const verifiedCount = results.filter(
+    (result) => result.citationVerification === "verified",
+  ).length;
+  const partialCount = results.filter(
+    (result) => result.citationVerification === "partial",
+  ).length;
+  return {
+    citationCount: results.length,
+    verifiedCount,
+    partialCount,
+    unverifiedCount: results.length - verifiedCount - partialCount,
+  };
+}
+
 export const LEGAL_SOURCE_TOOLS = [
   {
     type: "function",
@@ -146,5 +165,9 @@ export type LegalSourceToolEvent =
       provider_name: string | null;
       authority?: Record<string, unknown>;
       passage_count?: number;
+      citation_count?: number;
+      verified_count?: number;
+      partial_count?: number;
+      unverified_count?: number;
       error?: string;
     };

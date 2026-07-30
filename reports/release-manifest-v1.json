@@ -152,8 +152,8 @@
     },
     {
       "path": "backend/src/lib/chat/tools/toolDispatcher.ts",
-      "sha256": "f3ca333b90313fb45a813a5f6880831850dffc350d6652f21f4f1e84999ac47d",
-      "sizeBytes": 84778
+      "sha256": "f27455aa72d9e3bf113aa1a439ebcd052f85e1fa9fd46ed91fe2bdea14ba04df",
+      "sizeBytes": 86662
     },
     {
       "path": "backend/src/middleware/dataBoundary.test.ts",
@@ -402,8 +402,8 @@
     },
     {
       "path": "frontend/src/app/components/assistant/message/EventBlocks.tsx",
-      "sha256": "0a62854a48b18a9c5fc679c62dbea7bfb4b1b728fe445de9da9fac15b69adb32",
-      "sizeBytes": 31522
+      "sha256": "67c2c9d0841263d5cd07d0ca5646ea8136146f81a5b4e311fadcc94071c878fd",
+      "sizeBytes": 32591
     },
     {
       "path": "frontend/src/app/(pages)/account/api-keys/page.tsx",
