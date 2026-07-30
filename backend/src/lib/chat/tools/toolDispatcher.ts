@@ -10,10 +10,12 @@ import {
 } from "./courtlistenerTools";
 import {
   LEGAL_SOURCE_TOOL_NAMES,
+  normalizeLegalMaterialType,
   type LegalSourceToolEvent,
 } from "./legalSourceTools";
 import {
   createLegalSourceRegistry,
+  buildCanLiiSearchUrl,
   parseCanadianCitations,
   verifyCanadianCitations,
   type JurisdictionCode,
@@ -504,25 +506,29 @@ function legalSourceFailure(error: unknown) {
       ? `http-${status}`
       : error instanceof Error && error.name === "TimeoutError"
         ? "timeout"
-        : /not configured|api key|credential|token/i.test(message)
-          ? "not-configured"
-          : /not enabled|disabled|entitlement|authorized/i.test(message)
-            ? "not-authorized"
-            : /invalid|unexpected|no legislation content/i.test(message)
-              ? "invalid-response"
-              : "provider-request-failed";
+        : /no general full-text search endpoint/i.test(message)
+          ? "unsupported-operation"
+          : /not configured|api key|credential|token/i.test(message)
+            ? "not-configured"
+            : /not enabled|disabled|entitlement|authorized/i.test(message)
+              ? "not-authorized"
+              : /invalid|unexpected|no legislation content/i.test(message)
+                ? "invalid-response"
+                : "provider-request-failed";
   const publicMessage =
     errorCode === "timeout"
       ? "The provider request timed out."
-      : errorCode === "not-configured"
-        ? "The provider is not configured for this user."
-        : errorCode === "not-authorized"
-          ? "The provider is not authorized for this request."
-          : errorCode === "invalid-response"
-            ? "The provider returned an invalid response."
-            : errorCode.startsWith("http-")
-              ? `The provider returned HTTP status ${errorCode.slice(5)}.`
-              : "The provider request failed.";
+      : errorCode === "unsupported-operation"
+        ? "CanLII accepted this user's API key, but its REST API does not support general full-text keyword search."
+        : errorCode === "not-configured"
+          ? "The provider is not configured for this user."
+          : errorCode === "not-authorized"
+            ? "The provider is not authorized for this request."
+            : errorCode === "invalid-response"
+              ? "The provider returned an invalid response."
+              : errorCode.startsWith("http-")
+                ? `The provider returned HTTP status ${errorCode.slice(5)}.`
+                : "The provider request failed.";
   return { message: publicMessage, errorCode };
 }
 
@@ -544,9 +550,9 @@ async function executeLegalSourceTool(args: {
       : null;
   const requestedProvider =
     typeof input.provider_id === "string" ? input.provider_id : null;
-  const materialType =
+  let materialType =
     typeof input.material_type === "string" ? input.material_type : "decision";
-  const candidates = registry
+  const enabledProviders = registry
     .list({ jurisdiction: jurisdiction ?? undefined })
     .filter(
       (provider) =>
@@ -554,13 +560,67 @@ async function executeLegalSourceTool(args: {
         settings.enabledSourceProviders.includes(provider.descriptor.id) &&
         (!jurisdiction ||
           settings.enabledJurisdictions.includes(jurisdiction as never)) &&
-        (!requestedProvider || provider.descriptor.id === requestedProvider) &&
-        (materialType === "decision"
-          ? !!provider.searchDecisions || !!provider.fetchDecision
-          : !!provider.searchLegislation || !!provider.fetchLegislation),
+        (!requestedProvider || provider.descriptor.id === requestedProvider),
     );
+  const requestedEnabledProvider =
+    requestedProvider && enabledProviders.length === 1
+      ? enabledProviders[0]
+      : null;
+  if (name !== LEGAL_SOURCE_TOOL_NAMES.search && requestedEnabledProvider) {
+    materialType = normalizeLegalMaterialType(name, materialType, {
+      fetchDecision: Boolean(requestedEnabledProvider.fetchDecision),
+      fetchLegislation: Boolean(requestedEnabledProvider.fetchLegislation),
+    });
+  }
+  const candidates = enabledProviders.filter((provider) =>
+    materialType === "decision"
+      ? !!provider.searchDecisions || !!provider.fetchDecision
+      : !!provider.searchLegislation || !!provider.fetchLegislation,
+  );
   const provider = candidates[0];
   if (!provider) {
+    const incompatibleProvider =
+      requestedProvider && enabledProviders.length === 1
+        ? enabledProviders[0]
+        : null;
+    if (name === LEGAL_SOURCE_TOOL_NAMES.search && incompatibleProvider) {
+      const message = `${incompatibleProvider.descriptor.name} does not support ${materialType} search; the connector remains available for its supported material types.`;
+      return {
+        content: JSON.stringify({
+          providers: [
+            {
+              ...incompatibleProvider.descriptor,
+              available: true,
+              applicable: false,
+              result_count: 0,
+              error_code: "unsupported-material-type",
+              detail: message,
+            },
+          ],
+          results: [],
+          next_required_action:
+            "Use a provider that supports this material type, or search this provider for one of its supported material types.",
+        }),
+        event: {
+          type: "legal_source_search",
+          provider_id: incompatibleProvider.descriptor.id,
+          provider_name: incompatibleProvider.descriptor.name,
+          query: typeof input.query === "string" ? input.query : "",
+          result_count: 0,
+          providers: [
+            {
+              provider_id: incompatibleProvider.descriptor.id,
+              provider_name: incompatibleProvider.descriptor.name,
+              status: "not_applicable",
+              result_count: 0,
+              error_code: "unsupported-material-type",
+              error: message,
+            },
+          ],
+          coverage_warning: message,
+        },
+      };
+    }
     const message = requestedProvider
       ? `Provider ${requestedProvider} is not enabled for this jurisdiction and material type.`
       : `No enabled provider covers ${jurisdiction ?? "the requested jurisdiction"} ${materialType}.`;
@@ -603,7 +663,15 @@ async function executeLegalSourceTool(args: {
       const query = typeof input.query === "string" ? input.query.trim() : "";
       const limit = Math.min(20, Math.max(1, Number(input.limit) || 10));
       const searchTargets = requestedProvider ? [provider] : candidates;
-      const searched = await Promise.all(
+      const searched: Array<{
+        provider: LegalSourceProvider["descriptor"];
+        results: unknown[];
+        available: boolean;
+        status: "succeeded" | "failed" | "not_applicable";
+        errorCode?: string;
+        error?: string;
+        searchUrl?: string;
+      }> = await Promise.all(
         searchTargets.map(async (target) => {
           try {
             const targetContext = legalSourceProviderContext(
@@ -646,15 +714,34 @@ async function executeLegalSourceTool(args: {
                       targetContext,
                     )
                   : [];
-            return { provider: target.descriptor, results, available: true };
+            return {
+              provider: target.descriptor,
+              results,
+              available: true,
+              status: "succeeded" as const,
+            };
           } catch (error) {
             const failure = legalSourceFailure(error);
+            const searchUrl =
+              target.descriptor.id === "canlii-licensed" &&
+              failure.errorCode === "unsupported-operation"
+                ? buildCanLiiSearchUrl({
+                    query,
+                    jurisdiction: jurisdiction ?? undefined,
+                    language: input.language === "fr" ? "fr" : "en",
+                  })
+                : undefined;
             return {
               provider: target.descriptor,
               results: [],
-              available: false,
+              available: failure.errorCode === "unsupported-operation",
+              status:
+                failure.errorCode === "unsupported-operation"
+                  ? ("not_applicable" as const)
+                  : ("failed" as const),
               errorCode: failure.errorCode,
               error: failure.message,
+              ...(searchUrl ? { searchUrl } : {}),
             };
           }
         }),
@@ -680,12 +767,14 @@ async function executeLegalSourceTool(args: {
           providers: searched.map((entry) => ({
             ...entry.provider,
             available: entry.available,
+            applicable: entry.status !== "not_applicable",
             result_count: entry.results.length,
-            ...(entry.available
+            ...(entry.status === "succeeded"
               ? {}
               : {
                   error_code: entry.errorCode,
                   error: entry.error,
+                  ...(entry.searchUrl ? { search_url: entry.searchUrl } : {}),
                 }),
           })),
           results,
@@ -696,9 +785,7 @@ async function executeLegalSourceTool(args: {
         event: {
           type: "legal_source_search",
           provider_id:
-            searchTargets.length === 1
-              ? searchTargets[0].descriptor.id
-              : null,
+            searchTargets.length === 1 ? searchTargets[0].descriptor.id : null,
           provider_name:
             searchTargets.length === 1
               ? searchTargets[0].descriptor.name
@@ -708,13 +795,14 @@ async function executeLegalSourceTool(args: {
           providers: searched.map((entry) => ({
             provider_id: entry.provider.id,
             provider_name: entry.provider.name,
-            status: entry.available ? "succeeded" : "failed",
+            status: entry.status,
             result_count: entry.results.length,
-            ...(entry.available
+            ...(entry.status === "succeeded"
               ? {}
               : {
                   error_code: entry.errorCode,
                   error: entry.error,
+                  ...(entry.searchUrl ? { search_url: entry.searchUrl } : {}),
                 }),
           })),
           ...(coverageWarning ? { coverage_warning: coverageWarning } : {}),
@@ -733,8 +821,7 @@ async function executeLegalSourceTool(args: {
       const results = await verifyCanadianCitations(
         parseCanadianCitations(text),
         providers,
-        (item) =>
-          legalSourceProviderContext(item.descriptor.id, db, apiKeys),
+        (item) => legalSourceProviderContext(item.descriptor.id, db, apiKeys),
       );
       return {
         content: JSON.stringify({

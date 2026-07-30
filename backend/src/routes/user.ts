@@ -44,6 +44,7 @@ import {
 import { findProfileUserByEmail } from "../lib/userLookup";
 import { loadRuntimeConfig } from "../config/runtime";
 import { recordSecurityAuditEvent } from "../lib/securityAudit";
+import { CanLiiApiError, CanLiiClient } from "../lib/legalSources/canliiClient";
 
 export const userRouter = Router();
 
@@ -899,6 +900,24 @@ userRouter.put(
         return void res.status(400).json({
           detail: `Provider ${provider} is not approved for this hosted deployment.`,
         });
+      }
+      if (provider === "canlii" && apiKey?.trim()) {
+        try {
+          await new CanLiiClient(apiKey).listCaseDatabases("en");
+        } catch (err) {
+          const detail =
+            err instanceof CanLiiApiError
+              ? err.message
+              : "CanLII could not validate this API key.";
+          const status =
+            err instanceof CanLiiApiError &&
+            err.status !== undefined &&
+            err.status !== 401 &&
+            err.status !== 403
+              ? 502
+              : 400;
+          return void res.status(status).json({ detail });
+        }
       }
       await saveUserApiKey(userId, provider, apiKey, db);
       const status = await getUserApiKeyStatus(userId, db);

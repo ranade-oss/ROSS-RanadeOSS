@@ -569,12 +569,12 @@ export class A2ajProvider implements LegalSourceProvider {
       citation,
       language,
       canonicalUrl:
-        languageValue(row, "url", language) ?? "https://a2aj.ca/data/",
-      alternateLanguageUrl: languageValue(
-        row,
-        "url",
-        language === "en" ? "fr" : "en",
-      ),
+        languageValue(row, "source_url", language) ??
+        languageValue(row, "url", language) ??
+        "https://a2aj.ca/data/",
+      alternateLanguageUrl:
+        languageValue(row, "source_url", language === "en" ? "fr" : "en") ??
+        languageValue(row, "url", language === "en" ? "fr" : "en"),
       currentToDate: normalizeDate(
         languageValue(row, "scraped_timestamp", language),
       ),
@@ -774,14 +774,21 @@ function normalizeCoverageRow(
         ? "legislation"
         : "decision",
     documentCount:
-      number(row.document_count) ?? number(row.count) ?? number(row.rows),
+      number(row.number_of_documents) ??
+      number(row.document_count) ??
+      number(row.count) ??
+      number(row.rows),
     firstDocumentDate: normalizeDate(
-      text(row.first_document_date) ??
+      text(row.earliest_document_date) ??
+        text(row.first_document_date) ??
         text(row.first_date) ??
         text(row.min_date),
     ),
     lastDocumentDate: normalizeDate(
-      text(row.last_document_date) ?? text(row.last_date) ?? text(row.max_date),
+      text(row.latest_document_date) ??
+        text(row.last_document_date) ??
+        text(row.last_date) ??
+        text(row.max_date),
     ),
     checkedAt,
     warnings: [...A2AJ_COVERAGE_WARNINGS],
@@ -853,6 +860,7 @@ function languageValue(
     | "name"
     | "document_date"
     | "url"
+    | "source_url"
     | "unofficial_text"
     | "scraped_timestamp",
   language: LegalSourceLanguage,

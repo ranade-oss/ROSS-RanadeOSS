@@ -24,6 +24,13 @@ test("prior-turn context identifies every legal-source provider attempt", async 
           result_count: 0,
           error_code: "http-503",
         },
+        {
+          provider_id: "justice-laws-canada",
+          provider_name: "Justice Laws Website",
+          status: "not_applicable",
+          result_count: 0,
+          error_code: "unsupported-material-type",
+        },
       ],
     },
   ];
@@ -59,4 +66,8 @@ test("prior-turn context identifies every legal-source provider attempt", async 
   const assistant = result[0].content ?? "";
   assert.match(assistant, /A2AJ: succeeded, 2 results/);
   assert.match(assistant, /Ontario e-Laws: failed, 0 results, reason http-503/);
+  assert.match(
+    assistant,
+    /Justice Laws Website: not applicable, 0 results, reason unsupported-material-type/,
+  );
 });

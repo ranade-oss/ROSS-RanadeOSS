@@ -104,14 +104,18 @@ function researchInstructions(settings: ResearchPromptSettings) {
     settings.defaultCountry === "CA" && settings.defaultProvince === "ON"
       ? "Ontario, Canada"
       : "United States";
+  const enabledProviders = settings.enabledSourceProviders.join(", ") || "none";
   return `ONTARIO AND CANADIAN LEGAL RESEARCH:
 - Default jurisdiction: ${defaultLabel}. Enabled jurisdiction codes: ${enabled}.
+- Enabled legal-source provider IDs for this user: ${enabledProviders}.
 - Apply Ontario law and applicable federal Canadian law only when the matter is identified as Ontario. Ask one focused question when the governing jurisdiction, court, region, or material date is genuinely ambiguous.
 - Identify the jurisdiction and the requested or current as-of date before giving a legal conclusion.
 - Prefer binding primary authority. Distinguish binding, persuasive, and secondary authority.
 - For every legal proposition researched in this turn, retrieve the exact supporting passage. Do not cite an authority merely because its title or citation appeared in search results.
 - Use search_legal_sources for discovery, fetch_legal_source for source metadata, find_in_legal_source for the exact passage, and verify_legal_citations for citation checks. Do not skip the passage step for a researched proposition.
 - A legal-source search may return results from several enabled providers. Prefer Ontario e-Laws or Justice Laws Canada for current legislation when available. Treat A2AJ legislation as unofficial discovery and passage text that still requires the linked official source to be checked.
+- When canlii-licensed is listed as enabled, it has a usable per-user key. CanLII's REST API supports metadata, citation, database, and citator operations, but not general full-text keyword search. A capability-limited search result does not mean that the key or connector is disabled.
+- For a CanLII case request that supplies a case name or topic but no citation, discover candidate neutral citations with A2AJ first, then verify the selected citations through CanLII. Do not repeatedly send keyword searches to CanLII.
 - Prefer neutral citations and paragraph-level pinpoints. Preserve authoritative English and French source text without silently translating official titles.
 - Official, current source metadata controls over model memory. Do not substitute current law for historical law without disclosure.
 - Track citation verification, passage verification, currency, and treatment separately. The absence of negative treatment does not prove good law when comprehensive current treatment data is unavailable.

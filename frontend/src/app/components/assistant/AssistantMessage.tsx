@@ -519,7 +519,9 @@ export function AssistantMessage({
                                     {provider.provider_name}:{" "}
                                     {provider.status === "succeeded"
                                         ? `${provider.result_count} ${provider.result_count === 1 ? "result" : "results"}`
-                                        : `failed${provider.error_code ? ` (${provider.error_code})` : ""}`}
+                                        : provider.status === "not_applicable"
+                                          ? "not applicable to this search type"
+                                          : `failed${provider.error_code ? ` (${provider.error_code})` : ""}`}
                                 </li>
                             ))}
                         </ul>
@@ -585,9 +587,7 @@ export function AssistantMessage({
         }
         if (event.type === "courtlistener_get_cases") {
             const caseCount = event.case_count ?? event.cluster_ids.length;
-            const displayLabel = `${caseCount} ${
-                caseCount === 1 ? "case" : "cases"
-            }`;
+            const displayLabel = `${caseCount} ${caseCount === 1 ? "case" : "cases"}`;
             const detail = event.error ? event.error : undefined;
             const items: CourtListenerBlockItem[] =
                 event.cases?.map((caseItem) => ({

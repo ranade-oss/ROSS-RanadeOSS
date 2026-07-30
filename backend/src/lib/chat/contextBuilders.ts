@@ -1,7 +1,5 @@
 import { createServerSupabase } from "../supabase";
-import {
-  attachActiveVersionPaths,
-} from "../documentVersions";
+import { attachActiveVersionPaths } from "../documentVersions";
 import {
   type DocStore,
   type DocIndex,
@@ -14,7 +12,6 @@ import {
 import { buildSystemPrompt, type ResearchPromptSettings } from "./prompts";
 import { parseCitations, createCitation } from "./citations";
 import type { AssistantEvent } from "./streaming";
-
 
 export async function enrichWithPriorEvents(
   messages: ChatMessage[],
@@ -50,7 +47,9 @@ export async function enrichWithPriorEvents(
   const lines: string[] = [];
   for (const ev of content as Record<string, unknown>[]) {
     if (ev?.type === "doc_created") {
-      lines.push(`- generated_document → ${refFor(ev.document_id, ev.filename)}`);
+      lines.push(
+        `- generated_document → ${refFor(ev.document_id, ev.filename)}`,
+      );
     } else if (ev?.type === "doc_edited") {
       lines.push(`- edit_document → ${refFor(ev.document_id, ev.filename)}`);
     } else if (ev?.type === "doc_read") {
@@ -89,10 +88,7 @@ export async function enrichWithPriorEvents(
           lines.push("- user skipped an input");
         } else if (row.kind === "choice" && typeof row.answer === "string") {
           lines.push(`- user answered: "${row.answer}"`);
-        } else if (
-          row.kind === "documents" &&
-          Array.isArray(row.filenames)
-        ) {
+        } else if (row.kind === "documents" && Array.isArray(row.filenames)) {
           lines.push(
             `- user attached documents: ${row.filenames.join(", ") || "none"}`,
           );
@@ -111,7 +107,11 @@ export async function enrichWithPriorEvents(
                 ? attempt.provider_id
                 : "unknown provider";
           const status =
-            attempt.status === "succeeded" ? "succeeded" : "failed";
+            attempt.status === "succeeded"
+              ? "succeeded"
+              : attempt.status === "not_applicable"
+                ? "not applicable"
+                : "failed";
           const count =
             typeof attempt.result_count === "number"
               ? `, ${attempt.result_count} result${attempt.result_count === 1 ? "" : "s"}`
@@ -129,8 +129,7 @@ export async function enrichWithPriorEvents(
           typeof ev.provider_name === "string"
             ? ev.provider_name
             : "legal sources";
-        const count =
-          typeof ev.result_count === "number" ? ev.result_count : 0;
+        const count = typeof ev.result_count === "number" ? ev.result_count : 0;
         lines.push(
           `- legal-source search → ${provider}: ${ev.error ? "failed" : "completed"}, ${count} result${count === 1 ? "" : "s"}`,
         );
@@ -235,9 +234,7 @@ export function extractCitations(
   docIndex: DocIndex,
   _events?: ({ type: string } & Record<string, unknown>[]) | unknown[],
 ): unknown[] {
-  return parseCitations(fullText).map((c) =>
-    createCitation(c, docIndex),
-  );
+  return parseCitations(fullText).map((c) => createCitation(c, docIndex));
 }
 
 export function stripTransientAssistantEvents(events: AssistantEvent[]) {
@@ -345,13 +342,9 @@ export async function appendAssistantEventsToLastAssistantMessage(
     content: unknown;
     citations?: unknown;
   };
-  const existing = Array.isArray(row.content)
-    ? row.content
-    : [];
+  const existing = Array.isArray(row.content) ? row.content : [];
   const next = [...existing, ...events];
-  const existingCitations = Array.isArray(row.citations)
-    ? row.citations
-    : [];
+  const existingCitations = Array.isArray(row.citations) ? row.citations : [];
   const nextCitations =
     citations && citations.length > 0
       ? [...existingCitations, ...citations]

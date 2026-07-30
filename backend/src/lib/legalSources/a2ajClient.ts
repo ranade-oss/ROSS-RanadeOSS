@@ -19,6 +19,8 @@ const a2ajDocumentSchema = z
         document_date_fr: z.string().nullish(),
         url_en: z.string().nullish(),
         url_fr: z.string().nullish(),
+        source_url_en: z.string().nullish(),
+        source_url_fr: z.string().nullish(),
         unofficial_text_en: z.string().nullish(),
         unofficial_text_fr: z.string().nullish(),
         scraped_timestamp_en: z.string().nullish(),
@@ -142,9 +144,7 @@ export class A2ajClient {
         return documentResultsSchema.parse(raw).results[0];
     }
 
-    async coverage(
-        docType: "cases" | "laws",
-    ): Promise<A2ajCoverageRow[]> {
+    async coverage(docType: "cases" | "laws"): Promise<A2ajCoverageRow[]> {
         const params = new URLSearchParams({ doc_type: docType });
         const raw = await this.request(`/coverage?${params}`);
         const direct = coverageRowsSchema.safeParse(raw);

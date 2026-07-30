@@ -77,8 +77,8 @@
     },
     {
       "path": "backend/package.json",
-      "sha256": "2afc7728ea77ecb27d0ba17b56dfb237424bb4cbd5491bafc1f2e8ff27a83823",
-      "sizeBytes": 1592
+      "sha256": "51d850edb17c47a0f0f7a3254079579ea34a8b20d8260d2ba49e7bafc6278bca",
+      "sizeBytes": 1620
     },
     {
       "path": "backend/scripts/restore-storage-exercise.mjs",
@@ -147,13 +147,13 @@
     },
     {
       "path": "backend/src/lib/userApiKeys.ts",
-      "sha256": "36a12bb7bd532f6d9e885cc1668ad0b454c6c0ee3ece19aeab219c359c9a16bf",
-      "sizeBytes": 6580
+      "sha256": "91d015faf8d2c0b35a09a8cb3ee0bca830cdc93da931fea83bdddeb72f8168fd",
+      "sizeBytes": 6727
     },
     {
       "path": "backend/src/lib/chat/tools/toolDispatcher.ts",
-      "sha256": "c0e2560cbc2907b88d308ec20c22f28950708394ec229dcbadd02ac379493174",
-      "sizeBytes": 81126
+      "sha256": "f3ca333b90313fb45a813a5f6880831850dffc350d6652f21f4f1e84999ac47d",
+      "sizeBytes": 84778
     },
     {
       "path": "backend/src/middleware/dataBoundary.test.ts",
@@ -187,8 +187,8 @@
     },
     {
       "path": "backend/src/routes/user.ts",
-      "sha256": "758c53352f6232338940b64908f95ff7db297a07e3d9994f7eac60283af0fefa",
-      "sizeBytes": 41325
+      "sha256": "b83e5625e93d828a657d05f506b32cc6379ac95e9563448805df79aa504b59be",
+      "sizeBytes": 42010
     },
     {
       "path": "config/legal-source-operations.v1.json",

@@ -5,6 +5,30 @@ export const LEGAL_SOURCE_TOOL_NAMES = {
   verify: "verify_legal_citations",
 } as const;
 
+export function normalizeLegalMaterialType(
+  operation: string,
+  materialType: string,
+  capabilities: {
+    fetchDecision: boolean;
+    fetchLegislation: boolean;
+  },
+) {
+  if (operation === LEGAL_SOURCE_TOOL_NAMES.search) return materialType;
+  if (
+    materialType === "decision" &&
+    !capabilities.fetchDecision &&
+    capabilities.fetchLegislation
+  )
+    return "legislation";
+  if (
+    materialType !== "decision" &&
+    !capabilities.fetchLegislation &&
+    capabilities.fetchDecision
+  )
+    return "decision";
+  return materialType;
+}
+
 export const LEGAL_SOURCE_TOOLS = [
   {
     type: "function",
@@ -106,10 +130,11 @@ export type LegalSourceToolEvent =
       providers?: Array<{
         provider_id: string;
         provider_name: string;
-        status: "succeeded" | "failed";
+        status: "succeeded" | "failed" | "not_applicable";
         result_count: number;
         error_code?: string;
         error?: string;
+        search_url?: string;
       }>;
       coverage_warning?: string;
       error?: string;

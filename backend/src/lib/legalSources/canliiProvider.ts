@@ -112,7 +112,7 @@ export class CanLiiMetadataProvider implements LegalSourceProvider {
     const database = resolveDatabase(databases, input.court, citation);
     if (!database)
       throw new CanLiiApiError(
-        "The CanLII REST API has no general full-text search endpoint. Supply a CanLII database or a neutral citation, or open the generated CanLII search link.",
+        "CanLII accepted the user's API key, but its REST API has no general full-text search endpoint. Supply a CanLII database or a neutral citation, or use the generated CanLII search link.",
       );
 
     if (citation) {
