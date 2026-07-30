@@ -109,7 +109,12 @@ export class CanLiiMetadataProvider implements LegalSourceProvider {
     const language = input.language ?? "en";
     const databases = await client.listCaseDatabases(language);
     const citation = parseNeutralCitation(input.query);
-    const database = resolveDatabase(databases, input.court, citation);
+    const browseRequest = isBrowseRequest(input.query);
+    const database =
+      resolveDatabase(databases, input.court, citation) ??
+      (browseRequest
+        ? resolveBrowseDatabase(databases, input.jurisdiction)
+        : null);
     if (!database)
       throw new CanLiiApiError(
         "CanLII accepted the user's API key, but its REST API has no general full-text search endpoint. Supply a CanLII database or a neutral citation, or use the generated CanLII search link.",
@@ -133,7 +138,7 @@ export class CanLiiMetadataProvider implements LegalSourceProvider {
       decisionDateAfter: input.from,
       decisionDateBefore: input.to,
     });
-    const terms = searchTerms(input.query);
+    const terms = browseRequest ? [] : searchTerms(input.query);
     const matched = cases
       .filter((item) => {
         const haystack =
@@ -156,10 +161,25 @@ export class CanLiiMetadataProvider implements LegalSourceProvider {
   }
 
   async fetchDecision(sourceId: string, context?: LegalSourceContext) {
-    const [databaseId, caseId] = sourceId.split("/", 2);
+    let resolvedSourceId = sourceId.trim();
+    if (!resolvedSourceId.includes("/")) {
+      const verification = (
+        await this.verifyCitations([resolvedSourceId], context)
+      )[0];
+      if (
+        !verification?.sourceId ||
+        (verification.status !== "verified" &&
+          verification.status !== "partial")
+      )
+        throw new CanLiiApiError(
+          "CanLII could not resolve this neutral citation to a metadata record.",
+        );
+      resolvedSourceId = verification.sourceId;
+    }
+    const [databaseId, caseId] = resolvedSourceId.split("/", 2);
     if (!databaseId || !caseId)
       throw new CanLiiApiError(
-        "A CanLII metadata source id must be databaseId/caseId.",
+        "A CanLII metadata source id must be databaseId/caseId or a neutral citation.",
       );
     const client = this.client(context);
     const databases = await client.listCaseDatabases("en");
@@ -343,6 +363,31 @@ function searchTerms(value: string) {
     .split(/\s+/)
     .map((item) => item.replace(/[^\p{L}\p{N}-]/gu, ""))
     .filter((item) => item.length >= 2);
+}
+
+function isBrowseRequest(value: string) {
+  const normalized = value.toLocaleLowerCase("en-CA").trim();
+  return (
+    normalized.length === 0 ||
+    /\b(random|arbitrary|sample|some|recent|latest|browse)\b/.test(normalized)
+  );
+}
+
+function resolveBrowseDatabase(
+  databases: CanLiiCaseDatabase[],
+  jurisdiction: JurisdictionCode | undefined,
+) {
+  const preferred =
+    jurisdiction === "CA-ON"
+      ? ["onca", "onsc", "oncj"]
+      : jurisdiction === "CA"
+        ? ["csc-scc", "caf", "cf"]
+        : [];
+  return (
+    databases.find((item) =>
+      preferred.includes(item.databaseId.toLocaleLowerCase("en-CA")),
+    ) ?? null
+  );
 }
 
 function citationMatches(input: string, returned: string | null | undefined) {

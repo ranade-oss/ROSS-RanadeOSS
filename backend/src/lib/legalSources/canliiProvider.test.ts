@@ -9,6 +9,16 @@ const databases = [
     jurisdiction: "on",
     name: "Ontario Superior Court of Justice",
   },
+  {
+    databaseId: "onca",
+    jurisdiction: "on",
+    name: "Court of Appeal for Ontario",
+  },
+  {
+    databaseId: "csc-scc",
+    jurisdiction: "ca",
+    name: "Supreme Court of Canada",
+  },
 ];
 
 const metadata = {
@@ -98,4 +108,64 @@ test("CanLII topical search remains a user-directed link rather than website cra
   );
   assert.match(url, /^https:\/\/www\.canlii\.org\/en\/on\/onsc\//);
   assert.match(url, /text=defamation/);
+});
+
+test("CanLII can browse metadata for sample cases without full-text keyword search", async () => {
+  const listed = [
+    {
+      databaseId: "csc-scc",
+      caseId: "2016scc27",
+      title: "R. v. Jordan",
+      citation: "2016 SCC 27",
+    },
+  ];
+  const client = {
+    listCaseDatabases: async () => databases,
+    listCases: async (input: { databaseId: string }) => {
+      assert.equal(input.databaseId, "csc-scc");
+      return listed;
+    },
+    getCase: async () => ({
+      ...metadata,
+      databaseId: "csc-scc",
+      caseId: "2016scc27",
+      title: "R. v. Jordan",
+      citation: "2016 SCC 27",
+    }),
+  } as unknown as CanLiiClient;
+  const provider = new CanLiiMetadataProvider(() => client);
+
+  const results = await provider.searchDecisions(
+    { query: "some random cases", jurisdiction: "CA", limit: 3 },
+    { apiToken: "SYNTHETIC-USER-KEY" },
+  );
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].citation, "2016 SCC 27");
+  assert.equal(results[0].fullTextStatus, "metadata-only");
+});
+
+test("CanLII fetch accepts an A2AJ neutral-citation source id", async () => {
+  const requested: string[] = [];
+  const client = {
+    listCaseDatabases: async () => databases,
+    getCase: async (databaseId: string, caseId: string) => {
+      requested.push(`${databaseId}/${caseId}`);
+      return {
+        ...metadata,
+        databaseId: "csc-scc",
+        caseId: "2016scc27",
+        title: "R. v. Jordan",
+        citation: "2016 SCC 27",
+      };
+    },
+  } as unknown as CanLiiClient;
+  const provider = new CanLiiMetadataProvider(() => client);
+
+  const result = await provider.fetchDecision("2016 SCC 27", {
+    apiToken: "SYNTHETIC-USER-KEY",
+  });
+
+  assert.equal(result.citation, "2016 SCC 27");
+  assert.deepEqual(requested, ["csc-scc/2016scc27", "csc-scc/2016scc27"]);
 });

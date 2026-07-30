@@ -255,6 +255,11 @@ export function LegalAuthorityBlock({
 }) {
     const authority = event.authority;
     const hasError = !!event.error;
+    const allCitationsVerified =
+        event.action === "verified" &&
+        typeof event.citation_count === "number" &&
+        event.citation_count > 0 &&
+        event.verified_count === event.citation_count;
     const title =
         authority?.title ||
         authority?.citation ||
@@ -273,7 +278,11 @@ export function LegalAuthorityBlock({
         <EventBlock
             showConnector={showConnector}
             dotColor={
-                hasError ? "red" : status === "verified" ? "green" : "gray"
+                hasError
+                    ? "red"
+                    : status === "verified" || allCitationsVerified
+                      ? "green"
+                      : "gray"
             }
         >
             <details className="group">
@@ -292,6 +301,20 @@ export function LegalAuthorityBlock({
                 </summary>
                 {event.error ? (
                     <p className="mt-2 text-xs text-red-600">{event.error}</p>
+                ) : event.action === "verified" &&
+                  typeof event.citation_count === "number" ? (
+                    <p className="mt-2 text-xs text-gray-600">
+                        {event.verified_count ?? 0} of {event.citation_count}{" "}
+                        citation
+                        {event.citation_count === 1 ? "" : "s"} verified
+                        {(event.partial_count ?? 0) > 0
+                            ? `; ${event.partial_count} partially matched`
+                            : ""}
+                        {(event.unverified_count ?? 0) > 0
+                            ? `; ${event.unverified_count} unverified`
+                            : ""}
+                        .
+                    </p>
                 ) : authority ? (
                     <div className="mt-2 space-y-2 rounded-md border border-gray-200 bg-white/60 p-3 text-xs text-gray-600">
                         <div className="flex flex-wrap gap-1.5">

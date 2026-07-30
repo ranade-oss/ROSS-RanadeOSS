@@ -285,6 +285,10 @@ export type AssistantEvent =
       provider_name: string | null;
       authority?: LegalAuthoritySummary;
       passage_count?: number;
+      citation_count?: number;
+      verified_count?: number;
+      partial_count?: number;
+      unverified_count?: number;
       error?: string;
       isStreaming?: boolean;
     }

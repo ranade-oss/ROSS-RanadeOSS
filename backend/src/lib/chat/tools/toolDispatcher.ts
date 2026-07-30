@@ -11,6 +11,7 @@ import {
 import {
   LEGAL_SOURCE_TOOL_NAMES,
   normalizeLegalMaterialType,
+  summarizeCitationVerification,
   type LegalSourceToolEvent,
 } from "./legalSourceTools";
 import {
@@ -823,20 +824,61 @@ async function executeLegalSourceTool(args: {
         providers,
         (item) => legalSourceProviderContext(item.descriptor.id, db, apiKeys),
       );
+      const { citationCount, verifiedCount, partialCount, unverifiedCount } =
+        summarizeCitationVerification(results);
+      const verifyingProviderIds = [
+        ...new Set(
+          results
+            .filter(
+              (result) =>
+                result.citationVerification === "verified" ||
+                result.citationVerification === "partial",
+            )
+            .map((result) => result.providerId)
+            .filter((value): value is string => Boolean(value)),
+        ),
+      ];
+      const verifyingProvider =
+        verifyingProviderIds.length === 1
+          ? registry.get(verifyingProviderIds[0])?.descriptor
+          : null;
+      const verificationError =
+        citationCount === 0
+          ? "No recognizable Canadian citations were supplied for verification."
+          : verifiedCount === 0
+            ? "No supplied citation was verified by an enabled legal-source provider."
+            : undefined;
       return {
         content: JSON.stringify({
           results,
+          summary: {
+            citation_count: citationCount,
+            verified_count: verifiedCount,
+            partial_count: partialCount,
+            unverified_count: unverifiedCount,
+          },
           warning:
-            "Citation, passage, currency, and treatment verification are separate.",
+            "Only results whose citationVerification value is verified may be described as citation-verified. Tool completion alone is not verification. Citation, passage, currency, and treatment verification are separate.",
+          ...(verificationError
+            ? {
+                next_required_action:
+                  "Do not describe these citations as verified. Use a compatible provider or disclose that verification was unavailable.",
+              }
+            : {}),
         }),
         event: {
           type: "legal_authority",
           action: "verified",
-          provider_id: null,
-          provider_name: null,
+          provider_id: verifyingProvider?.id ?? null,
+          provider_name: verifyingProvider?.name ?? null,
           passage_count: results.filter(
             (result) => result.passageVerification === "verified",
           ).length,
+          citation_count: citationCount,
+          verified_count: verifiedCount,
+          partial_count: partialCount,
+          unverified_count: unverifiedCount,
+          ...(verificationError ? { error: verificationError } : {}),
         },
       };
     }
