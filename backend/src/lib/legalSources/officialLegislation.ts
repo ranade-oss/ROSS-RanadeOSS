@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
+import { A2ajClient, type A2ajDocument } from "./a2ajClient";
 import type {
     JurisdictionCode,
     LegalLegislationDocument,
@@ -26,8 +27,18 @@ type OntarioDocumentApiResponse = {
     alias?: unknown;
     state?: unknown;
     title?: unknown;
+    actName?: unknown;
     dateFrom?: unknown;
 };
+
+const JUSTICE_LOOKUP_URL =
+    "https://raw.githubusercontent.com/justicecanada/laws-lois-xml/main/lookup/lookup.xml";
+const ONTARIO_DISCOVERY_DATASETS = [
+    "LEGISLATION-ON",
+    "REGULATIONS-ON",
+] as const;
+const dynamicOntarioEntries = new Map<string, LegislationEntry>();
+let liveFederalEntriesPromise: Promise<LegislationEntry[]> | null = null;
 
 const ONTARIO_ENTRIES: LegislationEntry[] = [
     entry(
@@ -151,7 +162,10 @@ export class OntarioELawsProvider implements LegalSourceProvider {
         enabledByDefault: true,
     };
 
-    constructor(private readonly fetchImpl: typeof fetch = fetch) {}
+    constructor(
+        private readonly fetchImpl: typeof fetch = fetch,
+        private readonly discoveryClient = new A2ajClient(),
+    ) {}
 
     async health() {
         try {
@@ -162,13 +176,11 @@ export class OntarioELawsProvider implements LegalSourceProvider {
             return document.fullText && document.currentToDate
                 ? {
                       ok: true,
-                      detail:
-                          "Ontario e-Laws document and currency APIs returned current legislation.",
+                      detail: "Ontario e-Laws document and currency APIs returned current legislation.",
                   }
                 : {
                       ok: false,
-                      detail:
-                          "Ontario e-Laws retrieval did not return legislation text and currency metadata.",
+                      detail: "Ontario e-Laws retrieval did not return legislation text and currency metadata.",
                   };
         } catch (error) {
             return {
@@ -187,7 +199,44 @@ export class OntarioELawsProvider implements LegalSourceProvider {
         kind?: "legislation" | "regulation" | "rule";
         limit?: number;
     }) {
-        return searchEntries(ONTARIO_ENTRIES, input, this.descriptor.id);
+        const limit = Math.min(50, Math.max(1, input.limit ?? 10));
+        const datasets =
+            input.kind === "legislation"
+                ? [ONTARIO_DISCOVERY_DATASETS[0]]
+                : input.kind === "regulation" || input.kind === "rule"
+                  ? [ONTARIO_DISCOVERY_DATASETS[1]]
+                  : [...ONTARIO_DISCOVERY_DATASETS];
+        try {
+            const responses = await Promise.all(
+                datasets.map((dataset) =>
+                    this.discoveryClient.search({
+                        query: input.query,
+                        docType: "laws",
+                        dataset,
+                        language: input.language,
+                        size: limit,
+                    }),
+                ),
+            );
+            const discovered = responses
+                .flatMap((response) => response.results)
+                .map(ontarioEntryFromA2aj)
+                .filter((item): item is LegislationEntry => item !== null);
+            for (const item of discovered)
+                dynamicOntarioEntries.set(item.sourceId, item);
+            const combined = dedupeEntries([...ONTARIO_ENTRIES, ...discovered]);
+            return searchEntries(
+                combined,
+                { ...input, limit },
+                this.descriptor.id,
+            );
+        } catch {
+            return searchEntries(
+                ONTARIO_ENTRIES,
+                { ...input, limit },
+                this.descriptor.id,
+            );
+        }
     }
 
     async fetchLegislation(
@@ -202,7 +251,11 @@ export class OntarioELawsProvider implements LegalSourceProvider {
             throw new Error(
                 "Ontario historical-version retrieval is not enabled until an official stable interface is validated.",
             );
-        const item = requireEntry(ONTARIO_ENTRIES, sourceId);
+        const item =
+            ONTARIO_ENTRIES.find((entry) => entry.sourceId === sourceId) ??
+            dynamicOntarioEntries.get(sourceId) ??
+            ontarioEntryFromSourceId(sourceId);
+        if (!item) throw new Error(`Unknown legislation source: ${sourceId}`);
         const language = input.language ?? "en";
         const url =
             language === "fr" && item.alternateLanguageUrl
@@ -232,11 +285,18 @@ export class OntarioELawsProvider implements LegalSourceProvider {
         const sections = input.section
             ? filterSection(allSections, input.section)
             : allSections;
-        const summary = legislationSummary(item, this.descriptor.id, language, {
-            currentToDate: normalizeLegislationDate(rawCurrencyDate.trim()),
-            lastAmendedDate: null,
-            verification: "verified",
-        });
+        const identifiedItem = identifyOntarioEntry(item, payload, language);
+        dynamicOntarioEntries.set(identifiedItem.sourceId, identifiedItem);
+        const summary = legislationSummary(
+            identifiedItem,
+            this.descriptor.id,
+            language,
+            {
+                currentToDate: normalizeLegislationDate(rawCurrencyDate.trim()),
+                lastAmendedDate: null,
+                verification: "verified",
+            },
+        );
         return document(summary, rawDocument, fullText, sections, {
             source: "Ontario e-Laws official document API",
             apiUrl,
@@ -271,13 +331,11 @@ export class JusticeLawsProvider implements LegalSourceProvider {
             return document.fullText && document.currentToDate
                 ? {
                       ok: true,
-                      detail:
-                          "Justice Laws production XML path returned current legislation.",
+                      detail: "Justice Laws production XML path returned current legislation.",
                   }
                 : {
                       ok: false,
-                      detail:
-                          "Justice Laws retrieval did not return legislation text and currency metadata.",
+                      detail: "Justice Laws retrieval did not return legislation text and currency metadata.",
                   };
         } catch (error) {
             return {
@@ -296,7 +354,8 @@ export class JusticeLawsProvider implements LegalSourceProvider {
         kind?: "legislation" | "regulation" | "rule";
         limit?: number;
     }) {
-        return searchEntries(FEDERAL_ENTRIES, input, this.descriptor.id);
+        const entries = await this.entries();
+        return searchEntries(entries, input, this.descriptor.id);
     }
 
     async fetchLegislation(
@@ -311,7 +370,9 @@ export class JusticeLawsProvider implements LegalSourceProvider {
             throw new Error(
                 "Federal historical-version retrieval requires an explicit archived version and is not inferred from the current XML repository.",
             );
-        const item = requireEntry(FEDERAL_ENTRIES, sourceId);
+        const item =
+            FEDERAL_ENTRIES.find((entry) => entry.sourceId === sourceId) ??
+            requireEntry(await this.entries(), sourceId);
         const language = input.language ?? "en";
         const path = language === "fr" ? item.frenchPath : item.englishPath;
         if (!path)
@@ -339,6 +400,34 @@ export class JusticeLawsProvider implements LegalSourceProvider {
                     ? item.alternateLanguageUrl
                     : item.canonicalUrl,
         });
+    }
+
+    private async entries() {
+        if (this.fetchImpl !== fetch) {
+            try {
+                return dedupeEntries([
+                    ...FEDERAL_ENTRIES,
+                    ...(await loadFederalEntries(this.fetchImpl)),
+                ]);
+            } catch {
+                return FEDERAL_ENTRIES;
+            }
+        }
+        if (!liveFederalEntriesPromise)
+            liveFederalEntriesPromise = loadFederalEntries(
+                this.fetchImpl,
+            ).catch((error) => {
+                liveFederalEntriesPromise = null;
+                throw error;
+            });
+        try {
+            return dedupeEntries([
+                ...FEDERAL_ENTRIES,
+                ...(await liveFederalEntriesPromise),
+            ]);
+        } catch {
+            return FEDERAL_ENTRIES;
+        }
     }
 }
 
@@ -593,6 +682,196 @@ function entry(
         canonicalUrl: `https://www.ontario.ca/laws/${path}`,
         alternateLanguageUrl: `https://www.ontario.ca/fr/lois/${path.replace("statute", "loi").replace("regulation", "reglement")}`,
     };
+}
+
+function ontarioEntryFromA2aj(row: A2ajDocument): LegislationEntry | null {
+    const candidates = [
+        row.source_url_en,
+        row.source_url_fr,
+        row.url_en,
+        row.url_fr,
+    ];
+    for (const candidate of candidates) {
+        if (!candidate) continue;
+        const parsed = parseOntarioUrl(candidate);
+        if (!parsed) continue;
+        const title =
+            row.name_en?.trim() ||
+            row.name_fr?.trim() ||
+            row.citation_en?.trim() ||
+            row.citation_fr?.trim();
+        if (!title) continue;
+        return {
+            sourceId: `ontario-${parsed.type}-${parsed.code}`,
+            jurisdiction: "CA-ON",
+            kind:
+                parsed.type === "statute"
+                    ? "legislation"
+                    : title.toLocaleLowerCase("en-CA").includes("rules")
+                      ? "rule"
+                      : "regulation",
+            title,
+            citation:
+                row.citation_en?.trim() || row.citation_fr?.trim() || title,
+            canonicalUrl: `https://www.ontario.ca/laws/${parsed.type}/${parsed.code}`,
+            alternateLanguageUrl: `https://www.ontario.ca/fr/lois/${parsed.type === "statute" ? "loi" : "reglement"}/${parsed.code}`,
+        };
+    }
+    return null;
+}
+
+function ontarioEntryFromSourceId(sourceId: string): LegislationEntry | null {
+    const match = sourceId.match(
+        /^ontario-(statute|regulation)-([a-z0-9.-]+)$/i,
+    );
+    if (!match) return null;
+    const type = match[1].toLocaleLowerCase("en-CA");
+    const code = match[2].toLocaleLowerCase("en-CA");
+    return {
+        sourceId: `ontario-${type}-${code}`,
+        jurisdiction: "CA-ON",
+        kind: type === "statute" ? "legislation" : "regulation",
+        title: `Ontario ${type} ${code}`,
+        citation: code,
+        canonicalUrl: `https://www.ontario.ca/laws/${type}/${code}`,
+        alternateLanguageUrl: `https://www.ontario.ca/fr/lois/${type === "statute" ? "loi" : "reglement"}/${code}`,
+    };
+}
+
+function parseOntarioUrl(value: string) {
+    try {
+        const parsed = new URL(value);
+        if (
+            parsed.protocol !== "https:" ||
+            parsed.hostname !== "www.ontario.ca"
+        )
+            return null;
+        const match = parsed.pathname.match(
+            /\/(?:laws|fr\/lois)(?:\/api\/v2\/legislation\/(?:en|fr)\/doc-search)?\/(statute|regulation|loi|reglement)\/([a-z0-9.-]+)/i,
+        );
+        if (!match) return null;
+        return {
+            type:
+                match[1].toLocaleLowerCase("en-CA") === "statute" ||
+                match[1].toLocaleLowerCase("en-CA") === "loi"
+                    ? ("statute" as const)
+                    : ("regulation" as const),
+            code: match[2].toLocaleLowerCase("en-CA"),
+        };
+    } catch {
+        return null;
+    }
+}
+
+function identifyOntarioEntry(
+    item: LegislationEntry,
+    payload: OntarioDocumentApiResponse,
+    language: LegalSourceLanguage,
+) {
+    const actNames = record(payload.actName);
+    const officialTitle =
+        text(actNames[language]) ??
+        text(payload.actName) ??
+        text(payload.title);
+    if (!officialTitle || !item.title.startsWith("Ontario ")) return item;
+    return {
+        ...item,
+        title: officialTitle.split(/\s*,\s*(?:R\.S\.O\.|S\.O\.|O\. Reg\.)/)[0],
+        citation: text(payload.title) ?? item.citation,
+    };
+}
+
+function dedupeEntries(entries: LegislationEntry[]) {
+    const unique = new Map<string, LegislationEntry>();
+    for (const item of entries)
+        if (!unique.has(item.sourceId)) unique.set(item.sourceId, item);
+    return [...unique.values()];
+}
+
+async function loadFederalEntries(fetchImpl: typeof fetch) {
+    const xml = await safeOfficialFetch(fetchImpl, JUSTICE_LOOKUP_URL, [
+        "raw.githubusercontent.com",
+    ]);
+    const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: "@",
+        trimValues: true,
+        parseTagValue: false,
+    });
+    const parsed = record(parser.parse(xml));
+    const database = record(parsed.Database);
+    const statutes = array(record(database.Statutes).Statute).map(record);
+    const regulations = array(record(database.Regulations).Regulation).map(
+        record,
+    );
+
+    const activeEnglish = (row: Record<string, unknown>) =>
+        text(row.Language)?.toLocaleLowerCase("en-CA") === "en" &&
+        text(row.ConsolidateFlag)?.toLocaleLowerCase("en-CA") !== "false";
+    return [
+        ...statutes
+            .filter(activeEnglish)
+            .map(federalStatuteFromLookup)
+            .filter((item): item is LegislationEntry => item !== null),
+        ...regulations
+            .filter(activeEnglish)
+            .map(federalRegulationFromLookup)
+            .filter((item): item is LegislationEntry => item !== null),
+    ];
+}
+
+function federalStatuteFromLookup(
+    row: Record<string, unknown>,
+): LegislationEntry | null {
+    const code = text(row.ChapterNumber);
+    const citation = text(row.OfficialNumber) ?? code;
+    const title = text(row.ShortTitle);
+    if (!code || !title) return null;
+    return federalEntry(
+        `federal-act-${sourceIdPart(code)}`,
+        "legislation",
+        title,
+        citation ?? code,
+        justicePathPart(code),
+    );
+}
+
+function federalRegulationFromLookup(
+    row: Record<string, unknown>,
+): LegislationEntry | null {
+    const citation = text(row.AlphaNumber);
+    const title = text(row.ShortTitle);
+    if (!citation || !title) return null;
+    const englishCode = justicePathPart(citation);
+    const frenchCode = frenchRegulationCode(englishCode);
+    return {
+        sourceId: `federal-regulation-${sourceIdPart(citation)}`,
+        jurisdiction: "CA",
+        kind: title.toLocaleLowerCase("en-CA").includes("rules")
+            ? "rule"
+            : "regulation",
+        title,
+        citation,
+        canonicalUrl: `https://laws-lois.justice.gc.ca/eng/regulations/${englishCode}/`,
+        alternateLanguageUrl: `https://laws-lois.justice.gc.ca/fra/reglements/${frenchCode}/`,
+        englishPath: `eng/regulations/${englishCode}.xml`,
+        frenchPath: `fra/reglements/${frenchCode}.xml`,
+    };
+}
+
+function sourceIdPart(value: string) {
+    return value
+        .toLocaleLowerCase("en-CA")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+}
+
+function justicePathPart(value: string) {
+    return value.trim().replace(/\//g, "-").replace(/\s+/g, "_");
+}
+
+function frenchRegulationCode(value: string) {
+    return value.replace(/^SOR-/i, "DORS-").replace(/^SI-/i, "TR-");
 }
 
 function federalEntry(

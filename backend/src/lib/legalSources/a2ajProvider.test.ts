@@ -35,6 +35,7 @@ const syntheticLegislation = {
   name_en: "Synthetic Ontario Act, 2025",
   document_date_en: "2025-01-01T00:00:00",
   url_en: "https://example.invalid/official/synthetic-act",
+  source_url_en: "https://www.ontario.ca/laws/statute/25s01",
   unofficial_text_en:
     "1 Short title\nThis Act may be cited as the Synthetic Ontario Act.\n2 Application\nThis section applies only to synthetic tests.",
   cases_cited_en: null,
@@ -129,9 +130,9 @@ test("A2AJ provider maps Ontario metadata and grounded passages", async () => {
     coverage: async () => [
       {
         dataset: "ONCA",
-        count: 1,
-        first_date: "2025-03-04",
-        last_date: "2025-03-04",
+        number_of_documents: 1,
+        earliest_document_date: "2025-03-04",
+        latest_document_date: "2025-03-04",
       },
     ],
   } as unknown as A2ajClient;
@@ -185,6 +186,7 @@ test("A2AJ provider discovers Ontario legislation while retaining unofficial-sou
   assert.equal(summary.jurisdiction, "CA-ON");
   assert.equal(summary.kind, "legislation");
   assert.equal(summary.verification, "partial");
+  assert.equal(summary.canonicalUrl, syntheticLegislation.source_url_en);
 
   const document = await provider.fetchLegislation(summary.sourceId, {
     section: "2",

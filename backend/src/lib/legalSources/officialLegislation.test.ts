@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { A2ajClient } from "./a2ajClient";
 import {
     JusticeLawsProvider,
     normalizeLegislationDate,
@@ -28,6 +29,12 @@ const syntheticOntarioDocument = JSON.stringify({
     state: "current",
     dateFrom: "2026-07-01T04:00:00.000Z",
 });
+
+const unavailableDiscovery = {
+    search: async () => {
+        throw new Error("Synthetic discovery outage");
+    },
+} as unknown as A2ajClient;
 
 test("legislation calendar dates do not shift with the host timezone", () => {
     assert.equal(normalizeLegislationDate("July 10, 2026"), "2026-07-10");
@@ -85,7 +92,7 @@ test("Ontario e-Laws provider uses allowlisted official pages and extracts curre
                 },
             },
         );
-    });
+    }, unavailableDiscovery);
     const results = await provider.searchLegislation({
         query: "small claims rules",
     });
@@ -108,6 +115,64 @@ test("Ontario e-Laws provider uses allowlisted official pages and extracts curre
     assert.equal(document.sections.length, 1);
     assert.equal(document.sections[0].label, "1(1)");
     assert.equal(document.reproductionIsOfficial, false);
+});
+
+test("Ontario e-Laws discovers arbitrary instruments and retrieves official text", async () => {
+    const discovery = {
+        search: async () => ({
+            results: [
+                {
+                    dataset: "LEGISLATION-ON",
+                    name_en: "Privacy Act",
+                    citation_en: "R.S.O. 1990, c. P.21",
+                    source_url_en: "https://www.ontario.ca/laws/statute/90p21",
+                },
+            ],
+        }),
+    } as unknown as A2ajClient;
+    const provider = new OntarioELawsProvider(
+        async (input) =>
+            new Response(
+                String(input).endsWith("/currency-date")
+                    ? "July 10, 2026"
+                    : syntheticOntarioDocument,
+                { status: 200 },
+            ),
+        discovery,
+    );
+    const results = await provider.searchLegislation({
+        query: "Privacy Act",
+        kind: "legislation",
+    });
+    assert.equal(results[0].sourceId, "ontario-statute-90p21");
+    assert.equal(
+        results[0].canonicalUrl,
+        "https://www.ontario.ca/laws/statute/90p21",
+    );
+    const document = await provider.fetchLegislation(results[0].sourceId);
+    assert.match(document.fullText ?? "", /synthetic material/);
+});
+
+test("Justice Laws discovers arbitrary instruments from its official catalogue", async () => {
+    const lookup = `<?xml version="1.0"?>
+<Database><Statutes><Statute>
+<ChapterNumber>P-21</ChapterNumber><OfficialNumber>R.S.C. 1985, c. P-21</OfficialNumber>
+<Language>en</Language><ShortTitle>Privacy Act</ShortTitle><ConsolidateFlag>True</ConsolidateFlag>
+</Statute></Statutes><Regulations /></Database>`;
+    const urls: string[] = [];
+    const provider = new JusticeLawsProvider(async (input) => {
+        const url = String(input);
+        urls.push(url);
+        return new Response(
+            url.endsWith("/lookup/lookup.xml") ? lookup : syntheticFederalXml,
+            { status: 200 },
+        );
+    });
+    const results = await provider.searchLegislation({ query: "Privacy Act" });
+    assert.equal(results[0].sourceId, "federal-act-p-21");
+    assert.equal(results[0].citation, "R.S.C. 1985, c. P-21");
+    await provider.fetchLegislation(results[0].sourceId);
+    assert.ok(urls.some((url) => url.endsWith("/eng/acts/P-21.xml")));
 });
 
 test("official providers fail closed for inferred historical versions", async () => {
@@ -134,17 +199,18 @@ test("official provider health exercises the production retrieval path", async (
                 : syntheticOntarioDocument,
             { status: 200 },
         );
-    });
-    const justice = new JusticeLawsProvider(async () =>
-        new Response(syntheticFederalXml, { status: 200 }),
+    }, unavailableDiscovery);
+    const justice = new JusticeLawsProvider(
+        async () => new Response(syntheticFederalXml, { status: 200 }),
     );
 
     assert.equal((await ontario.health()).ok, true);
     assert.equal(ontarioRequests, 2);
     assert.equal((await justice.health()).ok, true);
 
-    const failed = new OntarioELawsProvider(async () =>
-        new Response("unavailable", { status: 503 }),
+    const failed = new OntarioELawsProvider(
+        async () => new Response("unavailable", { status: 503 }),
+        unavailableDiscovery,
     );
     assert.equal((await failed.health()).ok, false);
 });

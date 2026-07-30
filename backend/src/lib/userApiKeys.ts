@@ -156,15 +156,18 @@ export async function getUserApiKeyStatus(
 
     const { data, error } = await db
         .from("user_api_keys")
-        .select("provider")
+        .select("provider, encrypted_key, iv, auth_tag")
         .eq("user_id", userId);
     if (error) throw error;
 
-    for (const row of data ?? []) {
-        const provider = normalizeApiKeyProvider(String(row.provider));
+    for (const row of (data ?? []) as EncryptedKeyRow[]) {
+        const provider = normalizeApiKeyProvider(row.provider);
         if (provider && !status[provider]) {
-            status[provider] = true;
-            status.sources[provider] = "user";
+            const decrypted = decrypt(row);
+            if (decrypted?.trim()) {
+                status[provider] = true;
+                status.sources[provider] = "user";
+            }
         }
     }
 
