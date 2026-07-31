@@ -29,6 +29,23 @@ export function normalizeLegalMaterialType(
   return materialType;
 }
 
+export function legalSourceIdMatchesProvider(
+  providerId: string,
+  sourceId: string,
+): boolean | null {
+  const value = sourceId.trim();
+  if (providerId === "ontario-elaws")
+    return /^ontario-(?:statute|regulation)-[a-z0-9.-]+$/i.test(value);
+  if (providerId === "justice-laws-canada")
+    return /^federal-(?:act|regulation)-[a-z0-9.-]+$/i.test(value);
+  if (providerId === "canlii-licensed")
+    return (
+      /^[a-z0-9-]+\/[a-z0-9-]+$/i.test(value) ||
+      /\b\d{4}\s+[A-Z][A-Z0-9-]{1,12}\s+\d{1,7}\b/i.test(value)
+    );
+  return null;
+}
+
 export function summarizeCitationVerification(
   results: Array<{
     citationVerification: "verified" | "partial" | "unverified" | "unavailable";
@@ -169,5 +186,7 @@ export type LegalSourceToolEvent =
       verified_count?: number;
       partial_count?: number;
       unverified_count?: number;
+      status?: "succeeded" | "failed" | "not_applicable";
+      detail?: string;
       error?: string;
     };

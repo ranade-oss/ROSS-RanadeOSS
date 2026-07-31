@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const CANLII_API_BASE_URL = "https://api.canlii.org/v1";
 const DEFAULT_TIMEOUT_MS = 15_000;
+const DEFAULT_MAX_RETRIES = 1;
+const MAX_RETRY_DELAY_MS = 5_000;
 
 const localizedIdSchema = z
   .object({
@@ -55,6 +57,7 @@ export class CanLiiApiError extends Error {
   constructor(
     message: string,
     readonly status?: number,
+    readonly retryAfterSeconds?: number,
   ) {
     super(message);
     this.name = "CanLiiApiError";
@@ -67,7 +70,10 @@ export class CanLiiClient {
     private readonly options: {
       baseUrl?: string;
       timeoutMs?: number;
+      maxRetries?: number;
       fetchImpl?: typeof fetch;
+      now?: () => number;
+      sleep?: (milliseconds: number) => Promise<void>;
     } = {},
   ) {
     if (!apiKey.trim())
@@ -140,30 +146,81 @@ export class CanLiiClient {
     );
     const url = new URL(`${baseUrl}${path}`);
     url.searchParams.set("api_key", this.apiKey);
-    let response: Response;
-    try {
-      response = await (this.options.fetchImpl ?? fetch)(url, {
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "ROSS-RanadeOSS/0.1",
-        },
-        signal: AbortSignal.timeout(
-          this.options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-        ),
-      });
-    } catch {
-      throw new CanLiiApiError("CanLII metadata could not be reached.");
+    const maxRetries = Math.max(
+      0,
+      this.options.maxRetries ?? DEFAULT_MAX_RETRIES,
+    );
+    const fetchImpl = this.options.fetchImpl ?? fetch;
+    const sleep =
+      this.options.sleep ??
+      ((milliseconds: number) =>
+        new Promise<void>((resolve) => setTimeout(resolve, milliseconds)));
+    let lastError: CanLiiApiError | null = null;
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      try {
+        const response = await fetchImpl(url, {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "ROSS-RanadeOSS/0.1",
+          },
+          signal: AbortSignal.timeout(
+            this.options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+          ),
+        });
+        if (response.ok) return response.json() as Promise<unknown>;
+        const retryAfterSeconds = parseRetryAfter(
+          response.headers.get("retry-after"),
+          this.options.now?.() ?? Date.now(),
+        );
+        lastError = new CanLiiApiError(
+          response.status === 401 || response.status === 403
+            ? "CanLII rejected this API key."
+            : response.status === 429
+              ? retryAfterSeconds !== undefined
+                ? `CanLII rate limit reached. Retry after ${retryAfterSeconds} seconds.`
+                : "CanLII rate limit reached. Retry shortly."
+              : `CanLII metadata request failed (${response.status}).`,
+          response.status,
+          retryAfterSeconds,
+        );
+      } catch (error) {
+        lastError =
+          error instanceof CanLiiApiError
+            ? error
+            : new CanLiiApiError("CanLII metadata could not be reached.");
+      }
+      if (!isRetriable(lastError) || attempt === maxRetries) throw lastError;
+      if (
+        lastError.retryAfterSeconds !== undefined &&
+        lastError.retryAfterSeconds * 1_000 > MAX_RETRY_DELAY_MS
+      )
+        throw lastError;
+      const delay =
+        lastError.retryAfterSeconds !== undefined
+          ? Math.min(MAX_RETRY_DELAY_MS, lastError.retryAfterSeconds * 1_000)
+          : Math.min(MAX_RETRY_DELAY_MS, 500 * 2 ** attempt);
+      await sleep(delay);
     }
-    if (!response.ok) {
-      throw new CanLiiApiError(
-        response.status === 401 || response.status === 403
-          ? "CanLII rejected this API key."
-          : `CanLII metadata request failed (${response.status}).`,
-        response.status,
-      );
-    }
-    return response.json() as Promise<unknown>;
+    throw (
+      lastError ?? new CanLiiApiError("CanLII metadata could not be reached.")
+    );
   }
+}
+
+function parseRetryAfter(value: string | null, now: number) {
+  if (!value) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.ceil(seconds);
+  const date = Date.parse(value);
+  return Number.isFinite(date)
+    ? Math.max(0, Math.ceil((date - now) / 1_000))
+    : undefined;
+}
+
+function isRetriable(error: CanLiiApiError) {
+  return (
+    error.status === 429 || (error.status !== undefined && error.status >= 500)
+  );
 }
 
 export function localizedCanLiiId(

@@ -11,8 +11,8 @@ const REQUIRED_TARGETS = [
   },
   {
     id: "justice-laws-canada",
-    url: "https://raw.githubusercontent.com/justicecanada/laws-lois-xml/main/eng/acts/D-3.4.xml",
-    kind: "justice-xml",
+    url: "https://raw.githubusercontent.com/justicecanada/laws-lois-xml/main",
+    kind: "justice-runtime",
   },
 ];
 
@@ -60,7 +60,7 @@ const requestHeaders = (target) => ({
       ? "application/json"
       : target.kind === "ontario-runtime"
         ? "application/json, text/plain"
-      : "text/html, application/xml, text/xml",
+        : "text/html, application/xml, text/xml",
   "User-Agent": "ROSS-RanadeOSS-source-observer/1.0",
 });
 
@@ -85,7 +85,10 @@ async function inspect(response, target) {
     error.code = "invalid-payload";
     throw error;
   }
-  if (target.kind === "justice-xml" && !/<(?:Statute|Regulation)\b/.test(body)) {
+  if (
+    target.kind === "justice-xml" &&
+    !/<(?:Statute|Regulation)\b/.test(body)
+  ) {
     const error = new Error("Justice Laws response was not legislation XML.");
     error.code = "invalid-payload";
     throw error;
@@ -155,7 +158,10 @@ async function inspectA2ajCoverage(fetchImpl, target, timeoutMs) {
       query: probe.query,
       doc_type: probe.docType,
       dataset: probe.dataset,
-      size: "1",
+      size: "50",
+      search_language: "en",
+      start_date: "2000-01-01",
+      end_date: "2099-12-31",
     });
     const searchResponse = await fetchResponse(
       fetchImpl,
@@ -212,19 +218,59 @@ async function inspectA2ajCoverage(fetchImpl, target, timeoutMs) {
 }
 
 async function inspectOntarioRuntime(fetchImpl, target, timeoutMs) {
+  const discoveryParams = new URLSearchParams({
+    query: "Courts of Justice Act",
+    doc_type: "laws",
+    dataset: "LEGISLATION-ON",
+    size: "1",
+    search_language: "en",
+  });
+  const discoveryResponse = await fetchResponse(
+    fetchImpl,
+    `https://api.a2aj.ca/search?${discoveryParams}`,
+    { kind: "a2aj-split-coverage" },
+    timeoutMs,
+  );
+  if (!discoveryResponse.ok) {
+    const error = new Error("Ontario e-Laws discovery returned an error.");
+    error.status = discoveryResponse.status;
+    throw error;
+  }
+  const discovered = a2ajSearchRows(await discoveryResponse.json())[0];
+  const sourceUrl = [
+    discovered?.source_url_en,
+    discovered?.url_en,
+    discovered?.source_url_fr,
+    discovered?.url_fr,
+  ].find((value) => typeof value === "string" && value.trim());
+  let officialPath;
+  try {
+    const parsed = new URL(sourceUrl ?? "");
+    const match = parsed.pathname.match(
+      /\/laws\/(statute|regulation)\/([a-z0-9.-]+)/i,
+    );
+    if (
+      parsed.protocol !== "https:" ||
+      parsed.hostname !== "www.ontario.ca" ||
+      !match
+    )
+      throw new Error("invalid Ontario source URL");
+    officialPath = `${match[1].toLowerCase()}/${match[2].toLowerCase()}`;
+  } catch {
+    const error = new Error(
+      "Ontario e-Laws discovery returned no valid official source URL.",
+    );
+    error.code = "invalid-payload";
+    throw error;
+  }
   const [documentResponse, currencyResponse] = await Promise.all([
     fetchResponse(
       fetchImpl,
-      `${target.url}/doc-search/statute/90c43`,
+      `${target.url}/doc-search/${officialPath}`,
       target,
       timeoutMs,
     ),
-    fetchResponse(
-      fetchImpl,
-      `${target.url}/currency-date`,
-      target,
-      timeoutMs,
-    ),
+    fetchResponse(fetchImpl, `${target.url}/currency-date`, target, timeoutMs),
   ]);
   if (!documentResponse.ok || !currencyResponse.ok) {
     const error = new Error("Ontario e-Laws production API returned an error.");
@@ -262,6 +308,54 @@ async function inspectOntarioRuntime(fetchImpl, target, timeoutMs) {
   };
 }
 
+async function inspectJusticeRuntime(fetchImpl, target, timeoutMs) {
+  const lookupResponse = await fetchResponse(
+    fetchImpl,
+    `${target.url}/lookup/lookup.xml`,
+    target,
+    timeoutMs,
+  );
+  if (!lookupResponse.ok) {
+    const error = new Error("Justice Laws catalogue returned an error.");
+    error.status = lookupResponse.status;
+    throw error;
+  }
+  const lookup = await lookupResponse.text();
+  if (
+    !/<ChapterNumber>\s*P-21\s*<\/ChapterNumber>/i.test(lookup) ||
+    !/<ShortTitle>\s*Privacy Act\s*<\/ShortTitle>/i.test(lookup)
+  ) {
+    const error = new Error(
+      "Justice Laws catalogue omitted the discovery probe.",
+    );
+    error.code = "invalid-payload";
+    throw error;
+  }
+  const documentResponse = await fetchResponse(
+    fetchImpl,
+    `${target.url}/eng/acts/P-21.xml`,
+    target,
+    timeoutMs,
+  );
+  if (!documentResponse.ok) {
+    const error = new Error("Justice Laws discovered XML returned an error.");
+    error.status = documentResponse.status;
+    throw error;
+  }
+  const document = await documentResponse.text();
+  if (document.trim().length < 500 || !/<Statute\b/.test(document)) {
+    const error = new Error("Justice Laws discovered XML was invalid.");
+    error.code = "invalid-payload";
+    throw error;
+  }
+  return {
+    sourceVersion: [
+      responseVersion(lookupResponse, `lookup-${lookup.length}`),
+      responseVersion(documentResponse, `document-${document.length}`),
+    ].join("|"),
+  };
+}
+
 export async function observeLiveLegalSources({
   fetchImpl = fetch,
   now = () => new Date(),
@@ -279,18 +373,20 @@ export async function observeLiveLegalSources({
           ? await inspectA2ajCoverage(fetchImpl, target, timeoutMs)
           : target.kind === "ontario-runtime"
             ? await inspectOntarioRuntime(fetchImpl, target, timeoutMs)
-          : await (async () => {
-              const response = await fetchResponse(
-                fetchImpl,
-                target.url,
-                target,
-                timeoutMs,
-              );
-              const fallbackVersion = await inspect(response, target);
-              return {
-                sourceVersion: responseVersion(response, fallbackVersion),
-              };
-            })();
+            : target.kind === "justice-runtime"
+              ? await inspectJusticeRuntime(fetchImpl, target, timeoutMs)
+              : await (async () => {
+                  const response = await fetchResponse(
+                    fetchImpl,
+                    target.url,
+                    target,
+                    timeoutMs,
+                  );
+                  const fallbackVersion = await inspect(response, target);
+                  return {
+                    sourceVersion: responseVersion(response, fallbackVersion),
+                  };
+                })();
       providers[target.id] = {
         state: "healthy",
         checkedAt: observedAt,

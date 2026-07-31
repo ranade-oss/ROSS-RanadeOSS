@@ -5,6 +5,7 @@ import {
   localizedCanLiiId,
   type CanLiiCaseDatabase,
   type CanLiiCaseMetadata,
+  type CanLiiCaseSummary,
   type CanLiiLanguage,
 } from "./canliiClient";
 import type {
@@ -148,33 +149,30 @@ export class CanLiiMetadataProvider implements LegalSourceProvider {
         return terms.every((term) => haystack.includes(term));
       })
       .slice(0, limit);
-    const metadata = await Promise.all(
-      matched.map((item) =>
-        client.getCase(
-          item.databaseId,
-          localizedCanLiiId(item.caseId, language),
-          language,
-        ),
-      ),
-    );
-    return metadata.map((item) => this.summary(item, database));
+    return matched.map((item) => this.browseSummary(item, database, language));
   }
 
   async fetchDecision(sourceId: string, context?: LegalSourceContext) {
     let resolvedSourceId = sourceId.trim();
     if (!resolvedSourceId.includes("/")) {
-      const verification = (
-        await this.verifyCitations([resolvedSourceId], context)
-      )[0];
-      if (
-        !verification?.sourceId ||
-        (verification.status !== "verified" &&
-          verification.status !== "partial")
-      )
+      const parsed = parseNeutralCitation(resolvedSourceId);
+      if (!parsed)
         throw new CanLiiApiError(
           "CanLII could not resolve this neutral citation to a metadata record.",
         );
-      resolvedSourceId = verification.sourceId;
+      const client = this.client(context);
+      const databases = await client.listCaseDatabases("en");
+      const database = resolveDatabase(databases, undefined, parsed);
+      if (!database)
+        throw new CanLiiApiError(
+          "CanLII could not resolve this neutral citation to a metadata record.",
+        );
+      const metadata = await client.getCase(
+        database.databaseId,
+        parsed.caseId,
+        "en",
+      );
+      return this.document(metadata, database);
     }
     const [databaseId, caseId] = resolvedSourceId.split("/", 2);
     if (!databaseId || !caseId)
@@ -182,11 +180,8 @@ export class CanLiiMetadataProvider implements LegalSourceProvider {
         "A CanLII metadata source id must be databaseId/caseId or a neutral citation.",
       );
     const client = this.client(context);
-    const databases = await client.listCaseDatabases("en");
-    const database =
-      databases.find((item) => item.databaseId === databaseId) ?? null;
     const metadata = await client.getCase(databaseId, caseId, "en");
-    return this.document(metadata, database);
+    return this.document(metadata, null);
   }
 
   async verifyCitations(
@@ -302,6 +297,30 @@ export class CanLiiMetadataProvider implements LegalSourceProvider {
       fullTextStatus: "metadata-only",
       upstreamLicense: null,
       verification: "partial",
+    };
+  }
+
+  private browseSummary(
+    item: CanLiiCaseSummary,
+    database: CanLiiCaseDatabase,
+    language: CanLiiLanguage,
+  ): LegalDecisionSummary {
+    const caseId = localizedCanLiiId(item.caseId, language);
+    return {
+      providerId: this.descriptor.id,
+      sourceId: `${item.databaseId}/${caseId}`,
+      jurisdiction: canLiiJurisdiction(database.jurisdiction),
+      caseName: item.title ?? null,
+      citation: item.citation ?? null,
+      court: database.name,
+      decisionDate: null,
+      canonicalUrl: null,
+      snippet: null,
+      language,
+      alternateLanguageUrl: null,
+      fullTextStatus: "metadata-only",
+      upstreamLicense: null,
+      verification: "unverified",
     };
   }
 

@@ -57,14 +57,21 @@ test("A2AJ client sends bounded documented search parameters", async () => {
     language: "en",
     size: 5,
     offset: 10,
+    from: "2024-01-01",
+    to: "2024-12-31",
   });
-  assert.equal(result.results[0].citation_en, "2025 ONCA 999");
+  assert.equal(result.results.length, 0);
   const url = new URL(urls[0]);
   assert.equal(url.pathname, "/search");
   assert.equal(url.searchParams.get("doc_type"), "cases");
   assert.equal(url.searchParams.get("dataset"), "ONCA");
-  assert.equal(url.searchParams.get("size"), "5");
-  assert.equal(url.searchParams.get("from"), "10");
+  assert.equal(url.searchParams.get("size"), "15");
+  assert.equal(url.searchParams.get("search_language"), "en");
+  assert.equal(url.searchParams.get("start_date"), "2024-01-01");
+  assert.equal(url.searchParams.get("end_date"), "2024-12-31");
+  assert.equal(url.searchParams.has("from"), false);
+  assert.equal(url.searchParams.has("date_from"), false);
+  assert.equal(url.searchParams.has("date_to"), false);
 
   await client.search({
     query: "synthetic act",
@@ -75,10 +82,21 @@ test("A2AJ client sends bounded documented search parameters", async () => {
   assert.equal(lawUrl.searchParams.get("doc_type"), "laws");
   assert.equal(lawUrl.searchParams.get("dataset"), "LEGISLATION-ON");
 
+  await client.search({ query: "negligence", size: 100 });
+  const boundedUrl = new URL(urls[2]);
+  assert.equal(boundedUrl.searchParams.get("size"), "50");
+
+  const beyondWindow = await client.search({
+    query: "negligence",
+    offset: 50,
+  });
+  assert.deepEqual(beyondWindow.results, []);
+  assert.equal(urls.length, 3);
+
   await client.coverage("cases");
   await client.coverage("laws");
-  const caseCoverageUrl = new URL(urls[2]);
-  const lawCoverageUrl = new URL(urls[3]);
+  const caseCoverageUrl = new URL(urls[3]);
+  const lawCoverageUrl = new URL(urls[4]);
   assert.equal(caseCoverageUrl.pathname, "/coverage");
   assert.equal(caseCoverageUrl.searchParams.get("doc_type"), "cases");
   assert.equal(lawCoverageUrl.pathname, "/coverage");

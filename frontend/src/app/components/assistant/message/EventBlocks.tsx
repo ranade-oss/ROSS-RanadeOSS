@@ -254,7 +254,8 @@ export function LegalAuthorityBlock({
     onOpen?: () => void;
 }) {
     const authority = event.authority;
-    const hasError = !!event.error;
+    const notApplicable = event.status === "not_applicable";
+    const hasError = event.status === "failed" || !!event.error;
     const allCitationsVerified =
         event.action === "verified" &&
         typeof event.citation_count === "number" &&
@@ -290,17 +291,21 @@ export function LegalAuthorityBlock({
                     <span className="font-medium">
                         {hasError
                             ? "Legal source request failed"
-                            : event.action === "passages"
-                              ? "Retrieved supporting passages"
-                              : event.action === "verified"
-                                ? "Checked legal citations"
-                                : "Fetched legal authority"}
+                            : notApplicable
+                              ? "Legal source not applicable"
+                              : event.action === "passages"
+                                ? "Retrieved supporting passages"
+                                : event.action === "verified"
+                                  ? "Checked legal citations"
+                                  : "Fetched legal authority"}
                     </span>
                     <span className="ml-1 text-gray-400">{title}</span>
                     <ChevronDown className="ml-1 inline h-3 w-3 transition-transform group-open:rotate-180" />
                 </summary>
                 {event.error ? (
                     <p className="mt-2 text-xs text-red-600">{event.error}</p>
+                ) : notApplicable && event.detail ? (
+                    <p className="mt-2 text-xs text-gray-600">{event.detail}</p>
                 ) : event.action === "verified" &&
                   typeof event.citation_count === "number" ? (
                     <p className="mt-2 text-xs text-gray-600">
