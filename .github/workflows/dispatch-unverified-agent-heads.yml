@@ -112,7 +112,14 @@ jobs:
                 },
               );
 
-              const exactHeadRun = runs.find((run) => run.head_sha === pr.head.sha);
+              const exactHeadRun = runs.find(
+                (run) =>
+                  run.head_sha === pr.head.sha &&
+                  !(
+                    run.status === "completed" &&
+                    run.conclusion === "action_required"
+                  ),
+              );
               if (exactHeadRun) {
                 core.info(
                   `PR #${pr.number} already has Baseline run ${exactHeadRun.id} for ${pr.head.sha} (${exactHeadRun.status}/${exactHeadRun.conclusion || "none"}).`,
