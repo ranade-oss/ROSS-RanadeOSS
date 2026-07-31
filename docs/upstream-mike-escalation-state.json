@@ -241,6 +241,12 @@
       "risk": "defer",
       "reason": "The patch is metadata-only and omits 3,019 changed lines. It includes high-risk database migrations and schema changes, and current ROSS main does not contain the named pagination implementation. A complete, bounded, testable adaptation cannot be established without guessing at omitted code.",
       "processed_at": "2026-07-30T21:01:34.448277Z"
+    },
+    {
+      "number": 276,
+      "risk": "defer",
+      "reason": "Safely adaptable, but high risk because it changes production build validation for Supabase configuration and deployment behavior. The ROSS adaptation reuses its existing production flag and retains all ROSS-specific safeguards. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
+      "processed_at": "2026-07-31T17:04:17.826412Z"
     }
   ]
 }
