@@ -289,6 +289,8 @@ export type AssistantEvent =
       verified_count?: number;
       partial_count?: number;
       unverified_count?: number;
+      status?: "succeeded" | "failed" | "not_applicable";
+      detail?: string;
       error?: string;
       isStreaming?: boolean;
     }

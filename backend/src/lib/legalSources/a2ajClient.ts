@@ -116,19 +116,25 @@ export class A2ajClient {
         size?: number;
         offset?: number;
     }) {
+        const offset = Math.max(0, input.offset ?? 0);
+        const requestedSize = Math.min(50, Math.max(1, input.size ?? 10));
+        if (offset >= 50) return { results: [], total: undefined };
         const params = new URLSearchParams({
             query: input.query,
             doc_type: input.docType ?? "cases",
-            size: String(Math.min(100, Math.max(1, input.size ?? 10))),
+            size: String(Math.min(50, requestedSize + offset)),
         });
         if (input.dataset) params.set("dataset", input.dataset);
-        if (input.language) params.set("language", input.language);
-        if (input.from) params.set("date_from", input.from);
-        if (input.to) params.set("date_to", input.to);
-        if (input.offset) params.set("from", String(Math.max(0, input.offset)));
-        return searchResponseSchema.parse(
+        if (input.language) params.set("search_language", input.language);
+        if (input.from) params.set("start_date", input.from);
+        if (input.to) params.set("end_date", input.to);
+        const response = searchResponseSchema.parse(
             await this.request(`/search?${params}`),
         );
+        return {
+            ...response,
+            results: response.results.slice(offset, offset + requestedSize),
+        };
     }
 
     async fetchByCitation(

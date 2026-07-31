@@ -604,7 +604,7 @@ export class A2ajProvider implements LegalSourceProvider {
     let exhausted = false;
     let bufferedOffset: number | null = null;
     const batchSize = input.allowedDatasets
-      ? 100
+      ? 50
       : Math.min(100, input.limit + 1);
 
     for (

@@ -142,9 +142,13 @@ export async function enrichWithPriorEvents(
             ? ev.provider_id
             : "unknown provider";
       const action = typeof ev.action === "string" ? ev.action : "used";
-      lines.push(
-        `- legal authority → ${provider}: ${ev.error ? `${action} failed` : action}`,
-      );
+      const outcome =
+        ev.status === "not_applicable"
+          ? `${action} not applicable`
+          : ev.error || ev.status === "failed"
+            ? `${action} failed`
+            : action;
+      lines.push(`- legal authority → ${provider}: ${outcome}`);
     }
   }
   if (lines.length === 0) return messages;

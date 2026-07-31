@@ -10,6 +10,7 @@ import {
 } from "./courtlistenerTools";
 import {
   LEGAL_SOURCE_TOOL_NAMES,
+  legalSourceIdMatchesProvider,
   normalizeLegalMaterialType,
   summarizeCitationVerification,
   type LegalSourceToolEvent,
@@ -517,19 +518,23 @@ function legalSourceFailure(error: unknown) {
                 ? "invalid-response"
                 : "provider-request-failed";
   const publicMessage =
-    errorCode === "timeout"
-      ? "The provider request timed out."
-      : errorCode === "unsupported-operation"
-        ? "CanLII accepted this user's API key, but its REST API does not support general full-text keyword search."
-        : errorCode === "not-configured"
-          ? "The provider is not configured for this user."
-          : errorCode === "not-authorized"
-            ? "The provider is not authorized for this request."
-            : errorCode === "invalid-response"
-              ? "The provider returned an invalid response."
-              : errorCode.startsWith("http-")
-                ? `The provider returned HTTP status ${errorCode.slice(5)}.`
-                : "The provider request failed.";
+    errorCode === "http-429"
+      ? message.includes("Retry after")
+        ? `${message} Metadata discovery completed earlier in this turn, if any, does not mean this authority was retrieved or verified.`
+        : "CanLII is temporarily rate limiting requests. Metadata discovery completed earlier in this turn, if any, does not mean this authority was retrieved or verified. Retry shortly or use another enabled lawful source."
+      : errorCode === "timeout"
+        ? "The provider request timed out."
+        : errorCode === "unsupported-operation"
+          ? "CanLII accepted this user's API key, but its REST API does not support general full-text keyword search."
+          : errorCode === "not-configured"
+            ? "The provider is not configured for this user."
+            : errorCode === "not-authorized"
+              ? "The provider is not authorized for this request."
+              : errorCode === "invalid-response"
+                ? "The provider returned an invalid response."
+                : errorCode.startsWith("http-")
+                  ? `The provider returned HTTP status ${errorCode.slice(5)}.`
+                  : "The provider request failed.";
   return { message: publicMessage, errorCode };
 }
 
@@ -885,6 +890,31 @@ async function executeLegalSourceTool(args: {
 
     const sourceId =
       typeof input.source_id === "string" ? input.source_id.trim() : "";
+    const sourceIdMatches = legalSourceIdMatchesProvider(
+      provider.descriptor.id,
+      sourceId,
+    );
+    if (sourceIdMatches === false) {
+      const detail = `${provider.descriptor.name} cannot fetch this source identifier. Use the source_id returned by this same provider's search result.`;
+      return {
+        content: JSON.stringify({
+          applicable: false,
+          error_code: "source-id-provider-mismatch",
+          detail,
+          next_required_action:
+            "Search this provider for the requested material, or fetch the identifier through the provider that returned it.",
+        }),
+        event: {
+          type: "legal_authority",
+          action:
+            name === LEGAL_SOURCE_TOOL_NAMES.find ? "passages" : "fetched",
+          provider_id: provider.descriptor.id,
+          provider_name: provider.descriptor.name,
+          status: "not_applicable",
+          detail,
+        },
+      };
+    }
     const document =
       materialType === "decision" && provider.fetchDecision
         ? await provider.fetchDecision(sourceId, context)
@@ -947,6 +977,7 @@ async function executeLegalSourceTool(args: {
           provider_name: provider.descriptor.name,
           authority,
           passage_count: passages.length,
+          status: "succeeded",
         },
       };
     }
@@ -967,6 +998,7 @@ async function executeLegalSourceTool(args: {
         provider_id: provider.descriptor.id,
         provider_name: provider.descriptor.name,
         authority,
+        status: "succeeded",
       },
     };
   } catch (error) {
@@ -994,6 +1026,7 @@ async function executeLegalSourceTool(args: {
                     : "fetched",
               provider_id: provider.descriptor.id,
               provider_name: provider.descriptor.name,
+              status: "failed",
             }),
         error: message,
       } as LegalSourceToolEvent,

@@ -152,8 +152,8 @@
     },
     {
       "path": "backend/src/lib/chat/tools/toolDispatcher.ts",
-      "sha256": "f27455aa72d9e3bf113aa1a439ebcd052f85e1fa9fd46ed91fe2bdea14ba04df",
-      "sizeBytes": 86662
+      "sha256": "8ff8de5eb47932f9ff32a235c4ff29780fac15d552c8e34faa60418b96e99623",
+      "sizeBytes": 88193
     },
     {
       "path": "backend/src/middleware/dataBoundary.test.ts",
@@ -402,8 +402,8 @@
     },
     {
       "path": "frontend/src/app/components/assistant/message/EventBlocks.tsx",
-      "sha256": "67c2c9d0841263d5cd07d0ca5646ea8136146f81a5b4e311fadcc94071c878fd",
-      "sizeBytes": 32591
+      "sha256": "5a986b1a66a7623a6594ee8e6382074f4e957efb95ca3eb1b727afdd7f9d920a",
+      "sizeBytes": 32932
     },
     {
       "path": "frontend/src/app/(pages)/account/api-keys/page.tsx",
@@ -502,8 +502,8 @@
     },
     {
       "path": "scripts/lib/live-source-observer.mjs",
-      "sha256": "fd5b45219305cacbba1bbab1fc056ec38d712d71636c8b85105caa0286609c9c",
-      "sizeBytes": 10713
+      "sha256": "5af7622207e75ca1a7c8102da0ad8017008c17bbeed09bedcdc94510ae73bd5b",
+      "sizeBytes": 13801
     },
     {
       "path": "scripts/lib/release-train.mjs",

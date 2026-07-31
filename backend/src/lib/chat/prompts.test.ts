@@ -20,6 +20,12 @@ test("identifies a configured CanLII metadata connector without promising full-t
   assert.match(prompt, /does not mean that the key or connector is disabled/);
   assert.match(prompt, /discover candidate neutral citations with A2AJ/);
   assert.match(prompt, /verify the selected citations through CanLII/);
+  assert.match(prompt, /source_id returned by that same provider/);
+  assert.match(prompt, /stop making CanLII calls for this turn/);
+  assert.match(
+    prompt,
+    /partially successful only if an earlier metadata discovery actually succeeded/,
+  );
   assert.match(prompt, /random, sample, recent, or arbitrary cases/);
   assert.match(prompt, /citationVerification value is exactly "verified"/);
   assert.match(
