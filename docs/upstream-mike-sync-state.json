@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-07-30T17:58:46Z",
+  "last_merged_at": "2026-07-31T08:17:37Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -477,6 +477,16 @@
       "decision": "investigate",
       "reason": "Large, architecture-dependent database pagination change spanning migrations, schema, Supabase integration, backend behavior, APIs, and frontend state. It exceeds the automatic-adoption limits and touches protected areas.",
       "processed_at": "2026-07-30T20:51:01.868434Z"
+    },
+    {
+      "number": 276,
+      "title": "fix(frontend): require public env vars at build time",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/276",
+      "merged_at": "2026-07-31T08:17:37Z",
+      "merge_commit_sha": "14de15093f16c0dac013c43e71892c1d89fac12b",
+      "decision": "investigate",
+      "reason": "Changes required build-time environment validation and documentation involving Supabase/provider configuration and production build behavior\u2014explicitly protected areas. The proposed Next.js configuration also does not account for ROSS\u2019s existing security and standalone-build architecture.",
+      "processed_at": "2026-07-31T09:08:20.775321Z"
     }
   ]
 }
