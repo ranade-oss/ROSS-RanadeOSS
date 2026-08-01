@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "requested_by": "ranade-oss",
-  "requested_at": "2026-07-31T21:06:18Z",
+  "requested_at": "2026-08-01T02:02:17Z",
   "mode": "historical-backfill-low-then-escalated",
-  "sequence": 18
+  "sequence": 19
 }
