@@ -495,8 +495,8 @@
       "merged_at": "2026-08-02T16:28:00Z",
       "merge_commit_sha": "57bd8776a898f0556ebe9810ed6a37814cb32980",
       "decision": "investigate",
-      "reason": "Security, SSRF, backend egress, dependencies, and lockfile changes are protected and operationally sensitive.",
-      "processed_at": "2026-08-04T20:04:29.669009Z"
+      "reason": "Security, SSRF, OAuth egress, dependencies, and backend production behavior are protected areas. ROSS also has a divergent MCP implementation requiring security review.",
+      "processed_at": "2026-08-04T20:07:31.007189Z"
     },
     {
       "number": 245,
@@ -504,9 +504,9 @@
       "url": "https://github.com/Open-Legal-Products/mike/pull/245",
       "merged_at": "2026-08-02T17:26:52Z",
       "merge_commit_sha": "961457c70bd44850f8d22d96e4a32f97c4759bdf",
-      "decision": "investigate",
-      "reason": "CORS and backend production access controls are security and operational behaviour.",
-      "processed_at": "2026-08-04T20:04:29.669024Z"
+      "decision": "skip",
+      "reason": "ROSS already implements a stricter runtime-configured CORS allowlist and explicit denial middleware; the upstream implementation is superseded.",
+      "processed_at": "2026-08-04T20:07:31.007212Z"
     },
     {
       "number": 273,
@@ -515,8 +515,8 @@
       "merged_at": "2026-08-02T19:07:07Z",
       "merge_commit_sha": "133ecb3f6af528ac699948e7d00a5cc4747e9d11",
       "decision": "investigate",
-      "reason": "Low-risk dead-code cleanup in principle, but it modifies prohibited backend code and targets app.ts while ROSS retains the abstraction in index.ts.",
-      "processed_at": "2026-08-04T20:04:29.669028Z"
+      "reason": "The dead abstraction still exists in ROSS, but changing request-body parsing affects backend production behavior and backend/src is excluded from the patch.",
+      "processed_at": "2026-08-04T20:07:31.007217Z"
     },
     {
       "number": 253,
@@ -525,8 +525,8 @@
       "merged_at": "2026-08-02T19:08:19Z",
       "merge_commit_sha": "7d1ea6f9b0900e4b860b74296f33b8aaef9815c0",
       "decision": "investigate",
-      "reason": "Relevant tests, but they modify prohibited backend paths and coverage configuration; the documentation changes depend on unverified coverage results.",
-      "processed_at": "2026-08-04T20:04:29.669031Z"
+      "reason": "The backend tests may be useful, but they require backend/src and test-configuration changes and depend on Mike-specific coverage assumptions.",
+      "processed_at": "2026-08-04T20:07:31.007221Z"
     },
     {
       "number": 255,
@@ -535,8 +535,8 @@
       "merged_at": "2026-08-02T19:09:33Z",
       "merge_commit_sha": "2266446b0d26f735865b8cd3bb153b28e7d11b17",
       "decision": "investigate",
-      "reason": "Mechanically gated as too large and includes CI, dependencies, package files, a lockfile, and coverage configuration.",
-      "processed_at": "2026-08-04T20:04:29.669035Z"
+      "reason": "The bundle mechanically flags this 1,354-line change as too large; it also includes CI, dependencies, a lockfile, configuration, and API/SSE behavior tests.",
+      "processed_at": "2026-08-04T20:07:31.007224Z"
     },
     {
       "number": 279,
@@ -545,8 +545,8 @@
       "merged_at": "2026-08-03T07:12:25Z",
       "merge_commit_sha": "25833cb71fe72eaf39f1af8b9dd5fa734b39ae1d",
       "decision": "investigate",
-      "reason": "Cryptography, schemas, migrations, environment configuration, exports, backend APIs, and production behaviour are protected.",
-      "processed_at": "2026-08-04T20:04:29.669038Z"
+      "reason": "Large cryptographic and data-integrity change spanning schemas, migrations, environment configuration, exports, public endpoints, and backend production behavior.",
+      "processed_at": "2026-08-04T20:07:31.007228Z"
     },
     {
       "number": 280,
@@ -555,8 +555,8 @@
       "merged_at": "2026-08-03T08:26:09Z",
       "merge_commit_sha": "afe163a3f0152d61204d7792464192dec595cb25",
       "decision": "investigate",
-      "reason": "The UI is coupled to backend routes, workflow naming, shared types, scripts, and new application behaviour; it is not presentation-only.",
-      "processed_at": "2026-08-04T20:04:29.669040Z"
+      "reason": "The UI portion depends on new backend workflow behavior, shared types, README claims, and build scripts; it is an architecture-dependent feature rather than presentation-only UI.",
+      "processed_at": "2026-08-04T20:07:31.007231Z"
     },
     {
       "number": 246,
@@ -564,9 +564,9 @@
       "url": "https://github.com/Open-Legal-Products/mike/pull/246",
       "merged_at": "2026-08-03T08:28:25Z",
       "merge_commit_sha": "3775d534c3a62db2808b8820a4ad9dd5cfaf1d63",
-      "decision": "investigate",
-      "reason": "Security policy, secret scanning, CodeQL, Scorecard, and GitHub workflow changes are protected security and governance controls.",
-      "processed_at": "2026-08-04T20:04:29.669042Z"
+      "decision": "skip",
+      "reason": "ROSS already has a ROSS-specific security policy and extensive controlled workflows. Mike-specific hosted-service, release, secret-scanning, and governance changes are protected and non-portable.",
+      "processed_at": "2026-08-04T20:07:31.007234Z"
     }
   ]
 }
