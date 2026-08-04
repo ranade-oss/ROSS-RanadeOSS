@@ -47,8 +47,7 @@ jobs:
 
       - name: Run production final-completion gate before public promotion
         if: inputs.promote_public
-        run: npm run final:check -- \
-          --source-report artifacts/release-train-legal-source-health.json
+        run: npm run final:check -- --source-report artifacts/release-train-legal-source-health.json
 
       - name: Upload production qualification legal-source report
         if: always() && inputs.promote_public

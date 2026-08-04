@@ -116,7 +116,7 @@ test("the supported workflow is one-button rehearsal with optional public promot
   );
   assert.match(
     workflow,
-    /final:check[\s\S]*?--source-report artifacts\/release-train-legal-source-health\.json/,
+    /^\s*run: npm run final:check -- --source-report artifacts\/release-train-legal-source-health\.json$/m,
   );
   assert.match(
     workflow,

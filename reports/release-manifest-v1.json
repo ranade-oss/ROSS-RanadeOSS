@@ -37,8 +37,8 @@
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
-      "sha256": "40030bf5f1c37cc6e72b10ceb71514595a217bcc8e20d42c0f2956ebaff14c7e",
-      "sizeBytes": 10830
+      "sha256": "a0eb3dc75ed39f4edab51214c7cfdb552bca40b58c4a7b799d16fa7509a65b6a",
+      "sizeBytes": 10818
     },
     {
       "path": ".github/workflows/verify-ontario-sources.yml",
@@ -607,8 +607,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "35b00e64b5dc62f99007d4af24d08dc3d6a157227b9646c27572c07c6f2d5f11",
-      "sizeBytes": 30119
+      "sha256": "84733b2934c6798c2286b9ffd989d16403b565d320718f5510241bb2c95ad404",
+      "sizeBytes": 30134
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
