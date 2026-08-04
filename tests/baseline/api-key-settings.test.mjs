@@ -79,7 +79,7 @@ test("a future direct provider inherits stable API-key visibility", () => {
   );
 });
 
-test("OpenAI model discovery recognizes the GPT-5.6 API alias", () => {
+test("provider model discovery recognizes aliases and is exhaustive", () => {
   const discovery = read("backend/src/lib/llm/modelDiscovery.ts");
 
   assert.match(
@@ -97,4 +97,8 @@ test("OpenAI model discovery recognizes the GPT-5.6 API alias", () => {
     /available:\s*ids\.has\(capability\.id\)/,
     "literal-only discovery would incorrectly disable supported aliases",
   );
+  assert.match(discovery, /satisfies Record<Provider, DiscoveryAdapter>/);
+  for (const provider of ["openai", "claude", "gemini", "xai", "moonshot"]) {
+    assert.match(discovery, new RegExp(`\\b${provider}:`));
+  }
 });
