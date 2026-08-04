@@ -24,6 +24,10 @@ const runtime = loadRuntimeConfig();
 const PORT = runtime.port;
 const isProduction = process.env.NODE_ENV === "production";
 
+// Ceiling for JSON request bodies. Chat and tabular routes may post document
+// text inline; file uploads use multer and are not governed by this parser.
+const JSON_BODY_LIMIT = "50mb";
+
 function envInt(name: string, fallback: number): number {
   const raw = process.env[name];
   if (!raw) return fallback;
@@ -90,10 +94,6 @@ const dataDeleteLimiter = makeLimiter({
   message: "Too many data deletion requests. Please try again later.",
 });
 
-function jsonLimitForPath(path: string): string {
-  return "50mb";
-}
-
 app.disable("x-powered-by");
 app.set("trust proxy", envInt("TRUST_PROXY_HOPS", 1));
 
@@ -144,9 +144,7 @@ app.delete("/user/chats", dataDeleteLimiter);
 app.delete("/user/projects", dataDeleteLimiter);
 app.delete("/user/tabular-reviews", dataDeleteLimiter);
 
-app.use((req, res, next) =>
-  express.json({ limit: jsonLimitForPath(req.path) })(req, res, next),
-);
+app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
 app.use("/chat", chatRouter);
 app.use("/projects", projectsRouter);
