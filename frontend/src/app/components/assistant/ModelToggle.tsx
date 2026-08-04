@@ -17,6 +17,7 @@ export interface ModelOption {
   id: string;
   label: string;
   group: "Anthropic" | "Google" | "OpenAI" | "xAI" | "Moonshot";
+  provider: "claude" | "gemini" | "openai" | "xai" | "moonshot";
   available?: boolean;
   availabilityReason?: string;
   reasoningEfforts?: string[];
@@ -24,19 +25,84 @@ export interface ModelOption {
 }
 
 export const MODELS: ModelOption[] = [
-  { id: "claude-fable-5", label: "Claude Fable 5", group: "Anthropic" },
-  { id: "claude-opus-4-8", label: "Claude Opus 4.8", group: "Anthropic" },
-  { id: "claude-opus-4-7", label: "Claude Opus 4.7", group: "Anthropic" },
-  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", group: "Anthropic" },
-  { id: "gemini-3.5-flash", label: "Gemini 3.5 Flash", group: "Google" },
-  { id: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro", group: "Google" },
-  { id: "gemini-3-flash-preview", label: "Gemini 3 Flash", group: "Google" },
-  { id: "grok-4.5", label: "Grok 4.5", group: "xAI" },
-  { id: "kimi-k2.5", label: "Kimi K2.5", group: "Moonshot" },
+  {
+    id: "claude-fable-5",
+    label: "Claude Fable 5",
+    group: "Anthropic",
+    provider: "claude",
+  },
+  {
+    id: "claude-opus-4-8",
+    label: "Claude Opus 4.8",
+    group: "Anthropic",
+    provider: "claude",
+  },
+  {
+    id: "claude-opus-4-7",
+    label: "Claude Opus 4.7",
+    group: "Anthropic",
+    provider: "claude",
+  },
+  {
+    id: "claude-sonnet-4-6",
+    label: "Claude Sonnet 4.6",
+    group: "Anthropic",
+    provider: "claude",
+  },
+  {
+    id: "gemini-3.5-flash",
+    label: "Gemini 3.5 Flash",
+    group: "Google",
+    provider: "gemini",
+  },
+  {
+    id: "gemini-3.1-pro-preview",
+    label: "Gemini 3.1 Pro",
+    group: "Google",
+    provider: "gemini",
+  },
+  {
+    id: "gemini-3-flash-preview",
+    label: "Gemini 3 Flash",
+    group: "Google",
+    provider: "gemini",
+  },
+  { id: "grok-4.5", label: "Grok 4.5", group: "xAI", provider: "xai" },
+  {
+    id: "kimi-k2.5",
+    label: "Kimi K2.5",
+    group: "Moonshot",
+    provider: "moonshot",
+  },
+  {
+    id: "gpt-5.6-sol",
+    label: "GPT-5.6 Sol",
+    group: "OpenAI",
+    provider: "openai",
+    reasoningEfforts: ["none", "low", "medium", "high", "xhigh", "max"],
+    defaultReasoningEffort: "medium",
+  },
+  {
+    id: "gpt-5.6-terra",
+    label: "GPT-5.6 Terra",
+    group: "OpenAI",
+    provider: "openai",
+    reasoningEfforts: ["none", "low", "medium", "high", "xhigh", "max"],
+    defaultReasoningEffort: "medium",
+  },
+  {
+    id: "gpt-5.6-luna",
+    label: "GPT-5.6 Luna",
+    group: "OpenAI",
+    provider: "openai",
+    reasoningEfforts: ["none", "low", "medium", "high", "xhigh", "max"],
+    defaultReasoningEffort: "medium",
+  },
   {
     id: "gpt-5.6",
-    label: "GPT-5.6",
+    label: "GPT-5.6 (Sol alias)",
     group: "OpenAI",
+    provider: "openai",
     reasoningEfforts: ["none", "low", "medium", "high", "xhigh", "max"],
     defaultReasoningEffort: "medium",
   },
@@ -44,6 +110,7 @@ export const MODELS: ModelOption[] = [
     id: "gpt-5.5",
     label: "GPT-5.5",
     group: "OpenAI",
+    provider: "openai",
     reasoningEfforts: ["none", "low", "medium", "high", "xhigh"],
     defaultReasoningEffort: "medium",
   },
@@ -51,6 +118,7 @@ export const MODELS: ModelOption[] = [
     id: "gpt-5.4",
     label: "GPT-5.4",
     group: "OpenAI",
+    provider: "openai",
     reasoningEfforts: ["none", "low", "medium", "high", "xhigh"],
     defaultReasoningEffort: "medium",
   },
@@ -58,13 +126,24 @@ export const MODELS: ModelOption[] = [
 
 export const SETTINGS_MODELS: ModelOption[] = [
   ...MODELS,
-  { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", group: "Anthropic" },
+  {
+    id: "claude-haiku-4-5",
+    label: "Claude Haiku 4.5",
+    group: "Anthropic",
+    provider: "claude",
+  },
   {
     id: "gemini-3.1-flash-lite-preview",
     label: "Gemini 3.1 Flash Lite",
     group: "Google",
+    provider: "gemini",
   },
-  { id: "gpt-5.4-lite", label: "GPT-5.4 Lite", group: "OpenAI" },
+  {
+    id: "gpt-5.4-lite",
+    label: "GPT-5.4 Lite",
+    group: "OpenAI",
+    provider: "openai",
+  },
 ];
 
 export const DEFAULT_MODEL_ID = "gemini-3-flash-preview";
@@ -104,7 +183,7 @@ export function ModelToggle({
   const selectedLabel = selected?.label ?? "Model";
   const selectedAvailable =
     selected?.available !== false &&
-    (apiKeys ? isModelAvailable(value, apiKeys) : true);
+    (apiKeys ? isModelAvailable(value, apiKeys, selected?.provider) : true);
   const selectedUnavailableReason =
     selected?.available === false
       ? (selected.availabilityReason ??
@@ -143,7 +222,9 @@ export function ModelToggle({
               {items.map((m) => {
                 const available =
                   m.available !== false &&
-                  (apiKeys ? isModelAvailable(m.id, apiKeys) : true);
+                  (apiKeys
+                    ? isModelAvailable(m.id, apiKeys, m.provider)
+                    : true);
                 const unavailableReason =
                   m.available === false
                     ? (m.availabilityReason ??

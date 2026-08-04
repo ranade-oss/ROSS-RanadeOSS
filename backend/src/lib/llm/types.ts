@@ -6,6 +6,7 @@ export type Provider = "claude" | "gemini" | "openai" | "xai" | "moonshot";
 
 export type ReasoningEffort =
   | "none"
+  | "minimal"
   | "low"
   | "medium"
   | "high"

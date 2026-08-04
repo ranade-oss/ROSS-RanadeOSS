@@ -23,6 +23,10 @@ import { AssistantWorkflowModal } from "./AssistantWorkflowModal";
 import { ApiKeyMissingPopup } from "../popups/ApiKeyMissingPopup";
 import { ModelToggle } from "./ModelToggle";
 import { useSelectedModel } from "@/app/hooks/useSelectedModel";
+import {
+  jurisdictionCodes,
+  useSelectedJurisdiction,
+} from "@/app/hooks/useSelectedJurisdiction";
 import { useModelCatalog } from "@/app/hooks/useModelCatalog";
 import { useUserProfile } from "@/app/contexts/UserProfileContext";
 import {
@@ -48,6 +52,7 @@ interface Props {
   projectName?: string;
   projectCmNumber?: string | null;
   defaultJurisdictions?: Array<"CA-ON" | "CA" | "US">;
+  jurisdictionPersistenceScope?: string;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
@@ -61,6 +66,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
     projectName,
     projectCmNumber,
     defaultJurisdictions,
+    jurisdictionPersistenceScope,
   }: Props,
   ref,
 ) {
@@ -86,22 +92,16 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
     : ((selectedModel?.defaultReasoningEffort as ReasoningEffort | undefined) ??
       reasoningEfforts[0]);
   const { profile } = useUserProfile();
-  const [jurisdictionOverride, setJurisdictionOverride] = useState<
-    "CA-ON" | "CA" | "US" | null
-  >(null);
   const profileJurisdictions = profile?.legalResearch.enabledJurisdictions;
   const baseJurisdictions = defaultJurisdictions?.length
     ? defaultJurisdictions
     : profileJurisdictions?.length
       ? profileJurisdictions
       : (["CA-ON", "CA"] as Array<"CA-ON" | "CA" | "US">);
-  const jurisdiction =
-    jurisdictionOverride ??
-    (baseJurisdictions.includes("CA-ON")
-      ? "CA-ON"
-      : baseJurisdictions.includes("CA")
-        ? "CA"
-        : "US");
+  const [jurisdiction, setJurisdiction] = useSelectedJurisdiction(
+    baseJurisdictions,
+    jurisdictionPersistenceScope,
+  );
   const apiKeys = profile?.apiKeys;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
@@ -117,12 +117,14 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
     }
     const selected = modelCatalog.models.find((item) => item.id === model);
     const selectedAvailable =
-      selected?.available !== false && isModelAvailable(model, apiKeys);
+      selected?.available !== false &&
+      isModelAvailable(model, apiKeys, selected?.provider);
     if (selected && selectedAvailable) return;
     const replacement =
       modelCatalog.models.find(
         (item) =>
-          item.available !== false && isModelAvailable(item.id, apiKeys),
+          item.available !== false &&
+          isModelAvailable(item.id, apiKeys, item.provider),
       ) ?? modelCatalog.models[0];
     if (replacement && replacement.id !== model) setModel(replacement.id);
   }, [apiKeys, model, modelCatalog.loading, modelCatalog.models, setModel]);
@@ -167,8 +169,10 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
   const handleSubmit = () => {
     const query = value.trim();
     if (!query || isLoading) return;
-    if (apiKeys && !isModelAvailable(model, apiKeys)) {
-      setApiKeyModalProvider(getModelProvider(model));
+    if (apiKeys && !isModelAvailable(model, apiKeys, selectedModel?.provider)) {
+      setApiKeyModalProvider(
+        selectedModel?.provider ?? getModelProvider(model),
+      );
       return;
     }
     setValue("");
@@ -191,11 +195,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
       workflow: wf ?? undefined,
       model,
       reasoningEffort,
-      jurisdictions: jurisdictionOverride
-        ? jurisdiction === "CA-ON"
-          ? ["CA-ON", "CA"]
-          : [jurisdiction]
-        : baseJurisdictions,
+      jurisdictions: jurisdictionCodes(jurisdiction),
     });
   };
 
@@ -292,9 +292,7 @@ export const ChatInput = forwardRef<ChatInputHandle, Props>(function ChatInput(
                 id="chat-jurisdiction"
                 value={jurisdiction}
                 onChange={(event) =>
-                  setJurisdictionOverride(
-                    event.target.value as "CA-ON" | "CA" | "US",
-                  )
+                  setJurisdiction(event.target.value as "CA-ON" | "CA" | "US")
                 }
                 className="h-8 rounded-lg border-0 bg-white/45 px-2 text-xs text-gray-600 outline-none hover:bg-white/65 focus:ring-2 focus:ring-gray-400"
               >

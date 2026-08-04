@@ -8,6 +8,7 @@ import type {
 } from "./types";
 import { toClaudeTools } from "./tools";
 import { createRawLlmStreamRecorder, logRawLlmStream } from "./rawStreamLog";
+import { modelCapability } from "./models";
 
 type ContentBlock =
   | { type: "text"; text: string }
@@ -112,6 +113,7 @@ export async function streamClaude(
     runTools,
     apiKeys,
     enableThinking,
+    reasoningEffort,
   } = params;
   const maxIter = params.maxIterations ?? 10;
   const anthropic = client(apiKeys?.claude);
@@ -134,12 +136,11 @@ export async function streamClaude(
         model,
         system: systemPrompt,
         messages: messages as Anthropic.MessageParam[],
-        tools: toolsEnabled && claudeTools.length
-          ? (claudeTools as unknown as Tool[])
-          : undefined,
-        ...(iter === 0 &&
-        toolsEnabled &&
-        params.requiredFirstToolName
+        tools:
+          toolsEnabled && claudeTools.length
+            ? (claudeTools as unknown as Tool[])
+            : undefined,
+        ...(iter === 0 && toolsEnabled && params.requiredFirstToolName
           ? {
               tool_choice: {
                 type: "tool",
@@ -152,10 +153,10 @@ export async function streamClaude(
         // Claude 4.x models require `thinking.type: "adaptive"` and
         // drive effort via `output_config.effort` rather than a fixed
         // token budget. We only opt in when the caller requested it.
-        ...(enableThinking
+        ...(enableThinking && modelCapability(model)?.reasoningEfforts.length
           ? ({
               thinking: { type: "adaptive" },
-              output_config: { effort: "high" },
+              output_config: { effort: reasoningEffort ?? "high" },
             } as unknown as Record<string, unknown>)
           : {}),
         // Extended thinking requires temperature to be default (omitted).

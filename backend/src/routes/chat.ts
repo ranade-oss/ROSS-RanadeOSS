@@ -119,6 +119,7 @@ function parseOptionalModel(
 
 const REASONING_EFFORTS = new Set([
   "none",
+  "minimal",
   "low",
   "medium",
   "high",

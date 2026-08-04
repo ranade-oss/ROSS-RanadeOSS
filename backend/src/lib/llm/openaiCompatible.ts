@@ -103,6 +103,7 @@ async function createChatCompletion(params: {
   requiredToolName?: string;
   stream: boolean;
   maxTokens?: number;
+  reasoningEffort?: StreamChatParams["reasoningEffort"];
   apiKey: string;
   signal?: AbortSignal;
 }) {
@@ -127,6 +128,7 @@ async function createChatCompletion(params: {
         : undefined,
       stream: params.stream,
       max_tokens: params.maxTokens ?? 16_384,
+      reasoning_effort: params.reasoningEffort,
     }),
     signal: params.signal,
   });
@@ -163,6 +165,7 @@ export async function streamOpenAICompatible(
           ? params.requiredFirstToolName
           : undefined,
       stream: true,
+      reasoningEffort: params.reasoningEffort,
       apiKey: key,
       signal: params.abortSignal,
     });
@@ -229,7 +232,8 @@ export async function streamOpenAICompatible(
 
     if (!normalizedCalls.length || !params.runTools) break;
     messages.push({ role: "assistant", content: "" });
-    const results: NormalizedToolResult[] = await params.runTools(normalizedCalls);
+    const results: NormalizedToolResult[] =
+      await params.runTools(normalizedCalls);
     for (const result of results) {
       messages.push({
         role: "tool",

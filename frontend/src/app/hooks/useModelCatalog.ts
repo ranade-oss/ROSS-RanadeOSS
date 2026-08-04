@@ -30,6 +30,7 @@ export function useModelCatalog() {
         return {
           id: model.id,
           label: model.label,
+          provider,
           group:
             provider === "openai"
               ? ("OpenAI" as const)

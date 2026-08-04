@@ -6,6 +6,7 @@ import type {
 } from "./types";
 import { toGeminiTools } from "./tools";
 import { createRawLlmStreamRecorder, logRawLlmStream } from "./rawStreamLog";
+import { modelCapability } from "./models";
 
 type GeminiPart = {
   text?: string;
@@ -168,6 +169,7 @@ export async function streamGemini(
     runTools,
     apiKeys,
     enableThinking,
+    reasoningEffort,
   } = params;
   const maxIter = params.maxIterations ?? 10;
   const ai = client(apiKeys?.gemini);
@@ -193,12 +195,11 @@ export async function streamGemini(
           contents: contents as never,
           config: {
             systemInstruction: systemPrompt,
-            tools: toolsEnabled && functionDeclarations.length
-              ? [{ functionDeclarations } as never]
-              : undefined,
-            ...(iter === 0 &&
-            toolsEnabled &&
-            params.requiredFirstToolName
+            tools:
+              toolsEnabled && functionDeclarations.length
+                ? [{ functionDeclarations } as never]
+                : undefined,
+            ...(iter === 0 && toolsEnabled && params.requiredFirstToolName
               ? {
                   toolConfig: {
                     functionCallingConfig: {
@@ -212,9 +213,11 @@ export async function streamGemini(
             // When disabled, explicitly zero the thinking budget so the
             // model skips thinking entirely (saves tokens and latency
             // for bulk extraction jobs).
-            thinkingConfig: enableThinking
-              ? { includeThoughts: true }
-              : { thinkingBudget: 0 },
+            thinkingConfig: geminiThinkingConfig(
+              model,
+              !!enableThinking,
+              reasoningEffort,
+            ),
           },
         });
       } catch (error) {
@@ -341,6 +344,21 @@ export async function streamGemini(
     await rawStreamRecorder?.flush("error", error);
     throw error;
   }
+}
+
+function geminiThinkingConfig(
+  model: string,
+  enableThinking: boolean,
+  reasoningEffort?: StreamChatParams["reasoningEffort"],
+) {
+  if (!modelCapability(model)?.reasoningEfforts.length) return undefined;
+  if (!enableThinking) return { thinkingBudget: 0 };
+  const effort = reasoningEffort ?? "medium";
+  if (effort === "none") return { thinkingBudget: 0 };
+  return {
+    includeThoughts: true,
+    thinkingLevel: effort.toUpperCase(),
+  } as unknown as Record<string, unknown>;
 }
 
 export async function completeGeminiText(params: {

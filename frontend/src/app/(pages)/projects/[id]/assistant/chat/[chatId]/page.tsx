@@ -1268,6 +1268,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
                                 projectName={project?.name}
                                 projectCmNumber={project?.cm_number}
                                 defaultJurisdictions={project?.jurisdictions}
+                                jurisdictionPersistenceScope={`project:${projectId}`}
                             />
                         </div>
                     </div>
