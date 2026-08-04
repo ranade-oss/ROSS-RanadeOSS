@@ -42,8 +42,9 @@
     "wrangler": "4.114.0"
   },
   "overrides": {
-    "brace-expansion": "5.0.8",
-    "fast-uri": "3.1.4",
+    "brace-expansion": "5.0.9",
+    "fast-uri": "3.1.5",
+    "undici": "7.29.0",
     "postcss": "8.5.22",
     "sharp": "0.35.3"
   },

@@ -15,7 +15,7 @@ const root = resolve(import.meta.dirname, "..");
 const lock = JSON.parse(
   readFileSync(resolve(root, "package-lock.json"), "utf8"),
 );
-const safeVersion = "5.0.8";
+const safeVersion = "5.0.9";
 const legacyRequire =
   /require\((["'])brace-expansion\1\)(?!\.expand)/g;
 const legacyImport =
