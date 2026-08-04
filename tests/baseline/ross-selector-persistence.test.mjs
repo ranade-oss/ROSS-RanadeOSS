@@ -14,7 +14,10 @@ test("the submitted jurisdiction survives the first-prompt route transition", ()
     "frontend/src/app/(pages)/projects/[id]/assistant/chat/[chatId]/page.tsx",
   );
 
+  assert.match(hook, /useSyncExternalStore/);
+  assert.doesNotMatch(hook, /useEffect|setJurisdictionState/);
   assert.match(hook, /sessionStorage\.setItem\(storageKey, next\)/);
+  assert.match(hook, /notify\(storageKey\)/);
   assert.match(hook, /jurisdiction === "CA-ON" \? \["CA-ON", "CA"\]/);
   assert.match(input, /jurisdictions: jurisdictionCodes\(jurisdiction\)/);
   assert.doesNotMatch(input, /jurisdictionOverride/);

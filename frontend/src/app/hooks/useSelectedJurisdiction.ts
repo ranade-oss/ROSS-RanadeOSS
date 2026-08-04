@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 export type ChatJurisdiction = "CA-ON" | "CA" | "US";
 
 const STORAGE_PREFIX = "ross.selectedJurisdiction.v1";
+const listeners = new Map<string, Set<() => void>>();
 
 function defaultJurisdiction(
   jurisdictions?: readonly ChatJurisdiction[],
@@ -17,6 +18,43 @@ function defaultJurisdiction(
 
 function isJurisdiction(value: string | null): value is ChatJurisdiction {
   return value === "CA-ON" || value === "CA" || value === "US";
+}
+
+function readStoredJurisdiction(
+  storageKey: string,
+  fallback: ChatJurisdiction,
+): ChatJurisdiction {
+  if (typeof window === "undefined") return fallback;
+  const stored = window.sessionStorage.getItem(storageKey);
+  return isJurisdiction(stored) ? stored : fallback;
+}
+
+function subscribe(storageKey: string, onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") return () => undefined;
+
+  let storageListeners = listeners.get(storageKey);
+  if (!storageListeners) {
+    storageListeners = new Set();
+    listeners.set(storageKey, storageListeners);
+  }
+  storageListeners.add(onStoreChange);
+
+  const handleStorage = (event: StorageEvent) => {
+    if (event.storageArea === window.sessionStorage && event.key === storageKey) {
+      onStoreChange();
+    }
+  };
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    storageListeners.delete(onStoreChange);
+    if (storageListeners.size === 0) listeners.delete(storageKey);
+  };
+}
+
+function notify(storageKey: string): void {
+  listeners.get(storageKey)?.forEach((listener) => listener());
 }
 
 export function jurisdictionCodes(
@@ -39,22 +77,26 @@ export function useSelectedJurisdiction(
     () => `${STORAGE_PREFIX}:${persistenceScope}`,
     [persistenceScope],
   );
-  const [jurisdiction, setJurisdictionState] =
-    useState<ChatJurisdiction>(fallback);
-
-  useEffect(() => {
-    const stored =
-      typeof window === "undefined"
-        ? null
-        : window.sessionStorage.getItem(storageKey);
-    setJurisdictionState(isJurisdiction(stored) ? stored : fallback);
-  }, [fallback, storageKey]);
+  const subscribeToJurisdiction = useCallback(
+    (onStoreChange: () => void) => subscribe(storageKey, onStoreChange),
+    [storageKey],
+  );
+  const getSnapshot = useCallback(
+    () => readStoredJurisdiction(storageKey, fallback),
+    [fallback, storageKey],
+  );
+  const getServerSnapshot = useCallback(() => fallback, [fallback]);
+  const jurisdiction = useSyncExternalStore(
+    subscribeToJurisdiction,
+    getSnapshot,
+    getServerSnapshot,
+  );
 
   const setJurisdiction = useCallback(
     (next: ChatJurisdiction) => {
-      setJurisdictionState(next);
       if (typeof window !== "undefined") {
         window.sessionStorage.setItem(storageKey, next);
+        notify(storageKey);
       }
     },
     [storageKey],
