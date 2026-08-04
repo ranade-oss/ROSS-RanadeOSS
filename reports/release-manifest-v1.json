@@ -87,8 +87,8 @@
     },
     {
       "path": "backend/src/index.ts",
-      "sha256": "0b031efbfb400166c4e2864713fc8b80803feb5e0d96cc7ddfb7ee0968a1e7d7",
-      "sizeBytes": 5791
+      "sha256": "d613269b4effee8ecc0797db562a90dacbecf1b43a2a8d9af9c8cf66b5237b82",
+      "sizeBytes": 5858
     },
     {
       "path": "backend/src/lib/documentScanDispatcher.ts",

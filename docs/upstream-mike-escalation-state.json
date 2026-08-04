@@ -247,6 +247,42 @@
       "risk": "defer",
       "reason": "Safely adaptable, but high risk because it changes production build validation for Supabase configuration and deployment behavior. The ROSS adaptation reuses its existing production flag and retains all ROSS-specific safeguards. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
       "processed_at": "2026-07-31T17:04:17.826412Z"
+    },
+    {
+      "number": 242,
+      "risk": "defer",
+      "reason": "High-risk SSRF/OAuth security-boundary change. ROSS has divergent MCP egress code and lacks the supplied Vitest harness, so the complete adaptation cannot be validated safely.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 273,
+      "risk": "medium",
+      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS\u2019s 50 MB limit.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 253,
+      "risk": "defer",
+      "reason": "ROSS lacks the upstream backend Vitest/coverage harness, and several Mike-specific assertions require speculative adaptation.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 255,
+      "risk": "defer",
+      "reason": "Depends on an absent frontend test harness and includes prohibited workflow changes; a reliable partial adaptation is unclear.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 279,
+      "risk": "defer",
+      "reason": "High-risk schema migration, cryptographic signing-key, export, and production-data-boundary change with too broad a blast radius for this batch.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 280,
+      "risk": "defer",
+      "reason": "The cross-stack UI/API feature is not adequately testable because ROSS lacks the supplied frontend test harness.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
     }
   ]
 }
