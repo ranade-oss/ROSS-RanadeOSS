@@ -37,9 +37,27 @@ jobs:
       - name: Run complete engineering gate
         run: npm run check
 
+      - name: Observe live legal sources for production gate
+        if: inputs.promote_public
+        continue-on-error: true
+        run: |
+          mkdir -p artifacts
+          node scripts/observe-legal-sources.mjs \
+            --output artifacts/release-train-legal-source-health.json
+
       - name: Run production final-completion gate before public promotion
         if: inputs.promote_public
-        run: npm run final:check
+        run: npm run final:check -- \
+          --source-report artifacts/release-train-legal-source-health.json
+
+      - name: Upload production qualification legal-source report
+        if: always() && inputs.promote_public
+        uses: actions/upload-artifact@v7
+        with:
+          name: ross-release-qualification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-train-legal-source-health.json
+          if-no-files-found: warn
+          retention-days: 90
 
       - name: Build every Fly container path
         run: npm run preflight:fly

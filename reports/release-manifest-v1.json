@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 127,
+  "artifactCount": 128,
   "artifacts": [
     {
       "path": ".github/actionlint.yaml",
@@ -37,8 +37,8 @@
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
-      "sha256": "f0480f0fcf997b1b5e1408c12d7704032a7222aef61d1011599d0ab72a7ecb6c",
-      "sizeBytes": 10071
+      "sha256": "40030bf5f1c37cc6e72b10ceb71514595a217bcc8e20d42c0f2956ebaff14c7e",
+      "sizeBytes": 10830
     },
     {
       "path": ".github/workflows/verify-ontario-sources.yml",
@@ -522,8 +522,8 @@
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
-      "sha256": "ecbdcb7f83550bdfee2fafebb494d263de165ee2d7a6fb2a3f21cc886e849b58",
-      "sizeBytes": 1351
+      "sha256": "c5a9c7036a13c598f3d6e3d256d9af9f07b94da951d00032278776914aada8e2",
+      "sizeBytes": 2245
     },
     {
       "path": "scripts/preflight-fly-images.sh",
@@ -576,6 +576,11 @@
       "sizeBytes": 3312
     },
     {
+      "path": "scripts/check-final-completion.mjs",
+      "sha256": "59672ba849bb0bade25aedd58e1cee4a761c67657a2bb236cc977041c6624850",
+      "sizeBytes": 3128
+    },
+    {
       "path": "scripts/validate-release-id.mjs",
       "sha256": "5eca3fbee3ddd6245497243e5f2690d351956af3d9d025afd5e2fadb10766cde",
       "sizeBytes": 301
@@ -602,8 +607,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "5b64b90d4496365264852feeba59556a1b35350488755dcb8d2fec4ad12379a1",
-      "sizeBytes": 29357
+      "sha256": "35b00e64b5dc62f99007d4af24d08dc3d6a157227b9646c27572c07c6f2d5f11",
+      "sizeBytes": 30119
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
