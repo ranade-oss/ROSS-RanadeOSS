@@ -76,20 +76,11 @@ test("the release train rehearses by default and generates release IDs automatic
   assert.match(workflow, /release-train-ledger\.json/);
 });
 
-test("the older public deployment workflow is clearly legacy and hard blocked", () => {
-  const workflow = read(".github/workflows/deploy-public-beta-ross.yml");
-  assert.match(workflow, /name: "Legacy: deploy previously governed public beta"/);
-  assert.match(workflow, /Legacy public deployment is disabled/);
-  assert.match(workflow, /Run ROSS release train instead/);
-  assert.match(workflow, /preflight:/);
-  assert.match(workflow, /preflight:[\s\S]*?if: \$\{\{ false \}\}/);
-  assert.match(workflow, /needs: preflight/);
-});
 
 test("the combined public update expressly excludes the private-only defect set", () => {
   const instructions = read("docs/deployment/public-beta-combined-update.md");
   assert.match(instructions, /private-ROSS OpenAI-key/);
   assert.match(instructions, /not part of this update/);
   assert.match(instructions, /No database migration or new secret is required/);
-  assert.match(instructions, /Do not run the older standalone hotfix/);
+  assert.match(instructions, /former standalone public\s+deployment path has been removed/);
 });

@@ -10,7 +10,7 @@
 - SHA-256 manifest for governed release artifacts with a freshness check.
 - Evidence-bearing operational release gate covering CI, staging, migrations,
   backup/restore, rollback, observability, sources, dependencies, and incidents.
-- Manual GitHub release-candidate evidence workflow with no deployment job.
+- The ROSS release train produces 90-day evidence while keeping promotion behind its explicit human-approved input.
 - Executable release, evidence, backup/restore, rollback, source, observability,
   and security reporting runbooks.
 

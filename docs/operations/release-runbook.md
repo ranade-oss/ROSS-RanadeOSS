@@ -1,18 +1,20 @@
-# Release-candidate runbook
+# ROSS release-train runbook
 
 This runbook creates evidence; it does not authorize production. The release
-owner must use a unique candidate identifier and keep code, schema, workflows,
-legal-source policy, evaluation output, and approvals tied to the same commit.
+owner must keep code, schema, workflows, legal-source policy, evaluation
+output, and approvals tied to the same commit. The release train generates the
+candidate identifier.
 
 ## Candidate sequence
 
 1. Start from a reviewed commit on `main`; confirm the worktree and generated
    files are clean.
-2. Set a unique release ID in every governed record. Do not reuse an identifier.
+2. Confirm the governed records and release manifest are current. The release
+   train generates a new unused identifier for the exact checked-out commit.
 3. Run `npm run install:all`, `npm run check`, and
    `npm run build:release-manifest` using the locked dependency files.
-4. Run the GitHub **Release candidate evidence** workflow for the same commit.
-   Retain its URL, commit SHA, logs, and downloaded evidence artifact.
+4. Run the GitHub **ROSS release train** workflow for the same commit. Retain
+   its URL, commit SHA, logs, and 90-day evidence artifact.
 5. Deploy that immutable candidate to isolated staging. Never substitute a
    different build after review.
 6. Complete the staging journey, migration dry run, backup/restore exercise,

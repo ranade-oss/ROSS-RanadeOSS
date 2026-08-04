@@ -72,13 +72,15 @@ test("release manifest governs code, schema, evaluation, sources, workflows, and
   assert.equal(manifest.artifactCount, manifest.artifacts.length);
 });
 
-test("release candidate workflow creates evidence but never deploys", () => {
-  const workflow = read(".github/workflows/release-candidate.yml");
+test("release train creates evidence and keeps public promotion explicit", () => {
+  const workflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
   assert.match(workflow, /workflow_dispatch/);
   assert.match(workflow, /npm run check/);
+  assert.match(workflow, /if: inputs\.promote_public/);
   assert.match(workflow, /upload-artifact@v7/);
-  assert.doesNotMatch(workflow, /\bdeploy(?:ment)?\s*:/i);
-  assert.doesNotMatch(workflow, /wrangler deploy|kubectl|helm upgrade/i);
+  assert.match(workflow, /retention-days: 90/);
+ assert.match(workflow, /reports\/final-completion-dossier\.md/);
+ assert.match(workflow, /config\/launch-readiness\.v1\.json/);
 });
 
 test("production operations are documented without expanding the beta data boundary", () => {

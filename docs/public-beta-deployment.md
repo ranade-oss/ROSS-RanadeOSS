@@ -43,13 +43,12 @@ environment deployment branches to `main`.
 
 1. Complete the work in `docs/final/owner-action-sheet.md` for one immutable
    release candidate.
-2. Run the **Final controlled-beta evidence** workflow and retain its artifact.
-3. Open **Actions → Deploy public ROSS beta → Run workflow** on that exact
-   commit.
-4. Enter the matching release ID and Fly organization/app names.
-5. Confirm the Supabase auth configuration and recorded go-live approval.
-6. The workflow re-runs `npm run final:check`; any incomplete or mismatched
-   evidence stops deployment.
+2. Open **Actions → ROSS release train → Run workflow** on `main`.
+3. Leave public promotion unchecked for rehearsal, or select it only after
+   the final completion gate and approvals are ready.
+4. Confirm the Supabase auth configuration and recorded go-live approval.
+5. The release train runs `npm run final:check` before public promotion and
+   retains the governed evidence package for 90 days.
 
 ## Post-deploy verification
 

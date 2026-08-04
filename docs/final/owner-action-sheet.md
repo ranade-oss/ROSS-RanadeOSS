@@ -25,11 +25,11 @@ approved until the named evidence actually exists.
    domains, vendors/residency, effective notices, support/privacy contacts,
    public-beta registration/terms, abuse controls, and the go-live decision.
 7. **Immutable candidate.** Assign one release ID everywhere, rebuild generated
-   records, run the release-candidate workflow, and deploy that exact candidate
+   records, run the ROSS release-train workflow, and deploy that exact candidate
    to isolated staging.
-8. **Final gate.** Run `npm run final:check`. Any blocker ends the promotion
-   attempt. If it passes, run the GitHub **Final controlled-beta evidence**
-   workflow and retain its artifact and approval record.
+8. **Final gate.** The release train runs `npm run final:check` before public
+   promotion. Any blocker ends the promotion attempt. Retain its 90-day evidence
+   artifact and approval record.
 9. **Limited launch.** Open verified self-registration without anonymous use.
    Keep the hosted beta restricted to synthetic or affirmatively
    non-confidential material. Public search indexing and confidential or

@@ -21,18 +21,21 @@ test("Deliverable G records verified public registration without expanding the d
 });
 
 test("public deployment is manual, gated, verified-email only, and separately reversible", () => {
-  const publicWorkflow = read(".github/workflows/deploy-public-beta-ross.yml");
+  const publicWorkflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
+  const releaseTrain = read("scripts/fly-release-train.mjs");
+  const imageBuild = read("scripts/build-release-train-images.sh");
   const privateWorkflow = read(".github/workflows/deploy-private-ross.yml");
 
   assert.match(publicWorkflow, /workflow_dispatch:/);
   assert.doesNotMatch(publicWorkflow, /^\s*push:/m);
   assert.match(publicWorkflow, /environment: public-beta/);
-  assert.match(publicWorkflow, /verify-final-release-id\.mjs/);
-  assert.match(publicWorkflow, /npm run final:check/);
-  assert.match(publicWorkflow, /ROSS_REQUIRE_VERIFIED_EMAIL=true/);
-  assert.match(publicWorkflow, /NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=true/);
-  assert.match(publicWorkflow, /RATE_LIMIT_CHAT_MAX=20/);
-  assert.match(publicWorkflow, /--no-cache/);
+  assert.match(publicWorkflow, /validate-release-id\.mjs/);
+  assert.match(publicWorkflow, /if: inputs\.promote_public/);
+  assert.match(releaseTrain, /ROSS_REQUIRE_VERIFIED_EMAIL: "true"/);
+  assert.match(releaseTrain, /RATE_LIMIT_CHAT_MAX: "20"/);
+  assert.match(releaseTrain, /--flycast/);
+  assert.match(imageBuild, /--no-cache/);
+  assert.match(imageBuild, /NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=\$\{RELEASE_SIGNUPS_ENABLED:-true\}/);
   assert.match(privateWorkflow, /NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=false/);
 });
 

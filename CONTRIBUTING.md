@@ -21,7 +21,7 @@ Mike functionality recorded in the baseline contract.
 - Install all dependencies from the repository root with `npm run install:all`.
 - Run the baseline contract tests with `npm test`.
 - Run the full local verification suite with `npm run check`.
-- For a release-candidate change, regenerate and verify the governed manifest
++ For a release-train change, regenerate and verify the governed manifest
   with `npm run build:release-manifest` and `npm run test:release-manifest`.
 - If deployed test URLs are available, run `ROSS_E2E_API_URL=... ROSS_E2E_APP_URL=... npm run test:e2e`.
 - Check `git diff` and remove unrelated changes.

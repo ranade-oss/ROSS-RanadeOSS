@@ -24,13 +24,11 @@ test("CI pins an npm version that uses the supported bulk advisory endpoint", ()
 });
 
 test("every complete engineering workflow uses the shared pinned toolchain", () => {
-  for (const path of [
-    ".github/workflows/baseline.yml",
-    ".github/workflows/final-controlled-beta-evidence.yml",
-    ".github/workflows/refresh-release-manifest.yml",
-    ".github/workflows/release-candidate.yml",
-    ".github/workflows/verify-and-deploy-public-beta.yml",
-  ]) {
+ for (const path of [
+   ".github/workflows/baseline.yml",
+   ".github/workflows/refresh-release-manifest.yml",
+   ".github/workflows/verify-and-deploy-public-beta.yml",
+ ]) {
     const workflow = read(path);
     assert.match(workflow, /uses: \.\/\.github\/actions\/setup-ross-node/);
     assert.doesNotMatch(workflow, /uses: actions\/setup-node/);

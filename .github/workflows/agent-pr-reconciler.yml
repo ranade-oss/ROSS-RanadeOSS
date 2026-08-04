@@ -1,0 +1,285 @@
+name: Reconcile agent pull requests
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: reconcile-agent-pull-requests
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    permissions:
+      actions: write
+      contents: read
+      issues: write
+      pull-requests: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch Baseline for unverified exact heads
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+
+            const { data: workflow } = await github.rest.actions.getWorkflow({
+              owner,
+              repo,
+              workflow_id: "baseline.yml",
+            });
+
+            const reportFailure = async (pr, run) => {
+              const marker = `<!-- ross-baseline-run:${run.id} -->`;
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner,
+                repo,
+                issue_number: pr.number,
+                per_page: 100,
+              });
+              if (comments.some((comment) => comment.body?.includes(marker))) return;
+
+              const jobs = await github.paginate(
+                github.rest.actions.listJobsForWorkflowRun,
+                {
+                  owner,
+                  repo,
+                  run_id: run.id,
+                  per_page: 100,
+                },
+              );
+              const failures = jobs
+                .filter((job) => job.conclusion && job.conclusion !== "success" && job.conclusion !== "skipped")
+                .map((job) => {
+                  const steps = (job.steps || [])
+                    .filter((step) => step.conclusion === "failure")
+                    .map((step) => step.name);
+                  return `- **${job.name}** (${job.conclusion})${steps.length ? ` — ${steps.join(", ")}` : ""}`;
+                });
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr.number,
+                body: [
+                  marker,
+                  `Baseline failed for exact head \`${pr.head.sha}\`.`,
+                  "",
+                  failures.length ? failures.join("\n") : `- Workflow conclusion: **${run.conclusion}**`,
+                  "",
+                  `[Open workflow run](${run.html_url})`,
+                  "",
+                  "Bounded automatic repair runs only for eligible low-risk paths. Protected workflow, dependency, migration, deployment, security, legal, governance, or release changes require focused review.",
+                ].join("\n"),
+              });
+            };
+
+            const pullRequests = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: "open",
+              base: "main",
+              per_page: 100,
+            });
+
+            for (const pr of pullRequests) {
+              const markedSyncBot =
+                pr.user?.login === "github-actions[bot]" &&
+                pr.head.ref.startsWith("agent/upstream-sync-") &&
+                pr.body?.includes("Automated-Upstream-Mike-Sync: true");
+              const eligible =
+                !pr.draft &&
+                pr.head.repo?.full_name === `${owner}/${repo}` &&
+                pr.head.ref.startsWith("agent/") &&
+                (trustedAssociations.has(pr.author_association) || markedSyncBot);
+
+              if (!eligible) continue;
+
+              const runs = await github.paginate(
+                github.rest.actions.listWorkflowRuns,
+                {
+                  owner,
+                  repo,
+                  workflow_id: workflow.id,
+                  branch: pr.head.ref,
+                  per_page: 100,
+                },
+              );
+
+              const exactHeadRun = runs.find(
+                (run) =>
+                  run.head_sha === pr.head.sha &&
+                  !(
+                    run.status === "completed" &&
+                    run.conclusion === "action_required"
+                  ),
+              );
+              if (exactHeadRun) {
+                core.info(
+                  `PR #${pr.number} already has Baseline run ${exactHeadRun.id} for ${pr.head.sha} (${exactHeadRun.status}/${exactHeadRun.conclusion || "none"}).`,
+                );
+                if (
+                  exactHeadRun.status === "completed" &&
+                  exactHeadRun.conclusion &&
+                  exactHeadRun.conclusion !== "success" &&
+                  exactHeadRun.conclusion !== "skipped" &&
+                  exactHeadRun.conclusion !== "neutral"
+                ) {
+                  await reportFailure(pr, exactHeadRun);
+                }
+                continue;
+              }
+
+              await github.rest.actions.createWorkflowDispatch({
+                owner,
+                repo,
+                workflow_id: workflow.id,
+                ref: pr.head.ref,
+              });
+              core.notice(
+                `Dispatched Baseline for PR #${pr.number} exact head ${pr.head.sha}.`,
+              );
+            }
+  reconcile:
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Merge eligible exact-head verified pull requests
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+
+            const pulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: "open",
+              base: "main",
+              per_page: 100,
+            });
+
+            const candidates = pulls.filter((pr) => {
+              const markedSyncBot =
+                pr.user?.login === "github-actions[bot]" &&
+                pr.head.ref.startsWith("agent/upstream-sync-") &&
+                pr.body?.includes("Automated-Upstream-Mike-Sync: true");
+              return (
+                !pr.draft &&
+                pr.head.repo?.full_name === `${owner}/${repo}` &&
+                pr.head.ref.startsWith("agent/") &&
+                (trustedAssociations.has(pr.author_association) || markedSyncBot)
+              );
+            });
+
+            const gateQuery = `
+              query($owner: String!, $repo: String!, $number: Int!, $after: String) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    state
+                    isDraft
+                    headRefOid
+                    reviewDecision
+                    mergeable
+                    reviewThreads(first: 100, after: $after) {
+                      nodes { isResolved }
+                      pageInfo { hasNextPage endCursor }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const readGate = async (number) => {
+              let after = null;
+              let pullRequest = null;
+              let unresolved = false;
+              do {
+                const result = await github.graphql(gateQuery, {
+                  owner,
+                  repo,
+                  number,
+                  after,
+                });
+                pullRequest = result.repository.pullRequest;
+                unresolved ||= pullRequest.reviewThreads.nodes.some(
+                  (thread) => !thread.isResolved,
+                );
+                after = pullRequest.reviewThreads.pageInfo.hasNextPage
+                  ? pullRequest.reviewThreads.pageInfo.endCursor
+                  : null;
+              } while (after);
+              return { pullRequest, unresolved };
+            };
+
+            for (const pr of candidates) {
+              const runs = await github.paginate(
+                github.rest.actions.listWorkflowRunsForRepo,
+                {
+                  owner,
+                  repo,
+                  branch: pr.head.ref,
+                  status: "completed",
+                  per_page: 100,
+                },
+              );
+              const verified = runs.some(
+                (run) =>
+                  run.name === "Baseline verification" &&
+                  run.conclusion === "success" &&
+                  run.head_sha === pr.head.sha &&
+                  (run.event === "pull_request" || run.event === "workflow_dispatch"),
+              );
+              if (!verified) {
+                core.info(`PR #${pr.number} has no successful exact-head Baseline.`);
+                continue;
+              }
+
+              let gate;
+              for (let attempt = 1; attempt <= 6; attempt += 1) {
+                gate = await readGate(pr.number);
+                if (gate.pullRequest.mergeable !== "UNKNOWN") break;
+                if (attempt < 6) await new Promise((resolve) => setTimeout(resolve, 10000));
+              }
+
+              const node = gate.pullRequest;
+              const blocked =
+                node.state !== "OPEN" ||
+                node.isDraft ||
+                node.headRefOid !== pr.head.sha ||
+                node.reviewDecision === "CHANGES_REQUESTED" ||
+                node.mergeable !== "MERGEABLE" ||
+                gate.unresolved;
+              if (blocked) {
+                core.info(`PR #${pr.number} still has a review, head, or mergeability blocker.`);
+                continue;
+              }
+
+              try {
+                await github.rest.pulls.merge({
+                  owner,
+                  repo,
+                  pull_number: pr.number,
+                  merge_method: "squash",
+                  sha: pr.head.sha,
+                });
+                core.notice(`Reconciled and merged PR #${pr.number} at verified head ${pr.head.sha}.`);
+              } catch (error) {
+                core.warning(`PR #${pr.number} was eligible but merge failed: ${error.message}`);
+              }
+            }

@@ -1,0 +1,37 @@
+name: Coordinate upstream Mike synchronization
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/upstream-sync-request.json
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: coordinate-upstream-mike
+  cancel-in-progress: false
+
+jobs:
+  coordinate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Dispatch low-risk and escalated Mike queues
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            for (const workflow_id of ["sync-upstream-mike.yml", "sync-upstream-mike-escalated.yml"]) {
+              await github.rest.actions.createWorkflowDispatch({
+                owner,
+                repo,
+                workflow_id,
+                ref: "main",
+              });
+              core.notice(`Dispatched ${workflow_id} from current main.`);
+            }
+            core.notice("Upstream Mike coordination is complete; each queue retains its own bounded classification, proposal, and merge gates.");

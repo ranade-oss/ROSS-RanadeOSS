@@ -34,12 +34,14 @@ test("Deliverable F preserves source boundaries and exposes coverage gaps", () =
   assert.equal(plan.providerStrategy.canliiWebsiteAutomationAllowed, false);
 });
 
-test("final evidence workflow is manual, immutable, and never deploys", () => {
-  const workflow = read(".github/workflows/final-controlled-beta-evidence.yml");
+test("release train carries final evidence and keeps promotion explicit", () => {
+ const workflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
   assert.match(workflow, /workflow_dispatch/);
   assert.match(workflow, /final:check/);
-  assert.match(workflow, /verify-final-release-id/);
-  assert.doesNotMatch(workflow, /flyctl deploy|wrangler deploy|kubectl|helm upgrade/i);
+ assert.match(workflow, /retention-days: 90/);
+ assert.match(workflow, /reports\/final-completion-dossier\.md/);
+ assert.match(workflow, /config\/release-approvals\.v1\.json/);
+ assert.match(workflow, /if: inputs\.promote_public/);
 });
 
 test("owner action sheet ends with the fail-closed gate and limited launch", () => {

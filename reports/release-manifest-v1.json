@@ -3,12 +3,12 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 130,
+  "artifactCount": 127,
   "artifacts": [
     {
       "path": ".github/actionlint.yaml",
-      "sha256": "532b5dd2b8fced57ebc2ef18624a238111ccfa920399c272d4e096098fe79554",
-      "sizeBytes": 246
+      "sha256": "ceffa5bd25ae9ae637e3b1b8417012a01bf0a2c166bade718f40d7d15f9f33cb",
+      "sizeBytes": 134
     },
     {
       "path": ".github/actions/setup-ross-node/action.yml",
@@ -17,8 +17,8 @@
     },
     {
       "path": ".github/workflows/baseline.yml",
-      "sha256": "4d86e77e4be8278f92f3bb772c1430321b29a65b527e596e4cece66378356c9b",
-      "sizeBytes": 4643
+      "sha256": "0ac1e8065a021e6a4a46bda07248ab14e21812d76130f7ea1e8291f14645ff06",
+      "sizeBytes": 4702
     },
     {
       "path": ".github/workflows/deploy-private-ross.yml",
@@ -26,24 +26,9 @@
       "sizeBytes": 11614
     },
     {
-      "path": ".github/workflows/deploy-public-beta-ross.yml",
-      "sha256": "8a40a7cb5689498c321e8e3e66cbce67d7a70faa9e3ea369873aaf9c04b7071f",
-      "sizeBytes": 12920
-    },
-    {
-      "path": ".github/workflows/final-controlled-beta-evidence.yml",
-      "sha256": "49ee5033f9e86962e16b76f097dfa72f76094a304f8070c2b17ebe91fa359768",
-      "sizeBytes": 1757
-    },
-    {
       "path": ".github/workflows/refresh-release-manifest.yml",
       "sha256": "71ed98cf97f57617aa1fde12530a3271d43df467f68457829082f5223a7ce758",
       "sizeBytes": 2184
-    },
-    {
-      "path": ".github/workflows/release-candidate.yml",
-      "sha256": "b155ce7cc7a54f884e20f6a164929d8851652793725db8e2e0df18bbc7cf0511",
-      "sizeBytes": 3027
     },
     {
       "path": ".github/workflows/staging-debug-release-train.yml",
@@ -52,8 +37,8 @@
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
-      "sha256": "2bae1574be2fd81bf97636e77d3810225ac016122ca463971b17511a9f8951fc",
-      "sizeBytes": 9367
+      "sha256": "f0480f0fcf997b1b5e1408c12d7704032a7222aef61d1011599d0ab72a7ecb6c",
+      "sizeBytes": 10071
     },
     {
       "path": ".github/workflows/verify-ontario-sources.yml",
@@ -197,8 +182,8 @@
     },
     {
       "path": "config/final-completion.v1.json",
-      "sha256": "2095404de0cde5b8de7beeeb20948309b50e713394fae8a1ccad46465db01f4a",
-      "sizeBytes": 3367
+      "sha256": "f5f6c34845d1ca3a8e57d185bde3207107d1d9b5e6bf475fb4d0afa05ccec8e9",
+      "sizeBytes": 3379
     },
     {
       "path": "config/launch-readiness.v1.json",
@@ -487,8 +472,8 @@
     },
     {
       "path": "reports/final-completion-dossier.md",
-      "sha256": "fb40876504aeaf170438dd4a0fe5830f3e103a6c58778ab4864971a140179a21",
-      "sizeBytes": 2084
+      "sha256": "0a7d0d3285e4f0d95e32311b75b0427f08728523573f4ccc1bd245d7eebbe553",
+      "sizeBytes": 2096
     },
     {
       "path": "reports/ontario-evaluation-v1.json",
@@ -602,8 +587,8 @@
     },
     {
       "path": "tests/baseline/ross-ci-toolchain.test.mjs",
-      "sha256": "fee3ccf92ab0895cd40fef7776f3a3c1763ee82c160ef5c98c5ba6f64dacb6fe",
-      "sizeBytes": 3714
+      "sha256": "859d19d5982305e78ade9936c260ff69c4df49b3141908660b21dff323220a08",
+      "sizeBytes": 3602
     },
     {
       "path": "tests/baseline/ross-delivery-d.test.mjs",
@@ -612,8 +597,8 @@
     },
     {
       "path": "tests/baseline/ross-production-readiness.test.mjs",
-      "sha256": "def2f4e5b2e51fb9048821a05f8109b1cbb5415c520453853a612c2780f07ddd",
-      "sizeBytes": 3757
+      "sha256": "4053d258002b166f92677675aeba9b637f4ecfa60c20d9c1f9b252144513193f",
+      "sizeBytes": 3874
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
@@ -642,8 +627,8 @@
     },
     {
       "path": "website/app/page-content.ts",
-      "sha256": "e40f811d708f899da2e025934edadc876f932fc089431a91df4c574eaa370425",
-      "sizeBytes": 31845
+      "sha256": "70bc298aa61d186216a3288d1a242f830551b71f1c15ed44ff9a6abf1b0735b7",
+      "sizeBytes": 31822
     },
     {
       "path": "website/app/generated-brand-config.ts",
