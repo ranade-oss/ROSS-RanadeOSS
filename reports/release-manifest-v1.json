@@ -112,8 +112,8 @@
     },
     {
       "path": "backend/src/lib/llm/types.ts",
-      "sha256": "d4f0f4b57456bb44ac77d6b45d7bde61ac6036a98d551baf4ad62fbc1a633ceb",
-      "sizeBytes": 2290
+      "sha256": "1e0f3e78dd20459deb7136fccd2430e1adcb22c81027b597d1572367eb67703d",
+      "sizeBytes": 2304
     },
     {
       "path": "backend/src/lib/quarantinedUpload.ts",
@@ -427,8 +427,8 @@
     },
     {
       "path": "frontend/src/app/lib/mikeApi.ts",
-      "sha256": "06c96c908d67b520a4995a716906ec3ebd1112f8699880cf32a6882f369ef7f9",
-      "sizeBytes": 39183
+      "sha256": "20892752034962dd9e2c9380ce05241e7d893c15460fb347744c43dbdf089a35",
+      "sizeBytes": 39239
     },
     {
       "path": "frontend/src/app/lib/runtimeConfig.server.ts",
