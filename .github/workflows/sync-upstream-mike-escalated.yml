@@ -158,7 +158,8 @@ jobs:
           prompt-file: .ross-upstream-escalated/prompt.md
           permission-profile: ":read-only"
           safety-strategy: drop-sudo
-          allow-bot-users: github-actions[bot]
+          allow-bots: true
+          allow-bot-users: github-actions
           output-schema: |
             {
               "type": "object",
