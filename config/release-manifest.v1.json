@@ -117,6 +117,7 @@
     "scripts/lib/professional-validation.mjs",
     "scripts/lib/release-identifier.mjs",
     "scripts/lib/final-completion.mjs",
+    "scripts/check-final-completion.mjs",
     "scripts/validate-release-id.mjs",
     "scripts/validate-staging-debug.mjs",
     "tests/baseline/ross-ci-toolchain.test.mjs",

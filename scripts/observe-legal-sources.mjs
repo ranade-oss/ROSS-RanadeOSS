@@ -19,7 +19,41 @@ const output = resolve(
     : "artifacts/legal-source-health-live.json",
 );
 
-const report = await observeLiveLegalSources();
+let report;
+let observerError = null;
+try {
+  report = await observeLiveLegalSources();
+} catch (error) {
+  observerError = error;
+  const observedAt = new Date().toISOString();
+  report = {
+    version: "1.1.0",
+    observedAt,
+    liveChecksPerformed: false,
+    status: "degraded",
+    requiredProviderIds,
+    optionalProviderIds,
+    providers: Object.fromEntries(
+      [...new Set([...requiredProviderIds, ...optionalProviderIds])].map((id) => [
+        id,
+        {
+          state: "unavailable",
+          checkedAt: observedAt,
+          lastSuccessfulAt: null,
+          consecutiveFailures: 0,
+          consecutiveSuccesses: 0,
+          sourceVersion: null,
+          latencyClass: null,
+          reasonCode: "observer-failure",
+          attempts: 0,
+        },
+      ]),
+    ),
+  };
+  console.error(
+    `ROSS live legal-source observer failed before completing: ${error?.name ?? "unknown-error"}`,
+  );
+}
 await mkdir(dirname(output), { recursive: true });
 await writeFile(output, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
@@ -37,4 +71,4 @@ for (const id of observedLiveProviderIds) {
 }
 console.log(`Sanitized report: ${output}`);
 
-if (report.status !== "healthy") process.exitCode = 1;
+if (observerError || report.status !== "healthy") process.exitCode = 1;
