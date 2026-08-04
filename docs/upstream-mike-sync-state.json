@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-03T08:28:25Z",
+  "last_merged_at": "2026-08-04T08:29:03Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -567,6 +567,86 @@
       "decision": "skip",
       "reason": "ROSS already has a ROSS-specific security policy and extensive controlled workflows. Mike-specific hosted-service, release, secret-scanning, and governance changes are protected and non-portable.",
       "processed_at": "2026-08-04T20:07:31.007234Z"
+    },
+    {
+      "number": 274,
+      "title": "feat: add folder-grouped tabular review rows",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/274",
+      "merged_at": "2026-08-03T12:50:47Z",
+      "merge_commit_sha": "5f78bb22c7ff69c348d7eab41ec7fcad8d61ede3",
+      "decision": "investigate",
+      "reason": "Large, architecture-dependent feature spanning migrations, schemas, backend behavior, APIs, and UI; exceeds automatic-adoption limits.",
+      "processed_at": "2026-08-04T21:16:34.954101Z"
+    },
+    {
+      "number": 281,
+      "title": "test(frontend): fix the red main \u2014 pay down the coverage regression from #274/#263/#280",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/281",
+      "merged_at": "2026-08-03T13:47:07Z",
+      "merge_commit_sha": "c6aa6bea677aed13ab8b4057d9e80fbce7a55822",
+      "decision": "skip",
+      "reason": "Tests target upstream tabular-review, Supabase, and API behavior absent or divergent in ROSS; ROSS also lacks the referenced Vitest setup.",
+      "processed_at": "2026-08-04T21:16:34.954115Z"
+    },
+    {
+      "number": 248,
+      "title": "[Security 5/9] Nonce-based spotlighting of untrusted content in prompts",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/248",
+      "merged_at": "2026-08-03T14:21:06Z",
+      "merge_commit_sha": "20c0ed2676b674b75fe8a6ee996bc6dd132b5e06",
+      "decision": "investigate",
+      "reason": "Security-sensitive prompt-injection mitigation affecting backend request and tool execution paths; prohibited from automatic inclusion.",
+      "processed_at": "2026-08-04T21:16:34.954121Z"
+    },
+    {
+      "number": 282,
+      "title": "Self-hosted Docker stack (embedded Supabase + storage + email) and local Ollama models (supersedes #196)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/282",
+      "merged_at": "2026-08-04T03:26:29Z",
+      "merge_commit_sha": "fc69119220a2f8a93b39a723ddefd2bd8dedaad1",
+      "decision": "investigate",
+      "reason": "Large infrastructure and deployment change involving Docker, embedded Supabase, storage, provider models, environment configuration, and APIs.",
+      "processed_at": "2026-08-04T21:16:34.954124Z"
+    },
+    {
+      "number": 284,
+      "title": "test(frontend): lower branch coverage floor to 80%",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/284",
+      "merged_at": "2026-08-04T04:13:50Z",
+      "merge_commit_sha": "33073c43b4f6eef6c55ba228a7447ac787461b42",
+      "decision": "skip",
+      "reason": "The referenced Vitest coverage configuration is absent in ROSS, and lowering an upstream-specific coverage threshold is non-portable.",
+      "processed_at": "2026-08-04T21:16:34.954126Z"
+    },
+    {
+      "number": 174,
+      "title": "Confirm destructive folder deletes in chat explorer",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/174",
+      "merged_at": "2026-08-04T04:19:54Z",
+      "merge_commit_sha": "b44cec7542f1d70b08cbf4b8ba5a419c3c14a372",
+      "decision": "investigate",
+      "reason": "Changes destructive deletion behavior and depends on upstream explorer architecture; requires deliberate behavioral review despite its UI elements.",
+      "processed_at": "2026-08-04T21:16:34.954129Z"
+    },
+    {
+      "number": 283,
+      "title": "fix: validate project chat request bodies before side effects",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/283",
+      "merged_at": "2026-08-04T06:59:56Z",
+      "merge_commit_sha": "ba979eea2e5da42339b10e4ecb5fcc2d1b75dc28",
+      "decision": "investigate",
+      "reason": "Backend request validation changes public request handling, side effects, and data boundaries; protected operational behavior.",
+      "processed_at": "2026-08-04T21:16:34.954131Z"
+    },
+    {
+      "number": 287,
+      "title": "Default local signup to autoconfirm and streamline setup docs",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/287",
+      "merged_at": "2026-08-04T08:29:03Z",
+      "merge_commit_sha": "1ff6e7f1d2f46e87d035619719a9c41a6c33d896",
+      "decision": "investigate",
+      "reason": "Intertwines documentation with authentication defaults, environment settings, Supabase, deployment, provider keys, and cryptographic export guidance.",
+      "processed_at": "2026-08-04T21:16:34.954133Z"
     }
   ]
 }
