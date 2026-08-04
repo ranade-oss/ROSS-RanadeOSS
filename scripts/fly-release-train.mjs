@@ -6,6 +6,7 @@ import {
     existsSync,
     mkdirSync,
     readFileSync,
+    unlinkSync,
     writeFileSync,
 } from "node:fs";
 import { resolve } from "node:path";
@@ -402,6 +403,66 @@ function runRemoteProbe(app, machineId, args) {
     );
 }
 
+function observeLegalSources(outputPath) {
+    const resolvedOutputPath = resolve(root, outputPath);
+    if (existsSync(resolvedOutputPath)) unlinkSync(resolvedOutputPath);
+
+    const result = run(
+        "node",
+        [
+            "scripts/observe-legal-sources.mjs",
+            "--output",
+            outputPath,
+        ],
+        { capture: true, allowFailure: true },
+    );
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+
+    if (!existsSync(resolvedOutputPath)) {
+        throw new Error(
+            `Live legal-source observer did not produce a sanitized report at ${outputPath}.`,
+        );
+    }
+
+    let report;
+    try {
+        report = JSON.parse(readFileSync(resolvedOutputPath, "utf8"));
+    } catch (error) {
+        throw new Error(
+            `Live legal-source observer produced an unreadable sanitized report: ${error instanceof Error ? error.message : String(error)}.`,
+        );
+    }
+
+    const providerStates = Object.fromEntries(
+        Object.entries(report.providers ?? {}).map(([id, item]) => [
+            id,
+            {
+                state: item?.state ?? "unknown",
+                reasonCode: item?.reasonCode ?? "unknown",
+                attempts: item?.attempts ?? null,
+            },
+        ]),
+    );
+    ledger.rehearsal.legalSourceObservation = report.status ?? "unknown";
+    ledger.rehearsal.legalSourceProviders = providerStates;
+    ledger.rehearsal.legalSourceObserverExitCode = result.status;
+    saveLedger();
+
+    if (result.status !== 0 || report.status !== "healthy") {
+        const summary = Object.entries(providerStates)
+            .map(
+                ([id, item]) =>
+                    `${id}=${item.state} (${item.reasonCode}, attempts=${item.attempts ?? "unknown"})`,
+            )
+            .join(", ");
+        throw new Error(
+            `Live legal-source observation ${report.status ?? "unknown"}; provider states: ${summary}.`,
+        );
+    }
+    return report;
+}
+
 function wakePublicService(url) {
     run("curl", [
         "--fail",
@@ -688,14 +749,11 @@ function rehearse() {
             });
             verifySet(stageApps, candidate);
             smoke("rehearsal", { full: true });
-            run("node", [
-                "scripts/observe-legal-sources.mjs",
-                "--output",
+            observeLegalSources(
                 "artifacts/release-train-legal-source-health.json",
-            ]);
+            );
             ledger.rehearsal.candidatePromotionVerified = true;
             ledger.rehearsal.readOnlyIntegrationChecks = "passed";
-            ledger.rehearsal.legalSourceObservation = "healthy";
         } catch (error) {
             ledger.rehearsal.candidateFailureRollbackAttempted = true;
             try {

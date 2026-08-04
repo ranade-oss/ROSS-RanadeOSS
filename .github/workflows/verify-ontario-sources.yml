@@ -26,12 +26,14 @@ jobs:
           package-manager-cache: false
 
       - name: Run sanitized live observations
+        id: legal-source-observation
         run: node scripts/observe-legal-sources.mjs --output artifacts/legal-source-health-live.json
 
       - name: Upload sanitized observation
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: legal-source-health-${{ github.run_id }}
           path: artifacts/legal-source-health-live.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
