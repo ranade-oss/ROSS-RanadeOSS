@@ -18,7 +18,7 @@ Generated from governed records. This report is evidence inventory, not approval
 | privacy-security-accessibility | independent privacy, security, and accessibility reviewers | completed-with-evidence | `config/release-approvals.v1.json#approvals` |
 | operational-exercises | release and operations owners | completed-with-evidence | `config/operations-readiness.v1.json#evidence` |
 | accountable-launch-decisions | legal operator and product owner | completed-with-evidence | `config/launch-readiness.v1.json#decisions` |
-| immutable-release-candidate | release owner | completed-with-evidence | `reports/release-manifest-v1.json and .github/workflows/release-candidate.yml` |
+| immutable-release-candidate | release owner | completed-with-evidence | `reports/release-manifest-v1.json and .github/workflows/verify-and-deploy-public-beta.yml` |
 
 ## Provider decision
 

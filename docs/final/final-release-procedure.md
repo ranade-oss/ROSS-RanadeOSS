@@ -11,7 +11,7 @@
    `npm run check`.
 5. Deploy this exact commit to isolated staging and complete every evidence
    exercise and source observation without confidential material.
-6. Download/retain the release-candidate evidence and link its immutable run.
+6. Run/retain the ROSS release-train evidence and link its immutable run.
 7. Run `npm run final:status` for the readable inventory, then
    `npm run final:check` for the fail-closed gate.
 
@@ -22,10 +22,10 @@ approval, replace evidence with a placeholder, enable CanLII scraping, or
 substitute a different build. Correct the underlying issue and create a new
 candidate when evidence no longer matches.
 
-If it passes, run the GitHub **Final controlled-beta evidence** workflow on the
-same commit. Confirm the artifact contains the governed manifest, evaluation,
-source-health, professional-validation, approval, operations, launch, and final
-completion records. Record the human go/no-go decision and its time window.
+If it passes, retain the release-train artifact from the same commit. Confirm the
+artifact contains the governed manifest, evaluation, source-health,
+professional-validation, approval, operations, launch, and final completion
+records. Record the human go/no-go decision and its time window.
 
 Promote only the reviewed immutable images. Monitor authentication, storage,
 chat/model availability, legal-source health, errors, latency, and security

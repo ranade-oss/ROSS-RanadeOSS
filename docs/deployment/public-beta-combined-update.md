@@ -43,8 +43,9 @@ See [ROSS Release Train v1](release-train-v1.md) for the one-button rehearsal,
 forced staging failure, three-component rollback, digest promotion, cleanup,
 and operator summary.
 
-Do not run the older standalone hotfix or the blocked legacy public-deployment
-workflow.
+Use the ROSS release train for public promotion. The former standalone public
+deployment path has been removed, so there is no alternate deployment workflow
+to run.
 
 ## CanLII boundary
 

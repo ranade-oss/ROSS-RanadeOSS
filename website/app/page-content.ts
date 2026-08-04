@@ -403,7 +403,7 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "ROSS has executable engineering gates, recorded independent reviews, named ownership, approved public domains and contacts, completed live-environment exercises, verified launch vendors, and effective notices.",
     status:
-      "Ready for immutable-candidate generation and final controlled-beta evidence. Public deployment has not yet been performed, and the synthetic/non-confidential boundary remains binding.",
+      "Ready for immutable-candidate generation and release-train evidence. Public deployment has not yet been performed, and the synthetic/non-confidential boundary remains binding.",
     governance: ownerApproved("Release owner — AR; product owner — Abhi Ranade"),
     sections: [
       {
@@ -412,7 +412,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "What remains",
-        body: "The reviews, operational exercises, vendor disclosure, effective notices, source observation, and owner decisions are recorded. The remaining release sequence is to commit the evidence closure, run the complete candidate gate, create immutable evidence, run the final controlled-beta evidence workflow, and deploy the approved tag.",
+        body: "The reviews, operational exercises, vendor disclosure, effective notices, source observation, and owner decisions are recorded. The remaining release sequence is to commit the evidence closure, run the complete release-train gate, retain its 90-day evidence, and deploy only after explicit public promotion approval.",
       },
       {
         title: "Current safe boundary",

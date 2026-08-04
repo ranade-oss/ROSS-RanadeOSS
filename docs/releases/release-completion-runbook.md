@@ -20,7 +20,7 @@ a commit-derived identifier inside tracked files would create a new commit and
 change the hash it was intended to identify. Instead:
 
 1. the stable name is reserved in the governed records;
-2. the release-candidate workflow runs every engineering and governance gate;
+2. the ROSS release-train workflow runs every engineering and governance gate;
 3. only after those gates pass, the workflow creates an annotated Git tag with
    the reserved name on the checked-out commit; and
 4. the deployment workflow proves that the tag exists and points to the exact
@@ -113,26 +113,22 @@ record for H, not another development deliverable.
 
 ### 6. Create the immutable candidate
 
-From GitHub Actions, run **Release candidate evidence** on the final merged
-`main` commit. Leave the candidate input as:
-
-`ross-public-beta-20260717-rc1`
+From GitHub Actions, run **ROSS release train** on the final merged `main`
+commit. The release train generates the candidate identifier automatically.
 
 The workflow:
+The workflow:
 
-- validates that every governed record uses that identifier;
 - reruns the complete engineering gate;
-- archives non-secret evidence; and
-- creates or confirms an annotated tag with that name on the exact verified
-  commit.
+- archives the governed non-secret evidence for 90 days; and
+- creates the immutable tag only after explicit public promotion succeeds.
 
 If any gate fails, do not create the tag and do not deploy.
 
 ### 7. Launch the public beta
 
-Run **Deploy public ROSS beta** using the same identifier. The deployment
-workflow checks that the immutable tag points to the checked-out commit and
-runs `npm run final:check` before any Fly.io change.
+Run **ROSS release train** with public promotion explicitly enabled. Its
+production final-completion gate runs before any Fly.io change.
 
 After deployment, run and record the smoke tests. If a source change is needed,
 do not move the tag. Reserve an `rc2` identifier and repeat the candidate

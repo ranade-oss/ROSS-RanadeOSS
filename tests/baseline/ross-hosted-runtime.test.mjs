@@ -124,7 +124,7 @@ test("release checks reject high dependency advisories and deployments retry tra
   assert.match(retry, /FLY_DEPLOY_ATTEMPTS:-3/);
   for (const path of [
     ".github/workflows/deploy-private-ross.yml",
-    ".github/workflows/deploy-public-beta-ross.yml",
+    "scripts/fly-release-train.mjs",
   ]) {
     assert.match(read(path), /scripts\/fly-deploy-with-retry\.sh/);
   }

@@ -80,7 +80,7 @@
       "id": "immutable-release-candidate",
       "ownerRole": "release owner",
       "status": "completed-with-evidence",
-      "sourceOfTruth": "reports/release-manifest-v1.json and .github/workflows/release-candidate.yml"
+      "sourceOfTruth": "reports/release-manifest-v1.json and .github/workflows/verify-and-deploy-public-beta.yml"
     }
   ]
 }
