@@ -57,8 +57,8 @@
     },
     {
       "path": ".github/workflows/verify-ontario-sources.yml",
-      "sha256": "a686858060c8c90be6860e57d7f97bbc4a3d00c79c72c337bc471b4f7cd88e03",
-      "sizeBytes": 916
+      "sha256": "f2155aefc27585c8e1d81e7fc5dd749b44538cbbf14da0674ee0328daf534b65",
+      "sizeBytes": 973
     },
     {
       "path": "backend/migrations/20260718_01_document_scan_pipeline.sql",
@@ -502,8 +502,8 @@
     },
     {
       "path": "scripts/lib/live-source-observer.mjs",
-      "sha256": "5af7622207e75ca1a7c8102da0ad8017008c17bbeed09bedcdc94510ae73bd5b",
-      "sizeBytes": 13801
+      "sha256": "2d8032e837ba2f0ba36a974184bdd5230bc077e50d1fdc349fa53cd2eb323de5",
+      "sizeBytes": 16112
     },
     {
       "path": "scripts/lib/release-train.mjs",
@@ -532,13 +532,13 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "71338c98da92f12dfc244c3eb49d74b00cde169e5b8cdfbe5597ec75954199d0",
-      "sizeBytes": 26940
+      "sha256": "b50581d83d645b0f05399090dd7016ddfd6cabf85d00b2b4210fe2885274c306",
+      "sizeBytes": 28844
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
-      "sha256": "11a1c2e066ebaa55d4a001a7f3148183e5179838bb88e40deec2e6f45a7bc6e4",
-      "sizeBytes": 1082
+      "sha256": "ecbdcb7f83550bdfee2fafebb494d263de165ee2d7a6fb2a3f21cc886e849b58",
+      "sizeBytes": 1351
     },
     {
       "path": "scripts/preflight-fly-images.sh",
@@ -607,8 +607,8 @@
     },
     {
       "path": "tests/baseline/ross-delivery-d.test.mjs",
-      "sha256": "e6e0763eb8afdfa2e1fd262e1024b0463eae8a36e5de11c187e3c1b119bb1b83",
-      "sizeBytes": 2742
+      "sha256": "6a8dab18934f81a206d58c85cefdaa87a344a94519ef3282e65afbaa10b7dcc9",
+      "sizeBytes": 2789
     },
     {
       "path": "tests/baseline/ross-production-readiness.test.mjs",
@@ -617,8 +617,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "2406c9046010025257a3bd9586f7821010a8e1b35717a66f7c4fbd12ed712720",
-      "sizeBytes": 27604
+      "sha256": "5b64b90d4496365264852feeba59556a1b35350488755dcb8d2fec4ad12379a1",
+      "sizeBytes": 29357
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",

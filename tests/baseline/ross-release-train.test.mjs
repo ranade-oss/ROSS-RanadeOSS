@@ -607,6 +607,17 @@ if (url.endsWith("/api/runtime-config")) {
 `;
   const fakeNode = `#!/usr/bin/env bash
 if [ "\${1:-}" = "scripts/observe-legal-sources.mjs" ]; then
+  output=""
+  while [ "\$#" -gt 0 ]; do
+    if [ "\$1" = "--output" ]; then output="\$2"; shift 2; continue; fi
+    shift
+  done
+  mkdir -p "\$(dirname "\$output")"
+  if [ "\${FAKE_LEGAL_SOURCE_STATUS:-healthy}" = "degraded" ]; then
+    printf '{"version":"1.1.0","status":"degraded","liveChecksPerformed":true,"providers":{"a2aj-canada":{"state":"healthy","reasonCode":"ok","attempts":1},"ontario-elaws":{"state":"degraded","reasonCode":"invalid-response","attempts":3},"justice-laws-canada":{"state":"healthy","reasonCode":"ok","attempts":1}}}\n' > "\$output"
+    exit 1
+  fi
+  printf '{"version":"1.1.0","status":"healthy","liveChecksPerformed":true,"providers":{"a2aj-canada":{"state":"healthy","reasonCode":"ok","attempts":1},"ontario-elaws":{"state":"healthy","reasonCode":"ok","attempts":1},"justice-laws-canada":{"state":"healthy","reasonCode":"ok","attempts":1}}}\n' > "\$output"
   exit 0
 fi
 exec ${process.execPath} "$@"
@@ -650,6 +661,7 @@ exec ${process.execPath} "$@"
     GITHUB_RUN_ATTEMPT: "1",
     ROSS_QUALIFICATION_STATUS: "passed",
     FLY_DEPLOY_ATTEMPTS: "1",
+    FAKE_LEGAL_SOURCE_STATUS: "healthy",
   };
   const runTrain = (mode) =>
     spawnSync(
@@ -678,6 +690,12 @@ exec ${process.execPath} "$@"
   );
   assert.equal(ledger.rehearsal.rollbackVerified, true);
   assert.equal(ledger.rehearsal.candidatePromotionVerified, true);
+  assert.equal(ledger.rehearsal.legalSourceObservation, "healthy");
+  assert.equal(
+    ledger.rehearsal.legalSourceProviders["ontario-elaws"].state,
+    "healthy",
+  );
+  assert.equal(ledger.rehearsal.legalSourceObserverExitCode, 0);
   assert.equal(state.apps[apps.stageApi].image, candidate.api);
   assert.equal(state.apps[apps.stageWeb].image, candidate.web);
   assert.equal(state.apps[apps.stageWorker].image, candidate.worker);
@@ -782,4 +800,17 @@ exec ${process.execPath} "$@"
   assert.equal(state.apps[apps.prodApi].image, baseline.api);
   assert.equal(state.apps[apps.prodWeb].image, baseline.web);
   assert.equal(state.apps[apps.prodWorker].image, baseline.worker);
+
+  environment.FAKE_LEGAL_SOURCE_STATUS = "degraded";
+  const failedRehearsal = runTrain("rehearse");
+  assert.notEqual(failedRehearsal.status, 0);
+  ledger = JSON.parse(readFileSync(ledgerPath, "utf8"));
+  assert.equal(ledger.rehearsal.status, "failed");
+  assert.equal(ledger.rehearsal.legalSourceObservation, "degraded");
+  assert.equal(
+    ledger.rehearsal.legalSourceProviders["ontario-elaws"].reasonCode,
+    "invalid-response",
+  );
+  assert.equal(ledger.rehearsal.legalSourceObserverExitCode, 1);
+  assert.match(ledger.rehearsal.error, /Live legal-source observation degraded/);
 });

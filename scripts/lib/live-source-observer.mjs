@@ -1,20 +1,38 @@
-const REQUIRED_TARGETS = [
+const LIVE_TARGETS = [
   {
     id: "a2aj-canada",
     url: "https://api.a2aj.ca/coverage",
     kind: "a2aj-split-coverage",
+    required: false,
   },
   {
     id: "ontario-elaws",
     url: "https://www.ontario.ca/laws/api/v2/legislation/en",
     kind: "ontario-runtime",
+    required: true,
   },
   {
     id: "justice-laws-canada",
     url: "https://raw.githubusercontent.com/justicecanada/laws-lois-xml/main",
     kind: "justice-runtime",
+    required: true,
   },
 ];
+
+const RETRYABLE_HTTP_STATUSES = new Set([
+  408,
+  425,
+  429,
+  500,
+  502,
+  503,
+  504,
+]);
+const DEFAULT_RETRY_ATTEMPTS = 3;
+const DEFAULT_RETRY_DELAY_MS = 250;
+
+const wait = (milliseconds) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const latencyClass = (milliseconds) =>
   milliseconds < 1_000 ? "fast" : milliseconds < 5_000 ? "standard" : "slow";
@@ -74,6 +92,7 @@ async function fetchResponse(fetchImpl, url, target, timeoutMs) {
 
 async function inspect(response, target) {
   if (!response.ok) {
+    await response.body?.cancel();
     const error = new Error("Legal source returned a non-success status.");
     error.status = response.status;
     throw error;
@@ -94,6 +113,39 @@ async function inspect(response, target) {
     throw error;
   }
   return `content-${body.length}-bytes`;
+}
+
+function isRetryableError(target, error) {
+  const status = Number(error?.status);
+  return (
+    error?.name === "TimeoutError" ||
+    RETRYABLE_HTTP_STATUSES.has(status) ||
+    (target.id === "ontario-elaws" && error?.code === "invalid-payload")
+  );
+}
+
+async function observeWithRetries(
+  target,
+  operation,
+  { retryAttempts, retryDelayMs, sleepImpl },
+) {
+  let lastError = null;
+  let attempts = 0;
+  for (let attempt = 1; attempt <= retryAttempts; attempt += 1) {
+    attempts = attempt;
+    try {
+      return {
+        ok: true,
+        attempts: attempt,
+        observation: await operation(),
+      };
+    } catch (error) {
+      lastError = error;
+      if (attempt === retryAttempts || !isRetryableError(target, error)) break;
+      await sleepImpl(retryDelayMs * 2 ** (attempt - 1));
+    }
+  }
+  return { ok: false, attempts, error: lastError };
 }
 
 async function inspectA2ajCoverage(fetchImpl, target, timeoutMs) {
@@ -247,13 +299,9 @@ async function inspectOntarioRuntime(fetchImpl, target, timeoutMs) {
   try {
     const parsed = new URL(sourceUrl ?? "");
     const match = parsed.pathname.match(
-      /\/laws\/(statute|regulation)\/([a-z0-9.-]+)/i,
+      /\/laws\/(?:api\/v2\/legislation\/en\/doc-search\/)?(statute|regulation)\/([a-z0-9.-]+)$/i,
     );
-    if (
-      parsed.protocol !== "https:" ||
-      parsed.hostname !== "www.ontario.ca" ||
-      !match
-    )
+    if (parsed.protocol !== "https:" || parsed.hostname !== "www.ontario.ca" || !match)
       throw new Error("invalid Ontario source URL");
     officialPath = `${match[1].toLowerCase()}/${match[2].toLowerCase()}`;
   } catch {
@@ -361,41 +409,62 @@ export async function observeLiveLegalSources({
   now = () => new Date(),
   clock = () => Date.now(),
   timeoutMs = 10_000,
+  retryAttempts = DEFAULT_RETRY_ATTEMPTS,
+  retryDelayMs = DEFAULT_RETRY_DELAY_MS,
+  sleepImpl = wait,
 } = {}) {
   const observedAt = now().toISOString();
   const providers = {};
+  const boundedRetryAttempts = Number.isInteger(retryAttempts)
+    ? Math.max(1, retryAttempts)
+    : DEFAULT_RETRY_ATTEMPTS;
+  const boundedRetryDelayMs = Number.isFinite(retryDelayMs)
+    ? Math.max(0, retryDelayMs)
+    : DEFAULT_RETRY_DELAY_MS;
 
-  for (const target of REQUIRED_TARGETS) {
+  for (const target of LIVE_TARGETS) {
     const startedAt = clock();
+    let attempts = 1;
     try {
-      const observation =
-        target.kind === "a2aj-split-coverage"
-          ? await inspectA2ajCoverage(fetchImpl, target, timeoutMs)
-          : target.kind === "ontario-runtime"
-            ? await inspectOntarioRuntime(fetchImpl, target, timeoutMs)
-            : target.kind === "justice-runtime"
-              ? await inspectJusticeRuntime(fetchImpl, target, timeoutMs)
-              : await (async () => {
-                  const response = await fetchResponse(
-                    fetchImpl,
-                    target.url,
-                    target,
-                    timeoutMs,
-                  );
-                  const fallbackVersion = await inspect(response, target);
-                  return {
-                    sourceVersion: responseVersion(response, fallbackVersion),
-                  };
-                })();
+      const outcome = await observeWithRetries(
+        target,
+        () =>
+          target.kind === "a2aj-split-coverage"
+            ? inspectA2ajCoverage(fetchImpl, target, timeoutMs)
+            : target.kind === "ontario-runtime"
+              ? inspectOntarioRuntime(fetchImpl, target, timeoutMs)
+              : target.kind === "justice-runtime"
+                ? inspectJusticeRuntime(fetchImpl, target, timeoutMs)
+                : (async () => {
+                    const response = await fetchResponse(
+                      fetchImpl,
+                      target.url,
+                      target,
+                      timeoutMs,
+                    );
+                    const fallbackVersion = await inspect(response, target);
+                    return {
+                      sourceVersion: responseVersion(response, fallbackVersion),
+                    };
+                  })(),
+        {
+          retryAttempts: boundedRetryAttempts,
+          retryDelayMs: boundedRetryDelayMs,
+          sleepImpl,
+        },
+      );
+      attempts = outcome.attempts;
+      if (!outcome.ok) throw outcome.error;
       providers[target.id] = {
         state: "healthy",
         checkedAt: observedAt,
         lastSuccessfulAt: observedAt,
         consecutiveFailures: 0,
         consecutiveSuccesses: 1,
-        sourceVersion: observation.sourceVersion,
+        sourceVersion: outcome.observation.sourceVersion,
         latencyClass: latencyClass(Math.max(0, clock() - startedAt)),
         reasonCode: "ok",
+        attempts: outcome.attempts,
       };
     } catch (error) {
       providers[target.id] = {
@@ -407,6 +476,7 @@ export async function observeLiveLegalSources({
         sourceVersion: null,
         latencyClass: latencyClass(Math.max(0, clock() - startedAt)),
         reasonCode: reasonCode(error),
+        attempts,
       };
     }
   }
@@ -432,16 +502,24 @@ export async function observeLiveLegalSources({
     reasonCode: "licensed-connector-disabled",
   };
 
-  const requiredHealthy = REQUIRED_TARGETS.every(
+  const requiredHealthy = LIVE_TARGETS.filter(({ required }) => required).every(
     ({ id }) => providers[id]?.state === "healthy",
   );
   return {
-    version: "1.0.0",
+    version: "1.1.0",
     observedAt,
     liveChecksPerformed: true,
     status: requiredHealthy ? "healthy" : "degraded",
+    requiredProviderIds: requiredLiveProviderIds,
+    optionalProviderIds: optionalLiveProviderIds,
     providers,
   };
 }
 
-export const requiredLiveProviderIds = REQUIRED_TARGETS.map(({ id }) => id);
+export const requiredLiveProviderIds = LIVE_TARGETS.filter(
+  ({ required }) => required,
+).map(({ id }) => id);
+export const optionalLiveProviderIds = LIVE_TARGETS.filter(
+  ({ required }) => !required,
+).map(({ id }) => id);
+export const observedLiveProviderIds = LIVE_TARGETS.map(({ id }) => id);

@@ -4,6 +4,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  observedLiveProviderIds,
+  optionalLiveProviderIds,
   observeLiveLegalSources,
   requiredLiveProviderIds,
 } from "./lib/live-source-observer.mjs";
@@ -22,9 +24,16 @@ await mkdir(dirname(output), { recursive: true });
 await writeFile(output, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
 console.log(`ROSS live legal-source observation: ${report.status.toUpperCase()}`);
-for (const id of requiredLiveProviderIds) {
+for (const id of observedLiveProviderIds) {
   const item = report.providers[id];
-  console.log(`- ${id}: ${item.state} (${item.reasonCode}, ${item.latencyClass})`);
+  const requirement = requiredLiveProviderIds.includes(id)
+    ? "required"
+    : optionalLiveProviderIds.includes(id)
+      ? "optional"
+      : "unclassified";
+  console.log(
+    `- ${id} [${requirement}]: ${item.state} (${item.reasonCode}, ${item.latencyClass}, attempts=${item.attempts})`,
+  );
 }
 console.log(`Sanitized report: ${output}`);
 
