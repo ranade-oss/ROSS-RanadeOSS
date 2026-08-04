@@ -13,7 +13,7 @@ test("every npm workspace resolves the patched brace-expansion release", () => {
     const packageJson = json(`${workspace}/package.json`);
     const lock = json(`${workspace}/package-lock.json`);
 
-    assert.equal(packageJson.overrides["brace-expansion"], "5.0.8");
+    assert.equal(packageJson.overrides["brace-expansion"], "5.0.9");
     assert.equal(
       packageJson.scripts.postinstall,
       "node scripts/patch-brace-expansion-compat.mjs",
@@ -25,7 +25,7 @@ test("every npm workspace resolves the patched brace-expansion release", () => {
     });
     assert.ok(bracePackages.length > 0);
     for (const [path, record] of bracePackages) {
-      assert.equal(record.version, "5.0.8", `${workspace}/${path}`);
+      assert.equal(record.version, "5.0.9", `${workspace}/${path}`);
       assert.doesNotMatch(String(record.resolved), /^file:/);
     }
   }
@@ -40,12 +40,41 @@ test("legacy minimatch compatibility patching is deterministic and fail closed",
   );
 
   assert.equal(frontendPatch, websitePatch);
-  assert.match(frontendPatch, /safeVersion = "5\.0\.8"/);
+  assert.match(frontendPatch, /safeVersion = "5\.0\.9"/);
   assert.match(frontendPatch, /require\\.*brace-expansion/);
   assert.match(frontendPatch, /import\\s\+/);
   assert.match(frontendPatch, /failed a basic glob match/);
   assert.match(frontendPatch, /failed a basic brace expansion/);
   assert.match(frontendPatch, /No installed minimatch package was available/);
+});
+
+test("security-sensitive transitive dependencies stay on fixed releases", () => {
+  const workspaces = {
+    backend: { fastUri: "3.1.5", ipAddress: "10.4.0" },
+    frontend: { undici: "7.29.0" },
+    website: { fastUri: "3.1.5", undici: "7.29.0" },
+  };
+
+  for (const [workspace, expected] of Object.entries(workspaces)) {
+    const packageJson = json(`${workspace}/package.json`);
+    const lock = json(`${workspace}/package-lock.json`);
+    const overrides = packageJson.overrides ?? {};
+
+    for (const [dependency, version] of Object.entries({
+      ...(expected.fastUri ? { "fast-uri": expected.fastUri } : {}),
+      ...(expected.ipAddress ? { "ip-address": expected.ipAddress } : {}),
+      ...(expected.undici ? { undici: expected.undici } : {}),
+    })) {
+      assert.equal(overrides[dependency], version);
+      const resolved = Object.entries(lock.packages).filter(([path]) =>
+        path === `node_modules/${dependency}` ||
+        path.endsWith(`/node_modules/${dependency}`),
+      );
+      assert.ok(resolved.length > 0, `${workspace} must lock ${dependency}`);
+      for (const [path, record] of resolved)
+        assert.equal(record.version, version, `${workspace}/${path}`);
+    }
+  }
 });
 
 test("React server components and Next.js use their current patched releases", () => {
