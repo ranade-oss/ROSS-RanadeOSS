@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-07-31T08:17:37Z",
+  "last_merged_at": "2026-08-03T08:28:25Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -487,6 +487,86 @@
       "decision": "investigate",
       "reason": "Changes required build-time environment validation and documentation involving Supabase/provider configuration and production build behavior\u2014explicitly protected areas. The proposed Next.js configuration also does not account for ROSS\u2019s existing security and standalone-build architecture.",
       "processed_at": "2026-07-31T09:08:20.775321Z"
+    },
+    {
+      "number": 242,
+      "title": "[Security 1/9] SSRF guardrails for server-side connector fetches",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/242",
+      "merged_at": "2026-08-02T16:28:00Z",
+      "merge_commit_sha": "57bd8776a898f0556ebe9810ed6a37814cb32980",
+      "decision": "investigate",
+      "reason": "Security, SSRF, backend egress, dependencies, and lockfile changes are protected and operationally sensitive.",
+      "processed_at": "2026-08-04T20:04:29.669009Z"
+    },
+    {
+      "number": 245,
+      "title": "[Security 3/9] Production CORS allowlist with fail-safe denial",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/245",
+      "merged_at": "2026-08-02T17:26:52Z",
+      "merge_commit_sha": "961457c70bd44850f8d22d96e4a32f97c4759bdf",
+      "decision": "investigate",
+      "reason": "CORS and backend production access controls are security and operational behaviour.",
+      "processed_at": "2026-08-04T20:04:29.669024Z"
+    },
+    {
+      "number": 273,
+      "title": "Remove dead jsonLimitForPath abstraction",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/273",
+      "merged_at": "2026-08-02T19:07:07Z",
+      "merge_commit_sha": "133ecb3f6af528ac699948e7d00a5cc4747e9d11",
+      "decision": "investigate",
+      "reason": "Low-risk dead-code cleanup in principle, but it modifies prohibited backend code and targets app.ts while ROSS retains the abstraction in index.ts.",
+      "processed_at": "2026-08-04T20:04:29.669028Z"
+    },
+    {
+      "number": 253,
+      "title": "[Testing 17] test(backend): document-integrity unit tests + ratchet raise",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/253",
+      "merged_at": "2026-08-02T19:08:19Z",
+      "merge_commit_sha": "7d1ea6f9b0900e4b860b74296f33b8aaef9815c0",
+      "decision": "investigate",
+      "reason": "Relevant tests, but they modify prohibited backend paths and coverage configuration; the documentation changes depend on unverified coverage results.",
+      "processed_at": "2026-08-04T20:04:29.669031Z"
+    },
+    {
+      "number": 255,
+      "title": "[Testing 18] test(frontend): API-client/SSE tests + coverage ratchet",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/255",
+      "merged_at": "2026-08-02T19:09:33Z",
+      "merge_commit_sha": "2266446b0d26f735865b8cd3bb153b28e7d11b17",
+      "decision": "investigate",
+      "reason": "Mechanically gated as too large and includes CI, dependencies, package files, a lockfile, and coverage configuration.",
+      "processed_at": "2026-08-04T20:04:29.669035Z"
+    },
+    {
+      "number": 279,
+      "title": "feat: content hashes on document versions + signed project export manifest",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/279",
+      "merged_at": "2026-08-03T07:12:25Z",
+      "merge_commit_sha": "25833cb71fe72eaf39f1af8b9dd5fa734b39ae1d",
+      "decision": "investigate",
+      "reason": "Cryptography, schemas, migrations, environment configuration, exports, backend APIs, and production behaviour are protected.",
+      "processed_at": "2026-08-04T20:04:29.669038Z"
+    },
+    {
+      "number": 280,
+      "title": "feat: add workflow slash triggers",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/280",
+      "merged_at": "2026-08-03T08:26:09Z",
+      "merge_commit_sha": "afe163a3f0152d61204d7792464192dec595cb25",
+      "decision": "investigate",
+      "reason": "The UI is coupled to backend routes, workflow naming, shared types, scripts, and new application behaviour; it is not presentation-only.",
+      "processed_at": "2026-08-04T20:04:29.669040Z"
+    },
+    {
+      "number": 246,
+      "title": "[Security 19] security posture: SECURITY.md, CodeQL, secret scan, Scorecard",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/246",
+      "merged_at": "2026-08-03T08:28:25Z",
+      "merge_commit_sha": "3775d534c3a62db2808b8820a4ad9dd5cfaf1d63",
+      "decision": "investigate",
+      "reason": "Security policy, secret scanning, CodeQL, Scorecard, and GitHub workflow changes are protected security and governance controls.",
+      "processed_at": "2026-08-04T20:04:29.669042Z"
     }
   ]
 }
