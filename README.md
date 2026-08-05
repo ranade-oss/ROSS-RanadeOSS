@@ -6,11 +6,22 @@ ROSS (Ranade OSS) is an independently governed, Ontario-focused legal AI workspa
 
 > **Public beta:** [Launch ROSS](https://ross-ranadeoss-public.fly.dev)
 >
-> Verified account required. Use synthetic or affirmatively non-confidential materials only. The hosted beta is not approved for unrestricted confidential or production legal work.
+> A verified account is required. Use synthetic or affirmatively non-confidential materials only. The hosted beta is not approved for unrestricted confidential or production legal work.
 
- [Report a security issue](https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new) · [Documentation](docs/)
+[Documentation](docs/) · [Architecture](docs/architecture/README.md) · [Release runbook](docs/operations/release-runbook.md) · [Report a security issue](https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new)
 
 ROSS is a modified fork of [Mike](https://github.com/Open-Legal-Products/mike), licensed under AGPL-3.0. It is independently developed and is not endorsed by Mike's maintainers, governments, courts, or legal-source providers. See [NOTICE.md](NOTICE.md) for attribution and licence information.
+
+## Start here
+
+| Your goal | Recommended path |
+| --- | --- |
+| Try the hosted beta | Read [Current status](#current-status), then launch the public beta |
+| Run ROSS locally | Follow [Prerequisites](#prerequisites) and [Quick start](#quick-start) |
+| Understand the architecture | Review the [repository map](#repository-map) and [architecture decisions](docs/architecture/README.md) |
+| Contribute a change | Read [Contributing](#contributing) and run the [verification suite](#verification) |
+| Operate or release ROSS | Start with the [governance and release model](#governance-and-release-model) |
+| Report a vulnerability | Use a private [GitHub Security Advisory](https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new) |
 
 ## Current status
 
@@ -41,16 +52,18 @@ Do not use the hosted beta as a substitute for professional judgment, independen
 
 ## Repository map
 
-- `frontend/` — Next.js application
-- `backend/` — Express API, Supabase access, document processing, legal-source integrations, and database schema
-- `backend/schema.sql` — current schema for fresh Supabase databases
-- `backend/migrations/` — dated incremental migrations for existing databases
-- `website/` — governed public website, status, trust, coverage, and launch-readiness content
-- `config/` — versioned branding, policy, approval, evaluation, and release-control records
-- `reports/` — generated evaluation, source-health, completion, and release-manifest records
-- `docs/architecture/` — architecture decisions and approval status
-- `docs/operations/` — operational and release runbooks
-- `.github/workflows/` — partitioned verification, synchronization, repair, and exact-head merge automation
+| Path | Purpose |
+| --- | --- |
+| `frontend/` | Next.js application |
+| `backend/` | Express API, Supabase access, document processing, legal-source integrations, and database code |
+| `backend/schema.sql` | Current schema for fresh Supabase databases |
+| `backend/migrations/` | Dated incremental migrations for existing databases |
+| `website/` | Governed public website, status, trust, coverage, and launch-readiness content |
+| `config/` | Versioned branding, policy, approval, evaluation, and release-control records |
+| `reports/` | Generated evaluation, source-health, completion, and release-manifest records |
+| `docs/architecture/` | Architecture decisions and approval status |
+| `docs/operations/` | Operational and release runbooks |
+| `.github/workflows/` | Partitioned verification, synchronization, repair, and exact-head merge automation |
 
 ## Prerequisites
 
@@ -119,6 +132,8 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
 
 Use the Supabase project URL, backend service-role key, and frontend anon/public key expected by the installed Supabase client libraries. Provider keys may be configured globally in `backend/.env` or, where supported, per user under **Account > Models & API Keys**.
 
+Never commit `.env`, `.env.local`, service-role keys, provider keys, signing secrets, or client information.
+
 ### 3. Initialize the database
 
 For a fresh database, run the contents of:
@@ -168,6 +183,19 @@ npm run release:check
 ```
 
 `npm run lint:strict` reports inherited frontend lint debt separately from the repository's non-regression gate.
+
+## Contributing
+
+Contributions should be narrow, reviewable, and consistent with ROSS's legal, security, and release controls.
+
+1. Create a branch from the current `main` branch.
+2. Keep application, generated-artifact, and governance changes clearly scoped.
+3. Add or update tests for changed behavior.
+4. Run `npm run check` before opening a pull request.
+5. Describe user impact, security implications, migrations, generated files, and validation performed.
+6. Do not place client information, credentials, tokens, private legal material, or vulnerability details in commits or public issues.
+
+Security-sensitive changes and vulnerability reports must use the private reporting path described in [Security](#security).
 
 ## Governance and release model
 
