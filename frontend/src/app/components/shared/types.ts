@@ -373,7 +373,14 @@ export interface Message {
   files?: { filename: string; document_id?: string }[];
   workflow?: { id: string; title: string };
   model?: string;
-  reasoningEffort?: "none" | "low" | "medium" | "high" | "xhigh" | "max";
+  reasoningEffort?:
+    | "none"
+    | "minimal"
+    | "low"
+    | "medium"
+    | "high"
+    | "xhigh"
+    | "max";
   jurisdictions?: Array<"CA-ON" | "CA" | "US">;
   legalAsOfDate?: string;
   citations?: Citation[];

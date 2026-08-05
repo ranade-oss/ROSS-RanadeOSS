@@ -402,6 +402,7 @@ export type ApiKeyStatus = Record<ApiKeyProvider, boolean> & {
 
 export type ReasoningEffort =
   | "none"
+  | "minimal"
   | "low"
   | "medium"
   | "high"
@@ -411,7 +412,7 @@ export type ReasoningEffort =
 export interface ModelCatalogEntry {
   id: string;
   label: string;
-  provider: "claude" | "gemini" | "openai";
+  provider: "claude" | "gemini" | "openai" | "xai" | "moonshot";
   tier: "main" | "mid" | "low";
   reasoningEfforts: ReasoningEffort[];
   defaultReasoningEffort?: ReasoningEffort;
@@ -422,7 +423,7 @@ export interface ModelCatalogEntry {
 
 export interface ModelCatalog {
   models: ModelCatalogEntry[];
-  approvedProviders: Array<"claude" | "gemini" | "openai">;
+  approvedProviders: Array<"claude" | "gemini" | "openai" | "xai" | "moonshot">;
   selfHosted: boolean;
   refreshedAt: string;
   warning?: string;

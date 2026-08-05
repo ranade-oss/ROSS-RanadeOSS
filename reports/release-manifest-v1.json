@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 127,
+  "artifactCount": 128,
   "artifacts": [
     {
       "path": ".github/actionlint.yaml",
@@ -37,8 +37,8 @@
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
-      "sha256": "f0480f0fcf997b1b5e1408c12d7704032a7222aef61d1011599d0ab72a7ecb6c",
-      "sizeBytes": 10071
+      "sha256": "a0eb3dc75ed39f4edab51214c7cfdb552bca40b58c4a7b799d16fa7509a65b6a",
+      "sizeBytes": 10818
     },
     {
       "path": ".github/workflows/verify-ontario-sources.yml",
@@ -87,8 +87,8 @@
     },
     {
       "path": "backend/src/index.ts",
-      "sha256": "0b031efbfb400166c4e2864713fc8b80803feb5e0d96cc7ddfb7ee0968a1e7d7",
-      "sizeBytes": 5791
+      "sha256": "d613269b4effee8ecc0797db562a90dacbecf1b43a2a8d9af9c8cf66b5237b82",
+      "sizeBytes": 5858
     },
     {
       "path": "backend/src/lib/documentScanDispatcher.ts",
@@ -112,8 +112,8 @@
     },
     {
       "path": "backend/src/lib/llm/types.ts",
-      "sha256": "d4f0f4b57456bb44ac77d6b45d7bde61ac6036a98d551baf4ad62fbc1a633ceb",
-      "sizeBytes": 2290
+      "sha256": "1e0f3e78dd20459deb7136fccd2430e1adcb22c81027b597d1572367eb67703d",
+      "sizeBytes": 2304
     },
     {
       "path": "backend/src/lib/quarantinedUpload.ts",
@@ -427,8 +427,8 @@
     },
     {
       "path": "frontend/src/app/lib/mikeApi.ts",
-      "sha256": "06c96c908d67b520a4995a716906ec3ebd1112f8699880cf32a6882f369ef7f9",
-      "sizeBytes": 39183
+      "sha256": "20892752034962dd9e2c9380ce05241e7d893c15460fb347744c43dbdf089a35",
+      "sizeBytes": 39239
     },
     {
       "path": "frontend/src/app/lib/runtimeConfig.server.ts",
@@ -522,8 +522,8 @@
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
-      "sha256": "ecbdcb7f83550bdfee2fafebb494d263de165ee2d7a6fb2a3f21cc886e849b58",
-      "sizeBytes": 1351
+      "sha256": "c5a9c7036a13c598f3d6e3d256d9af9f07b94da951d00032278776914aada8e2",
+      "sizeBytes": 2245
     },
     {
       "path": "scripts/preflight-fly-images.sh",
@@ -576,6 +576,11 @@
       "sizeBytes": 3312
     },
     {
+      "path": "scripts/check-final-completion.mjs",
+      "sha256": "59672ba849bb0bade25aedd58e1cee4a761c67657a2bb236cc977041c6624850",
+      "sizeBytes": 3128
+    },
+    {
       "path": "scripts/validate-release-id.mjs",
       "sha256": "5eca3fbee3ddd6245497243e5f2690d351956af3d9d025afd5e2fadb10766cde",
       "sizeBytes": 301
@@ -602,8 +607,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "5b64b90d4496365264852feeba59556a1b35350488755dcb8d2fec4ad12379a1",
-      "sizeBytes": 29357
+      "sha256": "84733b2934c6798c2286b9ffd989d16403b565d320718f5510241bb2c95ad404",
+      "sizeBytes": 30134
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",

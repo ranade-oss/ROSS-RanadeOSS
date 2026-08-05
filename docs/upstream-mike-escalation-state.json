@@ -247,6 +247,90 @@
       "risk": "defer",
       "reason": "Safely adaptable, but high risk because it changes production build validation for Supabase configuration and deployment behavior. The ROSS adaptation reuses its existing production flag and retains all ROSS-specific safeguards. Generated patch was malformed or did not apply cleanly to current ROSS main; no code was applied.",
       "processed_at": "2026-07-31T17:04:17.826412Z"
+    },
+    {
+      "number": 242,
+      "risk": "defer",
+      "reason": "High-risk SSRF/OAuth security-boundary change. ROSS has divergent MCP egress code and lacks the supplied Vitest harness, so the complete adaptation cannot be validated safely.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 273,
+      "risk": "medium",
+      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS\u2019s 50 MB limit.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 253,
+      "risk": "defer",
+      "reason": "ROSS lacks the upstream backend Vitest/coverage harness, and several Mike-specific assertions require speculative adaptation.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 255,
+      "risk": "defer",
+      "reason": "Depends on an absent frontend test harness and includes prohibited workflow changes; a reliable partial adaptation is unclear.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 279,
+      "risk": "defer",
+      "reason": "High-risk schema migration, cryptographic signing-key, export, and production-data-boundary change with too broad a blast radius for this batch.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 280,
+      "risk": "defer",
+      "reason": "The cross-stack UI/API feature is not adequately testable because ROSS lacks the supplied frontend test harness.",
+      "processed_at": "2026-08-04T21:16:33.885666Z"
+    },
+    {
+      "number": 274,
+      "risk": "defer",
+      "reason": "High-risk schema, migration, RLS, and production-data-boundary change. Its 32-file patch also exceeds the 30-file batch limit by itself; a partial adaptation would be incomplete.",
+      "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 248,
+      "risk": "defer",
+      "reason": "High-risk prompt-security and cryptographic nonce boundary change. ROSS chat internals diverge, and the supplied Vitest coverage is not runnable in the current backend harness.",
+      "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 282,
+      "risk": "defer",
+      "reason": "High-risk deployment, infrastructure, authentication, storage, provider-credential, and Supabase boundary change with a broad cross-stack blast radius.",
+      "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 174,
+      "risk": "defer",
+      "reason": "The assistant explorer still lacks confirmation, but the upstream implementation diverges from ROSS UI components and depends on an unavailable frontend test harness, making a safe complete adaptation insufficiently testable.",
+      "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 283,
+      "risk": "defer",
+      "reason": "Medium-risk request-validation hardening. ROSS already has divergent global-chat and legal-scope validation, while project-chat validation remains separate; the upstream shared refactor and Vitest integration tests cannot be adopted and validated without speculative changes.",
+      "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 287,
+      "risk": "defer",
+      "reason": "High-risk authentication and deployment-default change that depends on the unapplied self-hosted Docker stack. Its documentation also describes infrastructure absent from ROSS.",
+      "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 289,
+      "risk": "defer",
+      "reason": "Obsolete for current ROSS because the documentation assumes the deferred Docker, embedded Supabase, storage, and Ollama stack from PR #282.",
+      "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 249,
+      "risk": "defer",
+      "reason": "High-risk server-side citation trust-boundary change. ROSS has materially divergent citation and legal-source verification architecture, and the supplied backend/frontend tests do not match its available test harnesses.",
+      "processed_at": "2026-08-04T22:12:31.411900Z"
     }
   ]
 }

@@ -46,6 +46,7 @@ test("consolidated handlers preserve their bounded permissions and triggers", ()
   const agent = read(".github/workflows/agent-pr-reconciler.yml");
   const mike = read(".github/workflows/coordinate-upstream-mike.yml");
   const lowRisk = read(".github/workflows/sync-upstream-mike.yml");
+  const escalated = read(".github/workflows/sync-upstream-mike-escalated.yml");
 
   assert.match(baseline, /paths-ignore:[\s\S]*reports\/release-manifest-v1\.json/);
   assert.match(handler, /^  merge:[\s\S]*contents: write/m);
@@ -60,4 +61,7 @@ test("consolidated handlers preserve their bounded permissions and triggers", ()
   assert.match(mike, /sync-upstream-mike\.yml/);
   assert.match(mike, /sync-upstream-mike-escalated\.yml/);
   assert.doesNotMatch(lowRisk, /docs\/upstream-sync-request\.json/);
+  assert.match(lowRisk, /one implementation candidate per branch/);
+  assert.match(escalated, /reconsider_all_deferred/);
+  assert.match(escalated, /actions: write/);
 });

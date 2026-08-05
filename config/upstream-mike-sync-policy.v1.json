@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "policy": "mike-sync-v2",
+  "upstream": "Open-Legal-Products/mike",
+  "implementation_candidates_per_branch": 1,
+  "observation_window_max": 8,
+  "retry_default_days": 7,
+  "outcomes": [
+    "adopted",
+    "adapted",
+    "equivalent",
+    "superseded",
+    "incompatible",
+    "deferred",
+    "retryable",
+    "needs-test-harness",
+    "needs-decision"
+  ],
+  "protected_domains": [
+    "authentication",
+    "authorization",
+    "mfa",
+    "cryptography",
+    "secrets",
+    "provider-keys",
+    "legal",
+    "privacy",
+    "schemas",
+    "migrations",
+    "supabase",
+    "data-boundaries",
+    "deployment",
+    "infrastructure",
+    "dependencies",
+    "lockfiles",
+    "governance",
+    "release",
+    "production-operations"
+  ],
+  "merge_controls": {
+    "exact_head_baseline_required": true,
+    "high_risk_code_is_draft": true,
+    "legacy_deferred_entries_are_not_retried": true,
+    "legacy_deferred_reconsideration_requires_explicit_input": true,
+    "legacy_deferred_reconsideration_is_one_pass": true,
+    "bounded_repair_attempts": 1
+  }
+}

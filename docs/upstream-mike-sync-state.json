@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-04T08:29:03Z",
+  "last_merged_at": "2026-08-04T11:24:49Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -647,6 +647,26 @@
       "decision": "investigate",
       "reason": "Intertwines documentation with authentication defaults, environment settings, Supabase, deployment, provider keys, and cryptographic export guidance.",
       "processed_at": "2026-08-04T21:16:34.954133Z"
+    },
+    {
+      "number": 289,
+      "title": "docs: simplify Docker quick start",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/289",
+      "merged_at": "2026-08-04T09:35:07Z",
+      "merge_commit_sha": "7219da42d253902bd8e2a67533d574b27113307f",
+      "decision": "investigate",
+      "reason": "Documentation-only, but it changes instructions involving secrets, provider keys, Supabase, object storage, and Docker operational setup. ROSS also uses a different environment-file architecture.",
+      "processed_at": "2026-08-04T21:21:24.430853Z"
+    },
+    {
+      "number": 249,
+      "title": "[Security 6/9] Server-side citation verification against source text",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/249",
+      "merged_at": "2026-08-04T11:24:49Z",
+      "merge_commit_sha": "8313af19b98ebfb6609ce97aa1962ef094db7b05",
+      "decision": "investigate",
+      "reason": "Large security-sensitive change affecting backend citation verification, data boundaries, shared types, and frontend behavior; it exceeds the mechanical gate and requires architectural review.",
+      "processed_at": "2026-08-04T21:21:24.430873Z"
     }
   ]
 }

@@ -80,6 +80,12 @@ test("production and rehearsal app names are fixed, distinct, and isolated", () 
 test("the supported workflow is one-button rehearsal with optional public promotion", () => {
   const workflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
   const fullGate = workflow.indexOf("name: Run complete engineering gate");
+  const sourceGate = workflow.indexOf(
+    "name: Observe live legal sources for production gate",
+  );
+  const sourceUpload = workflow.indexOf(
+    "name: Upload production qualification legal-source report",
+  );
   const dockerGate = workflow.indexOf("name: Build every Fly container path");
   const build = workflow.indexOf("name: Build and pin candidate images once");
   const rehearsal = workflow.indexOf(
@@ -101,6 +107,21 @@ test("the supported workflow is one-button rehearsal with optional public promot
     /release_id:|fly_organization:|api_app_name:|web_app_name:|confirm_deployment:/,
   );
   assert.ok(fullGate < dockerGate);
+  assert.ok(fullGate < sourceGate);
+  assert.ok(sourceGate < sourceUpload);
+  assert.ok(sourceUpload < dockerGate);
+  assert.match(
+    workflow,
+    /continue-on-error: true[\s\S]*?observe-legal-sources\.mjs[\s\S]*?release-train-legal-source-health\.json/,
+  );
+  assert.match(
+    workflow,
+    /^\s*run: npm run final:check -- --source-report artifacts\/release-train-legal-source-health\.json$/m,
+  );
+  assert.match(
+    workflow,
+    /if: always\(\) && inputs\.promote_public[\s\S]*?upload-artifact@v7[\s\S]*?release-train-legal-source-health\.json/,
+  );
   assert.ok(dockerGate < build);
   assert.ok(build < rehearsal);
   assert.ok(rehearsal < releasePreflight);

@@ -78,10 +78,11 @@ test("shared dialogs and warnings expose keyboard and live-region semantics", ()
   assert.match(warning, /aria-live="assertive"/);
 });
 
-test("model availability explains entitlement separately from missing keys", () => {
+test("model availability shows only live entitlements and explains missing keys", () => {
   const discovery = read("backend/src/lib/llm/modelDiscovery.ts");
   assert.match(discovery, /availabilityReason/);
-  assert.match(discovery, /does not currently list this model as available/);
+  assert.match(discovery, /listed\.filter\(adapter\.compatible\)/);
+  assert.match(discovery, /Add an API key for/);
 
   const toggle = read(
     "frontend/src/app/components/assistant/ModelToggle.tsx",

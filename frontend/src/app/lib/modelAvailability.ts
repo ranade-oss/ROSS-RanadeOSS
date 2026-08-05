@@ -1,24 +1,33 @@
-import { SETTINGS_MODELS, type ModelOption } from "../components/assistant/ModelToggle";
+import {
+    SETTINGS_MODELS,
+    type ModelOption,
+} from "../components/assistant/ModelToggle";
 import type { ApiKeyState } from "@/app/lib/mikeApi";
 
-export type ModelProvider =
-    | "claude"
-    | "gemini"
-    | "openai"
-    | "xai"
-    | "moonshot";
+export type ModelProvider = "claude" | "gemini" | "openai" | "xai" | "moonshot";
 
 export function getModelProvider(modelId: string): ModelProvider | null {
     const model = SETTINGS_MODELS.find((m) => m.id === modelId);
-    if (!model) return null;
-    return modelGroupToProvider(model.group);
+    if (model) return model.provider;
+    if (modelId.startsWith("claude-")) return "claude";
+    if (modelId.startsWith("gemini-")) return "gemini";
+    if (
+        modelId.startsWith("gpt-") ||
+        /^o\d/.test(modelId) ||
+        /^ft:(?:gpt-|o\d)/.test(modelId)
+    )
+        return "openai";
+    if (modelId.startsWith("grok-")) return "xai";
+    if (modelId.startsWith("kimi-")) return "moonshot";
+    return null;
 }
 
 export function isModelAvailable(
     modelId: string,
     apiKeys: ApiKeyState,
+    providerOverride?: ModelProvider | null,
 ): boolean {
-    const provider = getModelProvider(modelId);
+    const provider = providerOverride ?? getModelProvider(modelId);
     if (!provider) return false;
     return isProviderAvailable(provider, apiKeys);
 }
