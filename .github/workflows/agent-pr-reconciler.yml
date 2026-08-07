@@ -23,7 +23,7 @@ jobs:
       actions: write
       contents: read
       issues: write
-      pull-requests: read
+      pull-requests: write
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -136,7 +136,13 @@ jobs:
                   exactHeadRun.conclusion !== "skipped" &&
                   exactHeadRun.conclusion !== "neutral"
                 ) {
-                  await reportFailure(pr, exactHeadRun);
+                  try {
+                    await reportFailure(pr, exactHeadRun);
+                  } catch (error) {
+                    core.warning(
+                      `Could not report Baseline failure for PR #${pr.number}: ${error.message}`,
+                    );
+                  }
                 }
                 continue;
               }
