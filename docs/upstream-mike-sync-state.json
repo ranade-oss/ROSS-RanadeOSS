@@ -1,7 +1,7 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-04T11:24:49Z",
+  "last_merged_at": "2026-08-06T15:52:59Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -485,7 +485,7 @@
       "merged_at": "2026-07-31T08:17:37Z",
       "merge_commit_sha": "14de15093f16c0dac013c43e71892c1d89fac12b",
       "decision": "investigate",
-      "reason": "Changes required build-time environment validation and documentation involving Supabase/provider configuration and production build behavior\u2014explicitly protected areas. The proposed Next.js configuration also does not account for ROSS\u2019s existing security and standalone-build architecture.",
+      "reason": "Changes required build-time environment validation and documentation involving Supabase/provider configuration and production build behavior—explicitly protected areas. The proposed Next.js configuration also does not account for ROSS’s existing security and standalone-build architecture.",
       "processed_at": "2026-07-31T09:08:20.775321Z"
     },
     {
@@ -580,7 +580,7 @@
     },
     {
       "number": 281,
-      "title": "test(frontend): fix the red main \u2014 pay down the coverage regression from #274/#263/#280",
+      "title": "test(frontend): fix the red main — pay down the coverage regression from #274/#263/#280",
       "url": "https://github.com/Open-Legal-Products/mike/pull/281",
       "merged_at": "2026-08-03T13:47:07Z",
       "merge_commit_sha": "c6aa6bea677aed13ab8b4057d9e80fbce7a55822",
@@ -667,6 +667,143 @@
       "decision": "investigate",
       "reason": "Large security-sensitive change affecting backend citation verification, data boundaries, shared types, and frontend behavior; it exceeds the mechanical gate and requires architectural review.",
       "processed_at": "2026-08-04T21:21:24.430873Z"
+    },
+    {
+      "number": 256,
+      "title": "[Testing 16] ci: run the RLS/stack integration suite on every PR",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/256",
+      "merged_at": "2026-08-06T07:26:17.000Z",
+      "merge_commit_sha": "1b00314d9f09d37f3fcdc7bed4c236e2e7dcbcac",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "Supabase stack security CI",
+      "series_id": "testing-16-stack-ci",
+      "dependencies": [],
+      "prerequisites": [
+        "Security and architecture approval",
+        "ROSS-native Supabase/RLS integration harness",
+        "Approved schema bootstrap strategy"
+      ],
+      "reason": "Useful security validation, but it changes CI infrastructure and exercises RLS, schemas, and migrations; those boundaries require human approval.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-07T21:42:12.218Z"
+    },
+    {
+      "number": 243,
+      "title": "[Testing 20] test(e2e): accessibility scans + nightly run (stacked on #220)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/243",
+      "merged_at": "2026-08-06T07:35:10.000Z",
+      "merge_commit_sha": "b0ee67e4d5f309d0ca1aa46c7323ba72091f1ca2",
+      "decision": "adapt",
+      "outcome": "adapted",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "Accessible control names",
+      "series_id": "testing-20-accessibility",
+      "dependencies": [
+        "#220"
+      ],
+      "prerequisites": [],
+      "reason": "ROSS has the same three unlabeled controls. Adopt only presentation-neutral aria-labels; exclude the new dependency, lockfile, nightly CI, and Mike-specific E2E documentation.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-07T21:42:12.218Z"
+    },
+    {
+      "number": 291,
+      "title": "test(frontend): cover every lib wrapper and restore the coverage ratchet",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/291",
+      "merged_at": "2026-08-06T10:58:49.000Z",
+      "merge_commit_sha": "9179dd2b77e16dc61be0a2dd80d8be3bbe4b17d2",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "Frontend wrapper coverage ratchet",
+      "series_id": "frontend-lib-coverage",
+      "dependencies": [],
+      "prerequisites": [
+        "ROSS-native frontend unit-test and coverage harness",
+        "Focused mapping of tests to ROSS-specific API wrappers"
+      ],
+      "reason": "The tests may be useful, but ROSS has no frontend Vitest configuration and its API wrappers materially diverge from Mike’s routes and provider assumptions.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-07T21:42:12.218Z"
+    },
+    {
+      "number": 221,
+      "title": "[Feature 14] feat: Word add-in — chat, tracked-changes rewrites, workflows and projects in Word",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/221",
+      "merged_at": "2026-08-06T13:25:49.000Z",
+      "merge_commit_sha": "c059e6ce487e1f344ed7a3a8a4eb67e985003fe4",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "Microsoft Word add-in",
+      "series_id": "word-addin",
+      "dependencies": [],
+      "prerequisites": [
+        "Product and architecture decision",
+        "Security, privacy, authentication, and data-boundary review",
+        "Public API and deployment design",
+        "Complete bounded patch evidence"
+      ],
+      "reason": "This is a large new client surface involving authentication, document data, public APIs, dependencies, and deployment; its patch was also omitted by the observation bound.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-07T21:42:12.218Z"
+    },
+    {
+      "number": 296,
+      "title": "Fix Word add-in semver dependency",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/296",
+      "merged_at": "2026-08-06T15:52:59.000Z",
+      "merge_commit_sha": "204d2d533a075c74fc69f8b283c70fb4e94ec104",
+      "decision": "skip",
+      "outcome": "deferred",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "Word add-in semver declaration",
+      "series_id": "word-addin",
+      "dependencies": [
+        "#221"
+      ],
+      "prerequisites": [
+        "Approved and present Word add-in architecture",
+        "Dependency and lockfile review"
+      ],
+      "reason": "ROSS has no Word add-in, and dependency or lockfile changes are ineligible; reconsider only if #221 is separately approved and implemented.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-07T21:42:12.218Z"
     }
-  ]
+  ],
+  "policy": "v2",
+  "metrics": {
+    "by_outcome": {
+      "needs-decision": 57,
+      "equivalent": 11,
+      "adapted": 1,
+      "needs-test-harness": 1,
+      "deferred": 1
+    },
+    "by_status": {
+      "needs-decision": 57,
+      "terminal": 13,
+      "retryable": 1
+    },
+    "by_risk": {
+      "none": 71
+    }
+  }
 }
