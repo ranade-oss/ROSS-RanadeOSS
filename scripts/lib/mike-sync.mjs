@@ -260,6 +260,15 @@ function recordIsEligible(record, nowMs) {
   return Number.isNaN(next) || next <= nowMs;
 }
 
+function explicitNumbers(values) {
+  return new Set(
+    values
+      .filter((value) => !(typeof value === "string" && value.trim() === ""))
+      .map((value) => Number(value))
+      .filter(Number.isSafeInteger),
+  );
+}
+
 export function selectEscalationCandidate(
   lowState,
   escalationState,
@@ -270,7 +279,7 @@ export function selectEscalationCandidate(
     numbers = [],
   } = {},
 ) {
-  const explicit = new Set(numbers.map((number) => Number(number)).filter(Number.isInteger));
+  const explicit = explicitNumbers(numbers);
   const records = new Map((escalationState?.processed || []).map((entry) => [entry.number, entry]));
   const nowMs = Date.parse(now);
   const candidates = (lowState?.processed || [])

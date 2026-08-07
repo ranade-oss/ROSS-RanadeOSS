@@ -95,6 +95,13 @@ test("legacy deferred entries stay closed by default and can be reopened deliber
     }).number,
     301,
   );
+  assert.equal(
+    selectEscalationCandidate(low, escalation, {
+      reconsiderAllDeferred: true,
+      numbers: [""],
+    }).number,
+    301,
+  );
   escalation.processed[0] = {
     ...escalation.processed[0],
     outcome: "deferred",

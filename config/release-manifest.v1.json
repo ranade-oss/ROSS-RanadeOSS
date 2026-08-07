@@ -130,6 +130,9 @@
     "website/app/site-config.ts",
     "website/app/page-content.ts",
     "website/app/generated-brand-config.ts",
+    "website/vendor/image-size/index.d.ts",
+    "website/vendor/image-size/index.js",
+    "website/vendor/image-size/package.json",
     "workflows/ontario/catalogue.json"
   ]
 }

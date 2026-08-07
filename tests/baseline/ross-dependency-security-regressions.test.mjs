@@ -77,6 +77,29 @@ test("security-sensitive transitive dependencies stay on fixed releases", () => 
   }
 });
 
+test("website replaces the unmaintained image-size parser with the bounded ROSS-safe reader", () => {
+  const websitePackage = json("website/package.json");
+  const websiteLock = json("website/package-lock.json");
+  const releaseManifest = json("config/release-manifest.v1.json");
+  for (const path of [
+    "website/vendor/image-size/index.d.ts",
+    "website/vendor/image-size/index.js",
+    "website/vendor/image-size/package.json",
+  ]) {
+    assert.ok(releaseManifest.artifacts.includes(path), `${path} must be release-governed`);
+  }
+  assert.equal(websitePackage.overrides["image-size"], "file:vendor/image-size");
+  assert.equal(
+    websitePackage.devDependencies["image-size"],
+    "file:vendor/image-size",
+  );
+  assert.equal(websiteLock.packages["node_modules/image-size"].resolved, "vendor/image-size");
+  assert.equal(websiteLock.packages["node_modules/image-size"].link, true);
+  assert.equal(websiteLock.packages["vendor/image-size"].version, "2.0.3-ross.1");
+  assert.match(read("website/vendor/image-size/index.js"), /MAX_INPUT_BYTES/);
+  assert.match(read("website/vendor/image-size/index.js"), /unsupported by the ROSS-safe reader/);
+});
+
 test("React server components and Next.js use their current patched releases", () => {
   const frontendPackage = json("frontend/package.json");
   const websitePackage = json("website/package.json");

@@ -1,0 +1,15 @@
+{
+  "name": "image-size",
+  "version": "2.0.3-ross.1",
+  "description": "Bounded image dimension reader used by ROSS's Vinext build",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "default": "./index.js"
+    }
+  }
+}
