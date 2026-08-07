@@ -57,8 +57,8 @@
     },
     {
       "path": "backend/package-lock.json",
-      "sha256": "5883f47e70fb6e28c5db04c0a4b341bb21b3b2372c31370a767a961704d9359c",
-      "sizeBytes": 203235
+      "sha256": "fe25b6964eb17759de271b1fd2fcc6d76e840165882868649a79676c2be25cad",
+      "sizeBytes": 203237
     },
     {
       "path": "backend/package.json",
@@ -342,8 +342,8 @@
     },
     {
       "path": "frontend/package-lock.json",
-      "sha256": "40618e553ad2a981be05db111ba9c7150910d28807325d29441ec9fe505aab6d",
-      "sizeBytes": 534050
+      "sha256": "8e7dc58a310936ac0e8ef3968b73d8a24a625ec0395c73522cbff7475e978104",
+      "sizeBytes": 534667
     },
     {
       "path": "frontend/package.json",
@@ -617,13 +617,13 @@
     },
     {
       "path": "website/package-lock.json",
-      "sha256": "999aac2f2d545632172460dc2182f34425951a7cde2ad041dab9b8873bb9b8d7",
-      "sizeBytes": 259851
+      "sha256": "9655938a752b91a56bdf34769dab0a4c8a62d54003252f0b8885e45c023b8c31",
+      "sizeBytes": 260266
     },
     {
       "path": "website/package.json",
-      "sha256": "6d8b98afb2798f77766a225e21d7dc00554ea8b94371fc43c3f05a0715207669",
-      "sizeBytes": 1645
+      "sha256": "04be0b42a5b5491260ee75725e71864ea23ae4c5361c47f51a5c54a65a412637",
+      "sizeBytes": 1781
     },
     {
       "path": "website/app/site-config.ts",

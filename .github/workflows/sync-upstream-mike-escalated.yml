@@ -65,8 +65,9 @@ jobs:
             const explicit = new Set(
               String(process.env.RECONSIDER_NUMBERS || "")
                 .split(",")
+                .filter((value) => value.trim() !== "")
                 .map((value) => Number(value.trim()))
-                .filter(Number.isInteger),
+                .filter(Number.isSafeInteger),
             );
             const reconsiderDeferred = process.env.RECONSIDER_DEFERRED === "true";
             const reconsiderAllDeferred = process.env.RECONSIDER_ALL_DEFERRED === "true";
