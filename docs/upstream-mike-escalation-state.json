@@ -1,12 +1,61 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
   "processed": [
     {
       "number": 46,
-      "risk": "defer",
-      "reason": "Broad schema, authentication, secrets, legal, and backend rewrite; ROSS already contains hardened equivalents and safeguards.",
-      "processed_at": "2026-07-29T04:30:08.580300Z"
+      "title": "Sync security and backend profile updates",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/46",
+      "merged_at": "2026-05-08T13:12:04.000Z",
+      "merge_commit_sha": "7f5dd217d74095fe8931357fefad5d9c6dea6c90",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Hosted API hardening plus authenticated user profiles and encrypted per-user LLM provider keys",
+      "series_id": "mike-security-profile",
+      "dependencies": [
+        "helmet",
+        "express-rate-limit",
+        "Supabase Auth/Postgres/RLS",
+        "LLM provider adapters",
+        "frontend profile/auth contexts"
+      ],
+      "prerequisites": [
+        "Install locked backend dependencies so the existing security suite can run",
+        "Validate current migrations and RLS against a disposable Supabase instance",
+        "Obtain security and privacy owner approval"
+      ],
+      "reason": "Commit ba6f771 is an ancestor of current main, and ROSS has evolved its seams with stricter secret isolation, MFA, CORS/data-boundary middleware, additional providers, and revoked browser grants. Because this spans authentication, secrets, cryptography, schemas/RLS, dependencies, and privacy content, ancestry alone cannot establish production-safe equivalence. The focused security suite could not run because tsx is not installed.",
+      "architecture_brief": "Evaluate the existing ROSS-native implementation at backend/src/index.ts for HTTP controls, backend/src/routes/user.ts for authenticated/MFA-aware APIs, backend/src/lib/userApiKeys.ts for encrypted key handling, additive migrations plus backend/schema.sql for RLS/grants, and the existing frontend profile/API contexts. Do not replay the monolithic upstream patch.",
+      "implementation_plan": [
+        "Run the locked backend security suite and add endpoint-level coverage for profile validation, MFA enforcement, provider-key precedence, and non-disclosure.",
+        "Test key encryption, rotation/failure behavior, account deletion, and tenant isolation using a disposable database.",
+        "Verify trusted-proxy rate limiting, CORS, Helmet, and hosted data-boundary behavior in a deployment-like harness.",
+        "Review schema migration ordering, RLS/grants, privacy/terms/support content, and residual differences with security, data, and legal owners."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-07T23:20:25.193Z",
+      "processed_at": "2026-08-07T23:20:25.193Z",
+      "v2_attempted_at": "2026-08-07T23:20:25.193Z",
+      "history": [
+        {
+          "outcome": "deferred",
+          "status": "terminal",
+          "risk": "defer",
+          "reason": "Broad schema, authentication, secrets, legal, and backend rewrite; ROSS already contains hardened equivalents and safeguards.",
+          "processed_at": "2026-07-29T04:30:08.580300Z"
+        },
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "Commit ba6f771 is an ancestor of current main, and ROSS has evolved its seams with stricter secret isolation, MFA, CORS/data-boundary middleware, additional providers, and revoked browser grants. Because this spans authentication, secrets, cryptography, schemas/RLS, dependencies, and privacy content, ancestry alone cannot establish production-safe equivalence. The focused security suite could not run because tsx is not installed.",
+          "processed_at": "2026-08-07T23:20:25.193Z"
+        }
+      ]
     },
     {
       "number": 28,
@@ -185,7 +234,7 @@
     {
       "number": 235,
       "risk": "defer",
-      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR\u2019s blocking-CI objective and includes MFA-sensitive code.",
+      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR’s blocking-CI objective and includes MFA-sensitive code.",
       "processed_at": "2026-07-29T12:40:21.110349Z"
     },
     {
@@ -257,7 +306,7 @@
     {
       "number": 273,
       "risk": "medium",
-      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS\u2019s 50 MB limit.",
+      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS’s 50 MB limit.",
       "processed_at": "2026-08-04T21:16:33.885666Z"
     },
     {
@@ -332,5 +381,21 @@
       "reason": "High-risk server-side citation trust-boundary change. ROSS has materially divergent citation and legal-source verification architecture, and the supplied backend/frontend tests do not match its available test harnesses.",
       "processed_at": "2026-08-04T22:12:31.411900Z"
     }
-  ]
+  ],
+  "policy": "v2",
+  "metrics": {
+    "by_outcome": {
+      "needs-decision": 1,
+      "deferred": 54
+    },
+    "by_status": {
+      "needs-decision": 1,
+      "terminal": 54
+    },
+    "by_risk": {
+      "high": 1,
+      "defer": 53,
+      "medium": 1
+    }
+  }
 }
