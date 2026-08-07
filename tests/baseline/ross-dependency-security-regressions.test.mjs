@@ -80,6 +80,14 @@ test("security-sensitive transitive dependencies stay on fixed releases", () => 
 test("website replaces the unmaintained image-size parser with the bounded ROSS-safe reader", () => {
   const websitePackage = json("website/package.json");
   const websiteLock = json("website/package-lock.json");
+  const releaseManifest = json("config/release-manifest.v1.json");
+  for (const path of [
+    "website/vendor/image-size/index.d.ts",
+    "website/vendor/image-size/index.js",
+    "website/vendor/image-size/package.json",
+  ]) {
+    assert.ok(releaseManifest.artifacts.includes(path), `${path} must be release-governed`);
+  }
   assert.equal(websitePackage.overrides["image-size"], "file:vendor/image-size");
   assert.equal(
     websitePackage.devDependencies["image-size"],

@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 128,
+  "artifactCount": 131,
   "artifacts": [
     {
       "path": ".github/actionlint.yaml",
@@ -639,6 +639,21 @@
       "path": "website/app/generated-brand-config.ts",
       "sha256": "c8d6ddbb256b3ac6a6af85134b93c9f90df0e1885f2b09dbd37ec27fdc6476a1",
       "sizeBytes": 1650
+    },
+    {
+      "path": "website/vendor/image-size/index.d.ts",
+      "sha256": "dd7024c7395b1fbcb9abcc8ec709eda6763e577530ef2760c8562420bbf9bcb6",
+      "sizeBytes": 208
+    },
+    {
+      "path": "website/vendor/image-size/index.js",
+      "sha256": "489f6eaf2cd1f3015554a455bd09e22df4570db3d85a8a420e9f465291cca571",
+      "sizeBytes": 4940
+    },
+    {
+      "path": "website/vendor/image-size/package.json",
+      "sha256": "69af435576112002f7202338b6dac4aa5bd1813a6a7e0944c5d71c36a5ecd90b",
+      "sizeBytes": 331
     },
     {
       "path": "workflows/ontario/catalogue.json",
