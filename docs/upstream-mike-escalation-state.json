@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
   "processed": [
     {
@@ -185,7 +185,7 @@
     {
       "number": 235,
       "risk": "defer",
-      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR\u2019s blocking-CI objective and includes MFA-sensitive code.",
+      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR’s blocking-CI objective and includes MFA-sensitive code.",
       "processed_at": "2026-07-29T12:40:21.110349Z"
     },
     {
@@ -257,7 +257,7 @@
     {
       "number": 273,
       "risk": "medium",
-      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS\u2019s 50 MB limit.",
+      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS’s 50 MB limit.",
       "processed_at": "2026-08-04T21:16:33.885666Z"
     },
     {
@@ -331,6 +331,71 @@
       "risk": "defer",
       "reason": "High-risk server-side citation trust-boundary change. ROSS has materially divergent citation and legal-source verification architecture, and the supplied backend/frontend tests do not match its available test harnesses.",
       "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 256,
+      "title": "[Testing 16] ci: run the RLS/stack integration suite on every PR",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/256",
+      "merged_at": "2026-08-06T07:26:17.000Z",
+      "merge_commit_sha": "1b00314d9f09d37f3fcdc7bed4c236e2e7dcbcac",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Run non-skipping, real local Supabase authentication, RLS, access-control, and pagination integration tests on every pull request.",
+      "series_id": "testing-16",
+      "dependencies": [
+        "Mike Testing series harness that introduced test-stack.sh",
+        "Stack, access, and tabular-pagination Supabase integration suites",
+        "Pinned Supabase CLI with Docker and psql runner support"
+      ],
+      "prerequisites": [
+        "Create ROSS-specific integration suites covering its current schema, authentication contract, RLS policies, and tenant boundaries",
+        "Prove the suites execute rather than silently skip when CI supplies SUPABASE_TEST_* variables",
+        "Validate schema.sql-only bootstrap as the correct fresh-install path for ROSS",
+        "Approve CI runtime, action/CLI pins, permissions, and required-check placement"
+      ],
+      "reason": "The capability closes a meaningful security-test gap, but current ROSS has no test-stack.sh, no Supabase integration suites, and no Vitest dependency. Direct adoption would therefore provide no reliable coverage; because this changes CI infrastructure and validates authentication/RLS boundaries, it requires an explicit high-risk architecture decision.",
+      "architecture_brief": "Implement the ROSS-native harness at the existing backend/schema.sql and backend security-test seams, with a dedicated real-stack CI job integrated into Baseline verification. Keep schema.sql as the fresh-install bootstrap, retain migrations as incremental history, use local-only credentials, pin the Supabase tooling, and make missing variables or zero executed stack tests fail closed.",
+      "implementation_plan": [
+        "Design ROSS-specific stack, access/RLS, and pagination cases from the current schema and data-boundary controls.",
+        "Add a local runner script as the canonical suite manifest and verify it against a clean local Supabase stack.",
+        "Add an explicit assertion or reporter that fails when gated suites skip or execute zero tests.",
+        "Run the harness against schema.sql only and record authentication, anonymous-user, authenticated-user, service-role, and cross-tenant evidence.",
+        "Security-review local keys, service exposure, runner permissions, pinned actions/CLI, timeout, and required-check behavior.",
+        "After approval, add a dedicated Baseline stack partition and require it in the aggregate verify job."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-08T00:05:39.374Z",
+      "processed_at": "2026-08-08T00:05:39.374Z",
+      "v2_attempted_at": "2026-08-08T00:05:39.374Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "The capability closes a meaningful security-test gap, but current ROSS has no test-stack.sh, no Supabase integration suites, and no Vitest dependency. Direct adoption would therefore provide no reliable coverage; because this changes CI infrastructure and validates authentication/RLS boundaries, it requires an explicit high-risk architecture decision.",
+          "processed_at": "2026-08-08T00:05:39.374Z"
+        }
+      ]
     }
-  ]
+  ],
+  "policy": "v2",
+  "metrics": {
+    "by_outcome": {
+      "deferred": 55,
+      "needs-decision": 1
+    },
+    "by_status": {
+      "terminal": 55,
+      "needs-decision": 1
+    },
+    "by_risk": {
+      "defer": 54,
+      "medium": 1,
+      "high": 1
+    }
+  }
 }
