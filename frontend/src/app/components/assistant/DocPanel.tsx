@@ -4,9 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { getApiBaseUrl } from "@/app/lib/runtimeConfig";
-import { PdfView } from "../shared/views/PdfView";
-import { DocxView } from "../shared/views/DocxView";
-import { SpreadsheetView } from "../shared/views/SpreadsheetView";
+import {
+    LazyDocxView,
+    LazyPdfView,
+    LazySpreadsheetView,
+} from "../shared/views/LazyDocumentViews";
 import {
     CitationQuotesHeader,
     type CitationQuoteHeaderItem,
@@ -206,7 +208,7 @@ export function DocPanel({
 
             <div className="flex flex-1 min-h-0 flex-col px-3 py-3">
                 {useDocxView ? (
-                    <DocxView
+                    <LazyDocxView
                         documentId={documentId}
                         versionId={versionId ?? undefined}
                         quotes={quotes}
@@ -218,13 +220,13 @@ export function DocPanel({
                         onScrollChange={onScrollChange}
                     />
                 ) : useSheetView ? (
-                    <SpreadsheetView
+                    <LazySpreadsheetView
                         documentId={documentId}
                         versionId={versionId}
                         highlightCells={highlightCells}
                     />
                 ) : (
-                    <PdfView
+                    <LazyPdfView
                         doc={{
                             document_id: documentId,
                             version_id: versionId,

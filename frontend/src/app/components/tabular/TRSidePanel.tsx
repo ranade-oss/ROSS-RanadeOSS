@@ -20,9 +20,11 @@ import type {
 import { isSpreadsheetFilename } from "../shared/types";
 import { preprocessCitations, type ParsedCitation } from "./citation-utils";
 import { getPillClass } from "./pillUtils";
-import { PdfView } from "../shared/views/PdfView";
-import { SpreadsheetView } from "../shared/views/SpreadsheetView";
-import { DocxView } from "../shared/views/DocxView";
+import {
+    LazyDocxView,
+    LazyPdfView,
+    LazySpreadsheetView,
+} from "../shared/views/LazyDocumentViews";
 import { cn } from "@/app/lib/utils";
 
 function isDocxDocument(d: {
@@ -169,7 +171,7 @@ export function TRSidePanel({
                         </div>
                     )}
                     {isDocxDocument(doc) && !doc.pdf_storage_path ? (
-                        <DocxView
+                        <LazyDocxView
                             documentId={doc.id}
                             quotes={[
                                 {
@@ -179,9 +181,9 @@ export function TRSidePanel({
                             ]}
                         />
                     ) : isSpreadsheetFilename(doc.filename ?? "") ? (
-                        <SpreadsheetView documentId={doc.id} />
+                        <LazySpreadsheetView documentId={doc.id} />
                     ) : (
-                        <PdfView
+                        <LazyPdfView
                             doc={{ document_id: doc.id }}
                             quote={docCitation.quote}
                             fallbackPage={docCitation.page}

@@ -57,13 +57,13 @@
     },
     {
       "path": "backend/package-lock.json",
-      "sha256": "fe25b6964eb17759de271b1fd2fcc6d76e840165882868649a79676c2be25cad",
-      "sizeBytes": 203237
+      "sha256": "60adcca3518ee8ab0b3aee09933c498f18f2c4d601dafc513a6b98c8840dbe23",
+      "sizeBytes": 193647
     },
     {
       "path": "backend/package.json",
-      "sha256": "db135dc85184779164869ebc1d2f86997a93f37087a7abe04fcb3dac0d6afde1",
-      "sizeBytes": 1694
+      "sha256": "b02629b5bfbac3366fc951cd228b29ecfeb640039bf64c6478cba9b466dffd1e",
+      "sizeBytes": 1663
     },
     {
       "path": "backend/scripts/restore-storage-exercise.mjs",
@@ -342,13 +342,13 @@
     },
     {
       "path": "frontend/package-lock.json",
-      "sha256": "8e7dc58a310936ac0e8ef3968b73d8a24a625ec0395c73522cbff7475e978104",
-      "sizeBytes": 534667
+      "sha256": "0a5f8b41672de44b78baa92f996ae854e64592e35872cfc588bcfa6fa127d7fb",
+      "sizeBytes": 342601
     },
     {
       "path": "frontend/package.json",
-      "sha256": "e42439de3ef3f2102cb6145cac418d78f0e94328a3fbcf4769a977fa4e085911",
-      "sizeBytes": 2997
+      "sha256": "d5fe8c65a4d38d7fed6d17478fdabc53361e3d0d6e70200e7f39185e23101032",
+      "sizeBytes": 1996
     },
     {
       "path": "frontend/src/app/components/projects/ProjectDocumentsView.tsx",
@@ -367,8 +367,8 @@
     },
     {
       "path": "frontend/src/app/components/assistant/DocPanel.tsx",
-      "sha256": "242785507d8302d7dbde8b4e77e0a2243248f9b80e4ec0fbd07e12d121e2270f",
-      "sizeBytes": 14160
+      "sha256": "a209580ab907469ca491168febfa527cb8df6689390b6136176ef54f4fdb4654",
+      "sizeBytes": 14114
     },
     {
       "path": "frontend/src/app/components/assistant/EditCard.tsx",
@@ -617,13 +617,13 @@
     },
     {
       "path": "website/package-lock.json",
-      "sha256": "9655938a752b91a56bdf34769dab0a4c8a62d54003252f0b8885e45c023b8c31",
-      "sizeBytes": 260266
+      "sha256": "58ac0cfa03707b4313409a933b182dca40cd37429627f3d508f5c29a9991c9ee",
+      "sizeBytes": 228813
     },
     {
       "path": "website/package.json",
-      "sha256": "04be0b42a5b5491260ee75725e71864ea23ae4c5361c47f51a5c54a65a412637",
-      "sizeBytes": 1781
+      "sha256": "c9ac5275d4881d9d1dc72d9fee3dc33e1aeab9bf0181d4c50f02119d6b9f0671",
+      "sizeBytes": 1650
     },
     {
       "path": "website/app/site-config.ts",

@@ -39,10 +39,12 @@ import { AssistantMessage } from "@/app/components/assistant/AssistantMessage";
 import { ChatInput } from "@/app/components/assistant/ChatInput";
 import type { ChatInputHandle } from "@/app/components/assistant/ChatInput";
 import { ProjectExplorer } from "@/app/components/projects/ProjectExplorer";
-import { PdfView } from "@/app/components/shared/views/PdfView";
-import { SpreadsheetView } from "@/app/components/shared/views/SpreadsheetView";
+import {
+    LazyDocxView,
+    LazyPdfView,
+    LazySpreadsheetView,
+} from "@/app/components/shared/views/LazyDocumentViews";
 import { OwnerOnlyPopup } from "@/app/components/popups/OwnerOnlyPopup";
-import { DocxView } from "@/app/components/shared/views/DocxView";
 import { RossIcon } from "@/app/components/chat/ross-icon";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useUserProfile } from "@/app/contexts/UserProfileContext";
@@ -1086,7 +1088,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
                     <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
                         {activeTab ? (
                             isDocxTab(activeTab.filename) ? (
-                                <DocxView
+                                <LazyDocxView
                                     key={activeTab.documentId}
                                     documentId={activeTab.documentId}
                                     versionId={activeTab.versionId}
@@ -1118,14 +1120,14 @@ export default function ProjectAssistantChatPage({ params }: Props) {
                                     rounded={false}
                                 />
                             ) : isSpreadsheetFilename(activeTab.filename) ? (
-                                <SpreadsheetView
+                                <LazySpreadsheetView
                                     key={activeTab.documentId}
                                     documentId={activeTab.documentId}
                                     versionId={activeTab.versionId}
                                     rounded={false}
                                 />
                             ) : (
-                                <PdfView
+                                <LazyPdfView
                                     key={activeTab.documentId}
                                     doc={{ document_id: activeTab.documentId }}
                                     quotes={activeQuotes ?? undefined}
