@@ -197,6 +197,7 @@ jobs:
           safety-strategy: drop-sudo
           allow-bots: true
           allow-bot-users: github-actions
+          allow-users: github-actions
           output-schema: |
             {
               "type": "object",
