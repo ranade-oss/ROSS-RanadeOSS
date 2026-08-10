@@ -10,8 +10,8 @@ const workflow = readFileSync(
   "utf8",
 );
 
-test("the hourly agent reconciler preserves exact-head dispatch and merge gates", () => {
-  assert.match(workflow, /cron: "0 \* \* \* \*"/);
+test("the daily agent reconciler preserves exact-head dispatch and merge gates", () => {
+  assert.match(workflow, /cron: "0 0 \* \* \*"/);
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /branches: \[main\]/);
   assert.match(workflow, /run\.head_sha === pr\.head\.sha/);
