@@ -55,6 +55,8 @@ test("consolidated handlers preserve their bounded permissions and triggers", ()
   assert.match(agent, /cron: "0 0 \* \* \*"/);
   assert.doesNotMatch(agent, /cron: "\*\/5 \* \* \* \*"/);
   assert.match(agent, /actions: write/);
+  assert.match(agent, /scripts\/github\/exact-head-pr-gates\.cjs/);
+  assert.match(handler, /scripts\/github\/exact-head-pr-gates\.cjs/);
   assert.match(agent, /github\.rest\.actions\.createWorkflowDispatch/);
   assert.match(agent, /github\.rest\.pulls\.merge/);
   assert.match(mike, /docs\/upstream-sync-request\.json/);

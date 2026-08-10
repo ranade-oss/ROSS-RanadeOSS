@@ -27,12 +27,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Check out trusted gate helper
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: scripts/github
+
       - name: Dispatch Baseline for unverified exact heads
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
             const { owner, repo } = context.repo;
-            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            const { isEligibleAgentPullRequest } = require(
+              `${process.env.GITHUB_WORKSPACE}/scripts/github/exact-head-pr-gates.cjs`,
+            );
 
             const { data: workflow } = await github.rest.actions.getWorkflow({
               owner,
@@ -94,17 +104,7 @@ jobs:
             });
 
             for (const pr of pullRequests) {
-              const markedSyncBot =
-                pr.user?.login === "github-actions[bot]" &&
-                pr.head.ref.startsWith("agent/upstream-sync-") &&
-                pr.body?.includes("Automated-Upstream-Mike-Sync: true");
-              const eligible =
-                !pr.draft &&
-                pr.head.repo?.full_name === `${owner}/${repo}` &&
-                pr.head.ref.startsWith("agent/") &&
-                (trustedAssociations.has(pr.author_association) || markedSyncBot);
-
-              if (!eligible) continue;
+              if (!isEligibleAgentPullRequest(pr, { owner, repo })) continue;
 
               const runs = await github.paginate(
                 github.rest.actions.listWorkflowRuns,
@@ -165,12 +165,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Check out trusted gate helper
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: scripts/github
+
       - name: Merge eligible exact-head verified pull requests
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
             const { owner, repo } = context.repo;
-            const trustedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            const {
+              isEligibleAgentPullRequest,
+              isPullRequestGateBlocked,
+              waitForPullRequestGate,
+            } = require(
+              `${process.env.GITHUB_WORKSPACE}/scripts/github/exact-head-pr-gates.cjs`,
+            );
 
             const pulls = await github.paginate(github.rest.pulls.list, {
               owner,
@@ -180,58 +194,9 @@ jobs:
               per_page: 100,
             });
 
-            const candidates = pulls.filter((pr) => {
-              const markedSyncBot =
-                pr.user?.login === "github-actions[bot]" &&
-                pr.head.ref.startsWith("agent/upstream-sync-") &&
-                pr.body?.includes("Automated-Upstream-Mike-Sync: true");
-              return (
-                !pr.draft &&
-                pr.head.repo?.full_name === `${owner}/${repo}` &&
-                pr.head.ref.startsWith("agent/") &&
-                (trustedAssociations.has(pr.author_association) || markedSyncBot)
-              );
-            });
-
-            const gateQuery = `
-              query($owner: String!, $repo: String!, $number: Int!, $after: String) {
-                repository(owner: $owner, name: $repo) {
-                  pullRequest(number: $number) {
-                    state
-                    isDraft
-                    headRefOid
-                    reviewDecision
-                    mergeable
-                    reviewThreads(first: 100, after: $after) {
-                      nodes { isResolved }
-                      pageInfo { hasNextPage endCursor }
-                    }
-                  }
-                }
-              }
-            `;
-
-            const readGate = async (number) => {
-              let after = null;
-              let pullRequest = null;
-              let unresolved = false;
-              do {
-                const result = await github.graphql(gateQuery, {
-                  owner,
-                  repo,
-                  number,
-                  after,
-                });
-                pullRequest = result.repository.pullRequest;
-                unresolved ||= pullRequest.reviewThreads.nodes.some(
-                  (thread) => !thread.isResolved,
-                );
-                after = pullRequest.reviewThreads.pageInfo.hasNextPage
-                  ? pullRequest.reviewThreads.pageInfo.endCursor
-                  : null;
-              } while (after);
-              return { pullRequest, unresolved };
-            };
+            const candidates = pulls.filter((pr) =>
+              isEligibleAgentPullRequest(pr, { owner, repo }),
+            );
 
             for (const pr of candidates) {
               const runs = await github.paginate(
@@ -256,22 +221,13 @@ jobs:
                 continue;
               }
 
-              let gate;
-              for (let attempt = 1; attempt <= 6; attempt += 1) {
-                gate = await readGate(pr.number);
-                if (gate.pullRequest.mergeable !== "UNKNOWN") break;
-                if (attempt < 6) await new Promise((resolve) => setTimeout(resolve, 10000));
-              }
-
-              const node = gate.pullRequest;
-              const blocked =
-                node.state !== "OPEN" ||
-                node.isDraft ||
-                node.headRefOid !== pr.head.sha ||
-                node.reviewDecision === "CHANGES_REQUESTED" ||
-                node.mergeable !== "MERGEABLE" ||
-                gate.unresolved;
-              if (blocked) {
+              const gate = await waitForPullRequestGate({
+                github,
+                owner,
+                repo,
+                number: pr.number,
+              });
+              if (isPullRequestGateBlocked({ gate, expectedHead: pr.head.sha })) {
                 core.info(`PR #${pr.number} still has a review, head, or mergeability blocker.`);
                 continue;
               }

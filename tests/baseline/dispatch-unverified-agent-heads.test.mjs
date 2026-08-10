@@ -9,6 +9,10 @@ const workflow = readFileSync(
   resolve(root, ".github/workflows/agent-pr-reconciler.yml"),
   "utf8",
 );
+const gates = readFileSync(
+  resolve(root, "scripts/github/exact-head-pr-gates.cjs"),
+  "utf8",
+);
 
 test("the daily agent reconciler preserves exact-head dispatch and merge gates", () => {
   assert.match(workflow, /cron: "0 0 \* \* \*"/);
@@ -23,6 +27,8 @@ test("the daily agent reconciler preserves exact-head dispatch and merge gates",
   );
   assert.match(workflow, /github\.rest\.actions\.createWorkflowDispatch/);
   assert.match(workflow, /github\.rest\.pulls\.merge/);
-  assert.match(workflow, /reviewDecision === "CHANGES_REQUESTED"/);
-  assert.match(workflow, /node\.mergeable !== "MERGEABLE"/);
+  assert.match(workflow, /scripts\/github\/exact-head-pr-gates\.cjs/);
+  assert.match(gates, /reviewDecision === "CHANGES_REQUESTED"/);
+  assert.match(gates, /node\.mergeable !== "MERGEABLE"/);
+  assert.match(gates, /node\.headRefOid !== expectedHead/);
 });
