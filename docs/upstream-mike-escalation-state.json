@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
   "processed": [
     {
@@ -185,7 +185,7 @@
     {
       "number": 235,
       "risk": "defer",
-      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR\u2019s blocking-CI objective and includes MFA-sensitive code.",
+      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR’s blocking-CI objective and includes MFA-sensitive code.",
       "processed_at": "2026-07-29T12:40:21.110349Z"
     },
     {
@@ -257,7 +257,7 @@
     {
       "number": 273,
       "risk": "medium",
-      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS\u2019s 50 MB limit.",
+      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS’s 50 MB limit.",
       "processed_at": "2026-08-04T21:16:33.885666Z"
     },
     {
@@ -331,6 +331,71 @@
       "risk": "defer",
       "reason": "High-risk server-side citation trust-boundary change. ROSS has materially divergent citation and legal-source verification architecture, and the supplied backend/frontend tests do not match its available test harnesses.",
       "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 256,
+      "title": "[Testing 16] ci: run the RLS/stack integration suite on every PR",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/256",
+      "merged_at": "2026-08-06T07:26:17.000Z",
+      "merge_commit_sha": "1b00314d9f09d37f3fcdc7bed4c236e2e7dcbcac",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Run real local Supabase stack integration tests in CI to validate RLS, authentication/API contracts, pagination, and schema bootstrap behavior.",
+      "series_id": "Testing 16",
+      "dependencies": [
+        "Supabase CLI 2.108.0",
+        "Docker-capable CI runner",
+        "PostgreSQL client",
+        "backend Supabase integration suites"
+      ],
+      "prerequisites": [
+        "Define the ROSS-native fresh-database bootstrap contract: schema snapshot or ordered migrations",
+        "Add or recover focused ROSS integration tests for RLS, authentication, access, and tabular pagination",
+        "Validate local Supabase service configuration and development-key handling",
+        "Measure CI runtime and reliability on the supported runner"
+      ],
+      "reason": "The final scanned change is workflow-only, but its referenced test files and test-stack script do not exist on current ROSS main. Earlier patch evidence also exposes schema/migration conflicts. Adoption therefore requires an explicit security and database-bootstrap decision, not a cherry-pick assessment.",
+      "architecture_brief": "Implement at the existing backend security-test seam, with a dedicated local-stack runner that provisions disposable Supabase services, applies the approved ROSS bootstrap path, exports ephemeral connection values, and invokes committed integration tests. Keep CI orchestration separate from schema repairs and review any migration changes independently.",
+      "implementation_plan": [
+        "Specify and document the authoritative ROSS database bootstrap path.",
+        "Create a local, repeatable stack-test command and focused RLS/auth/access/pagination integration suite.",
+        "Run it against a disposable Supabase stack and record pass, failure, skip, runtime, and schema-drift evidence.",
+        "Security-review local keys, service exposure, RLS assertions, and migration behavior.",
+        "Only then add a pinned, least-privilege CI job in a separately approved workflow change."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-10T18:37:26.432Z",
+      "processed_at": "2026-08-10T18:37:26.432Z",
+      "v2_attempted_at": "2026-08-10T18:37:26.432Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "The final scanned change is workflow-only, but its referenced test files and test-stack script do not exist on current ROSS main. Earlier patch evidence also exposes schema/migration conflicts. Adoption therefore requires an explicit security and database-bootstrap decision, not a cherry-pick assessment.",
+          "processed_at": "2026-08-10T18:37:26.432Z"
+        }
+      ]
     }
-  ]
+  ],
+  "policy": "v2",
+  "metrics": {
+    "by_outcome": {
+      "deferred": 55,
+      "needs-decision": 1
+    },
+    "by_status": {
+      "terminal": 55,
+      "needs-decision": 1
+    },
+    "by_risk": {
+      "defer": 54,
+      "medium": 1,
+      "high": 1
+    }
+  }
 }
