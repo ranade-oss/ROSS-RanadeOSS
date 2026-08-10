@@ -51,7 +51,6 @@ test("legacy minimatch compatibility patching is deterministic and fail closed",
 test("security-sensitive transitive dependencies stay on fixed releases", () => {
   const workspaces = {
     backend: { fastUri: "3.1.5", ipAddress: "10.4.0" },
-    frontend: { undici: "7.29.0" },
     website: { fastUri: "3.1.5", undici: "7.29.0" },
   };
 

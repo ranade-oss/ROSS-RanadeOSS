@@ -21,7 +21,7 @@ Mike functionality recorded in the baseline contract.
 - Install all dependencies from the repository root with `npm run install:all`.
 - Run the baseline contract tests with `npm test`.
 - Run the full local verification suite with `npm run check`.
-+ For a release-train change, regenerate and verify the governed manifest
+- For a release-train change, regenerate and verify the governed manifest
   with `npm run build:release-manifest` and `npm run test:release-manifest`.
 - If deployed test URLs are available, run `ROSS_E2E_API_URL=... ROSS_E2E_APP_URL=... npm run test:e2e`.
 - Check `git diff` and remove unrelated changes.
@@ -53,15 +53,17 @@ Mike functionality recorded in the baseline contract.
 
 ## System Workflows
 
-System workflows live in `mike-workflows/system/`. Put structured metadata in
-the YAML frontmatter at the top of `SKILL.md`, put workflow instructions in the
-body of `SKILL.md`, and use `table-config.yaml` for tabular review columns.
-
-After changing system workflows, regenerate the app files:
+ROSS-owned Ontario workflow sources live in `workflows/ontario/`. After
+changing them, regenerate the governed app and website files:
 
 ```bash
-node scripts/build-workflows.js
+npm run build:ross-workflows
 ```
+
+The inherited Mike workflow catalogue in `backend/src/lib/systemWorkflows.ts`
+is a pinned compatibility baseline. Its upstream-only generator expects an
+adjacent `mike-workflows/` source checkout and is not used for ordinary ROSS
+changes.
 
 ## Security
 

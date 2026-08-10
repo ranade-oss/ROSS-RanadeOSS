@@ -13,8 +13,10 @@ import {
   X,
 } from "lucide-react";
 import { ConfirmPopup } from "@/app/components/popups/ConfirmPopup";
-import { PdfView } from "@/app/components/shared/views/PdfView";
-import { SpreadsheetView } from "@/app/components/shared/views/SpreadsheetView";
+import {
+  LazyPdfView,
+  LazySpreadsheetView,
+} from "@/app/components/shared/views/LazyDocumentViews";
 import { WarningPopup } from "@/app/components/popups/WarningPopup";
 import type { Document } from "@/app/components/shared/types";
 import { isSpreadsheetFilename } from "@/app/components/shared/types";
@@ -495,14 +497,14 @@ export function DocumentSidePanel({
             )}
           >
             {isSpreadsheetFilename(selectedFilename) ? (
-              <SpreadsheetView
+              <LazySpreadsheetView
                 key={`${selectedVersionId ?? "current"}:${selectedUploadedAt ?? ""}:${selectedSizeBytes ?? ""}`}
                 documentId={doc.id}
                 versionId={selectedVersionId}
                 rounded={false}
               />
             ) : (
-              <PdfView
+              <LazyPdfView
                 key={`${selectedVersionId ?? "current"}:${selectedUploadedAt ?? ""}:${selectedSizeBytes ?? ""}`}
                 doc={{
                   document_id: doc.id,
