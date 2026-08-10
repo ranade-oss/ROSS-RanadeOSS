@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
   "processed": [
     {
@@ -185,7 +185,7 @@
     {
       "number": 235,
       "risk": "defer",
-      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR\u2019s blocking-CI objective and includes MFA-sensitive code.",
+      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR’s blocking-CI objective and includes MFA-sensitive code.",
       "processed_at": "2026-07-29T12:40:21.110349Z"
     },
     {
@@ -257,7 +257,7 @@
     {
       "number": 273,
       "risk": "medium",
-      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS\u2019s 50 MB limit.",
+      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS’s 50 MB limit.",
       "processed_at": "2026-08-04T21:16:33.885666Z"
     },
     {
@@ -331,6 +331,72 @@
       "risk": "defer",
       "reason": "High-risk server-side citation trust-boundary change. ROSS has materially divergent citation and legal-source verification architecture, and the supplied backend/frontend tests do not match its available test harnesses.",
       "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 256,
+      "title": "[Testing 16] ci: run the RLS/stack integration suite on every PR",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/256",
+      "merged_at": "2026-08-06T07:26:17.000Z",
+      "merge_commit_sha": "1b00314d9f09d37f3fcdc7bed4c236e2e7dcbcac",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Run real local Supabase authentication/RLS integration tests and schema-to-migration drift checks in CI.",
+      "series_id": "Testing 16",
+      "dependencies": [
+        "Supabase CLI 2.108.0",
+        "Local PostgreSQL/Auth/PostgREST/Kong services",
+        "backend schema and ordered migrations",
+        "Upstream stack/access Supabase integration tests"
+      ],
+      "prerequisites": [
+        "Port or independently implement the missing ROSS-native stack integration test suite",
+        "Define the correct ROSS database bootstrap contract: fresh schema versus ordered migrations",
+        "Security and operations approval for the CI service topology, pinned CLI, runtime, and triggers",
+        "Verify every current ROSS migration applies safely under the approved bootstrap model"
+      ],
+      "reason": "ROSS has the Supabase schema, RLS controls, migrations, and baseline CI seam, but it has no SUPABASE_TEST harness, stack test script, or referenced integration tests. The proposal also surfaced migration incompatibilities still present in ROSS. Because adoption changes CI infrastructure and validates authentication, RLS, schemas, and migrations, it requires an explicit architecture/security decision rather than a patch here.",
+      "architecture_brief": "Add a separate least-privilege CI partition alongside baseline verification that boots an isolated pinned local Supabase stack, derives only ephemeral local credentials, applies an approved ROSS-native database bootstrap sequence, and runs focused deny-by-default RLS plus auth/API contract tests. Keep migration repairs independently reviewed and separated from workflow enablement.",
+      "implementation_plan": [
+        "Specify expected RLS behavior for anonymous, authenticated, cross-user, and service-role access.",
+        "Create a local, reproducible ROSS stack-test harness and focused integration tests before enabling CI.",
+        "Decide and document whether schema.sql is a terminal snapshot or may be followed by all historical migrations.",
+        "Audit and repair the identified historical migration conflicts, then test both fresh installation and supported upgrade paths.",
+        "Review the pinned Supabase CLI/action and minimal service set for supply-chain and operational risk.",
+        "Add the approved job to ROSS CI with explicit permissions, timeouts, concurrency, and evidence that tests cannot silently skip."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-10T09:10:43.741Z",
+      "processed_at": "2026-08-10T09:10:43.741Z",
+      "v2_attempted_at": "2026-08-10T09:10:43.741Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has the Supabase schema, RLS controls, migrations, and baseline CI seam, but it has no SUPABASE_TEST harness, stack test script, or referenced integration tests. The proposal also surfaced migration incompatibilities still present in ROSS. Because adoption changes CI infrastructure and validates authentication, RLS, schemas, and migrations, it requires an explicit architecture/security decision rather than a patch here.",
+          "processed_at": "2026-08-10T09:10:43.741Z"
+        }
+      ]
     }
-  ]
+  ],
+  "policy": "v2",
+  "metrics": {
+    "by_outcome": {
+      "deferred": 55,
+      "needs-decision": 1
+    },
+    "by_status": {
+      "terminal": 55,
+      "needs-decision": 1
+    },
+    "by_risk": {
+      "defer": 54,
+      "medium": 1,
+      "high": 1
+    }
+  }
 }
