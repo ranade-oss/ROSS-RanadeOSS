@@ -52,7 +52,7 @@ test("consolidated handlers preserve their bounded permissions and triggers", ()
   assert.match(handler, /^  merge:[\s\S]*contents: write/m);
   assert.match(handler, /allow-bots: true/);
   assert.match(handler, /allow-bot-users: github-actions/);
-  assert.match(agent, /cron: "0 \* \* \* \*"/);
+  assert.match(agent, /cron: "0 0 \* \* \*"/);
   assert.doesNotMatch(agent, /cron: "\*\/5 \* \* \* \*"/);
   assert.match(agent, /actions: write/);
   assert.match(agent, /github\.rest\.actions\.createWorkflowDispatch/);
