@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-06T15:52:59Z",
+  "last_merged_at": "2026-08-12T16:51:01Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -786,24 +786,126 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-07T21:42:12.218Z"
+    },
+    {
+      "number": 308,
+      "title": "Pagination Part 2",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/308",
+      "merged_at": "2026-08-12T09:50:34.000Z",
+      "merge_commit_sha": "26f4597b2120a00daf00594df161308cb8c5093c",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "collection-pagination-v2",
+      "series_id": "pagination-v2",
+      "dependencies": [],
+      "prerequisites": [
+        "ROSS-native pagination architecture review",
+        "Schema, API, authorization, and data-boundary review",
+        "Complete bounded patch evidence"
+      ],
+      "reason": "Potentially useful at ROSS scale, but evidence is metadata-only and the capability changes schemas, migrations, APIs, and data access controls.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-12T17:45:16.027Z"
+    },
+    {
+      "number": 311,
+      "title": "fix(word-addin): WKWebView completion scroll jump + streaming performance (stacked on #299)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/311",
+      "merged_at": "2026-08-12T10:03:13.000Z",
+      "merge_commit_sha": "7fd0f92741cd8be618915a2b6279bc1fbde7fc99",
+      "decision": "skip",
+      "outcome": "incompatible",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "word-chat-scroll-stability",
+      "series_id": "word-addin-chat-299",
+      "dependencies": [
+        "Mike PR #299"
+      ],
+      "prerequisites": [
+        "ROSS Word add-in surface",
+        "Upstream series dependency #299"
+      ],
+      "reason": "ROSS has web-assistant chat seams but no matching Word add-in surface; transplanting WebKit-specific behavior would not be a complete ROSS-native capability.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-12T17:45:16.027Z"
+    },
+    {
+      "number": 271,
+      "title": "feature: add workspace history of actions (History page + audit_events)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/271",
+      "merged_at": "2026-08-12T16:37:29.000Z",
+      "merge_commit_sha": "53cb54e8070e96b7febb4d446610ea574a59b6ed",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "workspace-action-history",
+      "series_id": "workspace-audit-history",
+      "dependencies": [],
+      "prerequisites": [
+        "Governance and audit-retention decision",
+        "Privacy/export/deletion policy review",
+        "Authorization and shared-project visibility review",
+        "ROSS-native schema and migration design"
+      ],
+      "reason": "An action-history capability may be valuable, but it materially changes governance, privacy, authorization, schemas, exports, and data retention.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-12T17:45:16.027Z"
+    },
+    {
+      "number": 254,
+      "title": "[Testing 21] test depth: mutation testing + SSE load harness (on-demand)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/254",
+      "merged_at": "2026-08-12T16:51:01.000Z",
+      "merge_commit_sha": "9df42324a1369e5c08e3867497f36d1a88e5aa80",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "mutation-and-sse-depth-testing",
+      "series_id": "testing-21",
+      "dependencies": [
+        "Mike PR #210"
+      ],
+      "prerequisites": [
+        "Isolated synthetic/non-confidential test environment",
+        "ROSS-specific mutation scope and thresholds",
+        "Approved staging load-test target and credentials handling",
+        "Bounded evaluation of runtime cost and false positives"
+      ],
+      "reason": "The testing capability is useful, but it introduces dependencies and CI/load infrastructure and requires a safe ROSS-specific evaluation harness before adoption.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-12T17:45:16.027Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 57,
+      "needs-decision": 59,
       "equivalent": 11,
       "adapted": 1,
-      "needs-test-harness": 1,
-      "deferred": 1
+      "needs-test-harness": 2,
+      "deferred": 1,
+      "incompatible": 1
     },
     "by_status": {
-      "needs-decision": 57,
-      "terminal": 13,
-      "retryable": 1
+      "needs-decision": 59,
+      "terminal": 14,
+      "retryable": 2
     },
     "by_risk": {
-      "none": 71
+      "none": 75
     }
   }
 }
