@@ -56,6 +56,7 @@ jobs:
           script: |
             const fs = require("fs");
             const { execFileSync } = require("child_process");
+            const { findExistingUnmergedMikeProposal } = await import("./scripts/lib/mike-sync.mjs");
             const low = JSON.parse(
               fs.readFileSync("docs/upstream-mike-sync-state.json", "utf8"),
             );
@@ -81,8 +82,33 @@ jobs:
                 return time || left.number - right.number;
               });
 
+            const proposals = await github.paginate(github.rest.pulls.list, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "all",
+              per_page: 100,
+            });
+            const existingProposalNumbers = new Set(
+              candidates
+                .filter((candidate) => findExistingUnmergedMikeProposal(proposals, candidate.number))
+                .map((candidate) => candidate.number),
+            );
+
             const eligible = candidates.find((candidate) => {
               const record = records.get(candidate.number);
+              const deliberatelyReconsidered =
+                (reconsiderDeferred && explicit.has(candidate.number))
+                || (reconsiderAllDeferred
+                  && record
+                  && (record.outcome || (record.risk === "defer" ? "deferred" : null)) === "deferred"
+                  && !record.v2_attempted_at
+                  && !(record.history?.length > 1));
+              if (existingProposalNumbers.has(candidate.number) && !deliberatelyReconsidered) {
+                core.notice(
+                  `Skipping Mike PR #${candidate.number}: an existing unmerged automated proposal already represents it.`,
+                );
+                return false;
+              }
               if (reconsiderAllDeferred) {
                 if (!record) return false;
                 const outcome = record.outcome || (record.risk === "defer" ? "deferred" : null);

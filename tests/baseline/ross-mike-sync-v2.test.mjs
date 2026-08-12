@@ -5,6 +5,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   decisionFromOutcome,
+  findExistingUnmergedMikeProposal,
   recordEscalatedResult,
   recordLowRiskResult,
   selectEscalationCandidate,
@@ -162,6 +163,38 @@ test("escalated retryable results retain history and become due queue entries", 
     selectEscalationCandidate({ processed: [item] }, state, { now: "2026-08-12T00:00:00Z" }).number,
     302,
   );
+});
+
+test("unmerged automated proposals suppress duplicate escalation records", () => {
+  const proposals = [
+    {
+      number: 105,
+      state: "open",
+      merged_at: null,
+      body: "Automated-Upstream-Mike-Sync: true\\n\\n## Mike PR #256",
+    },
+    {
+      number: 106,
+      state: "closed",
+      merged_at: null,
+      body: "Automated-Upstream-Mike-Sync: true\\n\\n## Mike PR #256",
+    },
+    {
+      number: 107,
+      state: "closed",
+      merged_at: "2026-08-12T00:00:00Z",
+      body: "Automated-Upstream-Mike-Sync: true\\n\\n## Mike PR #256",
+    },
+    {
+      number: 108,
+      state: "open",
+      merged_at: null,
+      body: "Human PR\\n\\n## Mike PR #256",
+    },
+  ];
+
+  assert.equal(findExistingUnmergedMikeProposal(proposals, 256)?.number, 105);
+  assert.equal(findExistingUnmergedMikeProposal(proposals, 999), null);
 });
 
 test("workflow boundaries expose the deliberate deferred pass and bounded repair", () => {
