@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
   "processed": [
     {
@@ -185,7 +185,7 @@
     {
       "number": 235,
       "risk": "defer",
-      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR\u2019s blocking-CI objective and includes MFA-sensitive code.",
+      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR’s blocking-CI objective and includes MFA-sensitive code.",
       "processed_at": "2026-07-29T12:40:21.110349Z"
     },
     {
@@ -257,7 +257,7 @@
     {
       "number": 273,
       "risk": "medium",
-      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS\u2019s 50 MB limit.",
+      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS’s 50 MB limit.",
       "processed_at": "2026-08-04T21:16:33.885666Z"
     },
     {
@@ -331,6 +331,70 @@
       "risk": "defer",
       "reason": "High-risk server-side citation trust-boundary change. ROSS has materially divergent citation and legal-source verification architecture, and the supplied backend/frontend tests do not match its available test harnesses.",
       "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 256,
+      "title": "[Testing 16] ci: run the RLS/stack integration suite on every PR",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/256",
+      "merged_at": "2026-08-06T07:26:17.000Z",
+      "merge_commit_sha": "1b00314d9f09d37f3fcdc7bed4c236e2e7dcbcac",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "ROSS-native CI validation of fresh-schema Supabase authentication and deny-all RLS behavior",
+      "series_id": "testing-16-stack-ci",
+      "dependencies": [
+        "Upstream Mike PR #233 capability: real-Supabase auth/RLS integration suites"
+      ],
+      "prerequisites": [
+        "Security and architecture approval",
+        "ROSS-native real-Supabase auth/RLS integration harness",
+        "Approved fresh-database bootstrap strategy",
+        "Evidence that all intended suites execute without silent skips",
+        "CI runtime, isolation, and branch-protection validation"
+      ],
+      "reason": "ROSS has static schema/RLS contract checks but no real Supabase stack suite or local harness. The natural seam is a ROSS-native backend integration harness invoked by Baseline CI; approving it requires evidence from fresh-schema execution, negative anon/authenticated access tests, backend JWT/service-role tests, explicit executed-test counts, and repeatable isolated CI runs.",
+      "architecture_brief": "Add a disposable, version-pinned local Supabase test stack around ROSS's current backend/schema.sql fresh-install path. Keep historical migration replay separate, run ROSS-specific auth and deny-all RLS assertions, fail when suites skip, and integrate only through the existing Baseline gate after security review.",
+      "implementation_plan": [
+        "Define the ROSS auth/RLS matrix and expected executed-test count.",
+        "Build focused backend integration tests against a disposable local Supabase stack using synthetic identities and local-only keys.",
+        "Create a local runner that loads backend/schema.sql only and fails on missing configuration or skipped suites.",
+        "Validate RLS denial, authenticated identity resolution, service-role behavior, cleanup, and repeated-run stability.",
+        "Obtain security and architecture approval for the pinned Supabase tooling and bootstrap model.",
+        "After approval, add the job to the existing Baseline workflow and separately decide whether it becomes a required status check."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-12T18:42:03.974Z",
+      "processed_at": "2026-08-12T18:42:03.974Z",
+      "v2_attempted_at": "2026-08-12T18:42:03.974Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has static schema/RLS contract checks but no real Supabase stack suite or local harness. The natural seam is a ROSS-native backend integration harness invoked by Baseline CI; approving it requires evidence from fresh-schema execution, negative anon/authenticated access tests, backend JWT/service-role tests, explicit executed-test counts, and repeatable isolated CI runs.",
+          "processed_at": "2026-08-12T18:42:03.974Z"
+        }
+      ]
     }
-  ]
+  ],
+  "policy": "v2",
+  "metrics": {
+    "by_outcome": {
+      "deferred": 55,
+      "needs-decision": 1
+    },
+    "by_status": {
+      "terminal": 55,
+      "needs-decision": 1
+    },
+    "by_risk": {
+      "defer": 54,
+      "medium": 1,
+      "high": 1
+    }
+  }
 }
