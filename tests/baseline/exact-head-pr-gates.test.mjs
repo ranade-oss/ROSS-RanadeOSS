@@ -142,6 +142,7 @@ test("manual handler inputs resolve the requested Baseline run", async () => {
     event: "workflow_dispatch",
     head_branch: "agent/example",
     head_sha: "verified-head",
+    name: "Baseline verification",
     conclusion: "success",
   };
   const calls = [];
@@ -172,6 +173,34 @@ test("manual handler inputs resolve the requested Baseline run", async () => {
       owner,
       repo,
       event: { inputs: { baseline_run_id: "not-a-run" } },
+    }),
+    null,
+  );
+  assert.equal(
+    await resolveBaselineRun({
+      github,
+      owner,
+      repo,
+      event: {
+        inputs: { baseline_run_id: "123" },
+      },
+    }),
+    baseline,
+  );
+  const nonBaseline = { ...baseline, name: "Untrusted workflow" };
+  const untrustedGithub = {
+    rest: {
+      actions: {
+        getWorkflowRun: async () => ({ data: nonBaseline }),
+      },
+    },
+  };
+  assert.equal(
+    await resolveBaselineRun({
+      github: untrustedGithub,
+      owner,
+      repo,
+      event: { inputs: { baseline_run_id: "123" } },
     }),
     null,
   );
