@@ -31,6 +31,18 @@ export const TERMINAL_OUTCOMES = new Set([
 const DECISIONS = new Set(["adopt", "adapt", "skip", "investigate"]);
 const RISKS = new Set(["none", "medium", "high"]);
 
+export function isAutomatedMikeProposalFor(pr, number) {
+  if (!pr || !Number.isSafeInteger(number)) return false;
+  const body = typeof pr.body === "string" ? pr.body : "";
+  return /(?:^|\r?\n)Automated-Upstream-Mike-Sync:\s*true(?:\r?\n|$)/.test(body)
+    && new RegExp("\\bMike PR #" + number + "\\b", "i").test(body);
+}
+
+export function findExistingUnmergedMikeProposal(prs, number) {
+  if (!Array.isArray(prs)) return null;
+  return prs.find((pr) => isAutomatedMikeProposalFor(pr, number) && !pr.merged_at) || null;
+}
+
 export function outcomeFromLegacyDecision(decision) {
   switch (decision) {
     case "adopt":
