@@ -30,7 +30,7 @@ const resolveBaselineRun = async ({ github, owner, repo, event }) => {
     repo,
     run_id: runId,
   });
-  return run;
+  return run.name === "Baseline verification" ? run : null;
 };
 
 const resolvePullRequestForRun = async ({ github, owner, repo, run }) => {
