@@ -19,6 +19,20 @@ const isEligibleAgentPullRequest = (
     (allowMikeSyncBot && isMarkedMikeSyncBot(pr))) &&
   (verifiedHead === null || pr.head.sha === verifiedHead);
 
+const resolveBaselineRun = async ({ github, owner, repo, event }) => {
+  if (event?.workflow_run) return event.workflow_run;
+
+  const runId = Number(event?.inputs?.baseline_run_id);
+  if (!Number.isSafeInteger(runId) || runId <= 0) return null;
+
+  const { data: run } = await github.rest.actions.getWorkflowRun({
+    owner,
+    repo,
+    run_id: runId,
+  });
+  return run;
+};
+
 const resolvePullRequestForRun = async ({ github, owner, repo, run }) => {
   const linked = run.pull_requests?.[0];
   if (run.event === "pull_request" && linked) {
@@ -129,6 +143,7 @@ const isPullRequestGateBlocked = ({ gate, expectedHead }) => {
 module.exports = {
   isEligibleAgentPullRequest,
   isPullRequestGateBlocked,
+  resolveBaselineRun,
   resolvePullRequestForRun,
   waitForPullRequestGate,
 };
