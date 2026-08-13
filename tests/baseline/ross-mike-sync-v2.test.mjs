@@ -209,6 +209,11 @@ test("workflow boundaries expose the deliberate deferred pass and bounded repair
   assert.match(workflow, /High-risk or security-sensitive work/);
   assert.match(workflow, /draft state-only architecture record/);
   assert.match(lowRiskWorkflow, /findExistingUnmergedMikeProposal/);
+  for (const syncWorkflow of [lowRiskWorkflow, workflow]) {
+    assert.match(syncWorkflow, /pathToFileURL/);
+    assert.match(syncWorkflow, /process\.env\.GITHUB_WORKSPACE/);
+    assert.doesNotMatch(syncWorkflow, /await import\("\.\/scripts\/lib\/mike-sync\.mjs"\)/);
+  }
   assert.match(lowRiskWorkflow, /settle-baseline-run\.sh/);
   assert.match(workflow, /settle-baseline-run\.sh/);
   assert.match(baselineHandler, /baseline_run_id:/);
