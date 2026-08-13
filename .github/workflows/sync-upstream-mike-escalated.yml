@@ -56,7 +56,9 @@ jobs:
           script: |
             const fs = require("fs");
             const { execFileSync } = require("child_process");
-            const { findExistingUnmergedMikeProposal } = await import("./scripts/lib/mike-sync.mjs");
+            const { pathToFileURL } = require("node:url");
+            const mikeSyncUrl = pathToFileURL(`${process.env.GITHUB_WORKSPACE}/scripts/lib/mike-sync.mjs`);
+            const { findExistingUnmergedMikeProposal } = await import(mikeSyncUrl.href);
             const low = JSON.parse(
               fs.readFileSync("docs/upstream-mike-sync-state.json", "utf8"),
             );
