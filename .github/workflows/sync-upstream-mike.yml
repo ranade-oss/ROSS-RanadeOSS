@@ -44,6 +44,7 @@ jobs:
           script: |
             const fs = require("fs");
             const { execFileSync } = require("child_process");
+            const { findExistingUnmergedMikeProposal } = await import("./scripts/lib/mike-sync.mjs");
             const state = JSON.parse(
               fs.readFileSync("docs/upstream-mike-sync-state.json", "utf8"),
             );
@@ -81,11 +82,28 @@ jobs:
               const time = new Date(left.merged_at).getTime() - new Date(right.merged_at).getTime();
               return time || left.number - right.number;
             });
-            const window = candidates.slice(0, limit);
+            const proposals = await github.paginate(github.rest.pulls.list, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "all",
+              base: "main",
+              per_page: 100,
+            });
+            const boundedCandidates = candidates.slice(0, limit);
+            const blockedIndex = boundedCandidates.findIndex((candidate) =>
+              findExistingUnmergedMikeProposal(proposals, candidate.number),
+            );
+            const window = blockedIndex >= 0
+              ? boundedCandidates.slice(0, blockedIndex)
+              : boundedCandidates;
             core.setOutput("base_sha", execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim());
             if (window.length === 0) {
               core.setOutput("has_window", "false");
-              core.notice("No unprocessed merged upstream Mike PRs are newer than the sync cursor.");
+              if (blockedIndex >= 0) {
+                core.notice("An existing unmerged automated proposal is already the next low-risk queue item; waiting for reconciliation.");
+              } else {
+                core.notice("No unprocessed merged upstream Mike PRs are newer than the sync cursor.");
+              }
               return;
             }
 
@@ -357,6 +375,7 @@ jobs:
           git add docs/upstream-mike-sync-state.json
 
       - name: Publish one capability proposal and settle its PR
+        id: publish
         env:
           GH_TOKEN: ${{ github.token }}
           PR_TITLE: ${{ steps.parse.outputs.title }}
@@ -382,27 +401,10 @@ jobs:
 
           pr_url="$(gh pr create --base main --head "$branch" --title "$PR_TITLE" --body-file /tmp/pr-body.md)"
           pr_number="$(gh pr view "$pr_url" --json number --jq .number)"
-          gh workflow run baseline.yml --ref "$branch"
-
-          deadline=$((SECONDS + 7200))
-          merged_at=""
-          while [ "$SECONDS" -lt "$deadline" ]; do
-            pr="$(gh pr view "$pr_number" --json state,mergedAt)"
-            merged_at="$(jq -r '.mergedAt // empty' <<<"$pr")"
-            state="$(jq -r '.state' <<<"$pr")"
-            if [ -n "$merged_at" ]; then
-              echo "Synchronization PR #${pr_number} merged at ${merged_at}."
-              break
-            fi
-            if [ "$state" != "OPEN" ]; then
-              echo "Synchronization PR #${pr_number} closed without merging." >&2
-              exit 1
-            fi
-            sleep 20
-          done
-          test -n "$merged_at"
+          bash scripts/github/settle-baseline-run.sh "$branch" "$pr_number"
 
       - name: Continue Mike capability queues
+        if: steps.publish.outputs.merged == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

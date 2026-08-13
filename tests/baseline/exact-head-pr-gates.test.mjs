@@ -6,6 +6,7 @@ import gates from "../../scripts/github/exact-head-pr-gates.cjs";
 const {
   isEligibleAgentPullRequest,
   isPullRequestGateBlocked,
+  resolveBaselineRun,
   resolvePullRequestForRun,
   waitForPullRequestGate,
 } = gates;
@@ -130,6 +131,76 @@ test("workflow runs resolve only one exact open pull request", async () => {
         head_branch: "agent/example",
         head_sha: "verified-head",
       },
+    }),
+    null,
+  );
+});
+
+test("manual handler inputs resolve the requested Baseline run", async () => {
+  const baseline = {
+    id: 123,
+    event: "workflow_dispatch",
+    head_branch: "agent/example",
+    head_sha: "verified-head",
+    name: "Baseline verification",
+    conclusion: "success",
+  };
+  const calls = [];
+  const github = {
+    rest: {
+      actions: {
+        getWorkflowRun: async (params) => {
+          calls.push(params);
+          return { data: baseline };
+        },
+      },
+    },
+  };
+
+  assert.deepEqual(
+    await resolveBaselineRun({
+      github,
+      owner,
+      repo,
+      event: { inputs: { baseline_run_id: "123" } },
+    }),
+    baseline,
+  );
+  assert.deepEqual(calls, [{ owner, repo, run_id: 123 }]);
+  assert.equal(
+    await resolveBaselineRun({
+      github,
+      owner,
+      repo,
+      event: { inputs: { baseline_run_id: "not-a-run" } },
+    }),
+    null,
+  );
+  assert.equal(
+    await resolveBaselineRun({
+      github,
+      owner,
+      repo,
+      event: {
+        inputs: { baseline_run_id: "123" },
+      },
+    }),
+    baseline,
+  );
+  const nonBaseline = { ...baseline, name: "Untrusted workflow" };
+  const untrustedGithub = {
+    rest: {
+      actions: {
+        getWorkflowRun: async () => ({ data: nonBaseline }),
+      },
+    },
+  };
+  assert.equal(
+    await resolveBaselineRun({
+      github: untrustedGithub,
+      owner,
+      repo,
+      event: { inputs: { baseline_run_id: "123" } },
     }),
     null,
   );

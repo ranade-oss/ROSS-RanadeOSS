@@ -199,6 +199,8 @@ test("unmerged automated proposals suppress duplicate escalation records", () =>
 
 test("workflow boundaries expose the deliberate deferred pass and bounded repair", () => {
   const workflow = read(".github/workflows/sync-upstream-mike-escalated.yml");
+  const lowRiskWorkflow = read(".github/workflows/sync-upstream-mike.yml");
+  const baselineHandler = read(".github/workflows/handle-baseline-result.yml");
   assert.match(workflow, /reconsider_all_deferred:/);
   assert.match(workflow, /one controlled v2 pass over every legacy deferred Mike PR/);
   assert.match(workflow, /v2_attempted_at/);
@@ -206,4 +208,9 @@ test("workflow boundaries expose the deliberate deferred pass and bounded repair
   assert.match(workflow, /["']maxItems["']:\s*1/);
   assert.match(workflow, /High-risk or security-sensitive work/);
   assert.match(workflow, /draft state-only architecture record/);
+  assert.match(lowRiskWorkflow, /findExistingUnmergedMikeProposal/);
+  assert.match(lowRiskWorkflow, /settle-baseline-run\.sh/);
+  assert.match(workflow, /settle-baseline-run\.sh/);
+  assert.match(baselineHandler, /baseline_run_id:/);
+  assert.match(baselineHandler, /resolveBaselineRun/);
 });

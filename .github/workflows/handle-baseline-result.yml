@@ -4,6 +4,12 @@ on:
   workflow_run:
     workflows: ["Baseline verification"]
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      baseline_run_id:
+        description: "Completed Baseline workflow run to process"
+        required: true
+        type: string
 
 permissions:
   actions: read
@@ -11,7 +17,7 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: handle-baseline-${{ github.event.workflow_run.id }}
+  group: handle-baseline-${{ github.event.workflow_run.id || github.event.inputs.baseline_run_id || github.run_id }}
   cancel-in-progress: false
 
 jobs:
@@ -20,9 +26,12 @@ jobs:
       contents: write
       pull-requests: write
     if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      (github.event.workflow_run.event == 'pull_request' ||
-       github.event.workflow_run.event == 'workflow_dispatch')
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       (github.event.workflow_run.event == 'pull_request' ||
+        github.event.workflow_run.event == 'workflow_dispatch')) ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.event.inputs.baseline_run_id != '')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -38,16 +47,27 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
-            const run = context.payload.workflow_run;
             const { owner, repo } = context.repo;
             const {
               isEligibleAgentPullRequest,
+              resolveBaselineRun,
               isPullRequestGateBlocked,
               resolvePullRequestForRun,
               waitForPullRequestGate,
             } = require(
               `${process.env.GITHUB_WORKSPACE}/scripts/github/exact-head-pr-gates.cjs`,
             );
+
+            const run = await resolveBaselineRun({
+              github,
+              owner,
+              repo,
+              event: context.payload,
+            });
+            if (!run || run.conclusion !== "success") {
+              core.info("The requested Baseline run did not complete successfully.");
+              return;
+            }
 
             const resolved = await resolvePullRequestForRun({
               github,
@@ -90,9 +110,12 @@ jobs:
             core.notice(`Merged PR #${pr.number} immediately after successful final-head Baseline verification.`);
   qualify:
     if: >-
-      github.event.workflow_run.conclusion == 'failure' &&
-      (github.event.workflow_run.event == 'pull_request' ||
-       github.event.workflow_run.event == 'workflow_dispatch')
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'failure' &&
+       (github.event.workflow_run.event == 'pull_request' ||
+        github.event.workflow_run.event == 'workflow_dispatch')) ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.event.inputs.baseline_run_id != '')
     runs-on: ubuntu-latest
     outputs:
       eligible: ${{ steps.gate.outputs.eligible }}
@@ -114,9 +137,8 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
-            const run = context.payload.workflow_run;
             const { owner, repo } = context.repo;
-            const { resolvePullRequestForRun } = require(
+            const { resolveBaselineRun, resolvePullRequestForRun } = require(
               `${process.env.GITHUB_WORKSPACE}/scripts/github/exact-head-pr-gates.cjs`,
             );
             const deny = (reason) => {
@@ -124,6 +146,14 @@ jobs:
               core.setOutput('reason', reason);
               core.notice(`Automatic repair skipped: ${reason}`);
             };
+
+            const run = await resolveBaselineRun({
+              github,
+              owner,
+              repo,
+              event: context.payload,
+            });
+            if (!run || run.conclusion !== 'failure') return deny('the requested Baseline run did not fail');
 
             const resolved = await resolvePullRequestForRun({
               github,
@@ -207,7 +237,7 @@ jobs:
       - name: Capture failed Baseline logs
         env:
           GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ID: ${{ github.event.workflow_run.id || github.event.inputs.baseline_run_id }}
         run: |
           mkdir -p .ross-autofix
           gh run view "$RUN_ID" --log-failed > .ross-autofix/baseline-failure.log
@@ -370,7 +400,7 @@ jobs:
         if: steps.parse.outputs.apply == 'true'
         env:
           HEAD_REF: ${{ needs.qualify.outputs.head_ref }}
-          FAILED_RUN: ${{ github.event.workflow_run.id }}
+          FAILED_RUN: ${{ github.event.workflow_run.id || github.event.inputs.baseline_run_id }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
