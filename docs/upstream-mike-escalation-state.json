@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "upstream": "Open-Legal-Products/mike",
   "processed": [
     {
@@ -185,7 +185,7 @@
     {
       "number": 235,
       "risk": "defer",
-      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR\u2019s blocking-CI objective and includes MFA-sensitive code.",
+      "reason": "Depends on prohibited workflow changes; partial lint-only adaptation would not fulfill the PR’s blocking-CI objective and includes MFA-sensitive code.",
       "processed_at": "2026-07-29T12:40:21.110349Z"
     },
     {
@@ -257,7 +257,7 @@
     {
       "number": 273,
       "risk": "medium",
-      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS\u2019s 50 MB limit.",
+      "reason": "Bounded backend cleanup: replaces a path-insensitive wrapper with one equivalent static JSON parser while preserving ROSS’s 50 MB limit.",
       "processed_at": "2026-08-04T21:16:33.885666Z"
     },
     {
@@ -331,6 +331,61 @@
       "risk": "defer",
       "reason": "High-risk server-side citation trust-boundary change. ROSS has materially divergent citation and legal-source verification architecture, and the supplied backend/frontend tests do not match its available test harnesses.",
       "processed_at": "2026-08-04T22:12:31.411900Z"
+    },
+    {
+      "number": 291,
+      "title": "test(frontend): cover every lib wrapper and restore the coverage ratchet",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/291",
+      "merged_at": "2026-08-06T10:58:49.000Z",
+      "merge_commit_sha": "9179dd2b77e16dc61be0a2dd80d8be3bbe4b17d2",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "medium",
+      "capability": "ROSS-native contract tests for frontend API wrappers, reducer/model helpers, and a measured no-regression coverage ratchet",
+      "series_id": "frontend-lib-coverage",
+      "dependencies": [
+        "Mike PR #228 (minimal Vitest harness)",
+        "Mike PR #255 (initial frontend API-client tests)"
+      ],
+      "prerequisites": [
+        "Approved ROSS-native frontend test/coverage harness",
+        "Focused mapping from upstream cases to current frontend/src/app/lib/mikeApi.ts, folderDeleteState.ts, and modelAvailability.ts",
+        "Baseline ROSS coverage measurements before setting ratchet floors"
+      ],
+      "reason": "The current ROSS library seams exist, but frontend/package.json has no test or coverage scripts/dependencies and ROSS has no Vitest configuration; upstream routes and provider assumptions also diverge, so the tests and thresholds require a focused ROSS-native evaluation.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": "2026-08-20T18:42:47.291Z",
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-13T18:42:47.291Z",
+      "processed_at": "2026-08-13T18:42:47.291Z",
+      "v2_attempted_at": "2026-08-13T18:42:47.291Z",
+      "history": [
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "The current ROSS library seams exist, but frontend/package.json has no test or coverage scripts/dependencies and ROSS has no Vitest configuration; upstream routes and provider assumptions also diverge, so the tests and thresholds require a focused ROSS-native evaluation.",
+          "processed_at": "2026-08-13T18:42:47.291Z"
+        }
+      ]
     }
-  ]
+  ],
+  "policy": "v2",
+  "metrics": {
+    "by_outcome": {
+      "deferred": 55,
+      "needs-test-harness": 1
+    },
+    "by_status": {
+      "terminal": 55,
+      "retryable": 1
+    },
+    "by_risk": {
+      "defer": 54,
+      "medium": 2
+    }
+  }
 }
