@@ -371,21 +371,74 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 221,
+      "title": "[Feature 14] feat: Word add-in — chat, tracked-changes rewrites, workflows and projects in Word",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/221",
+      "merged_at": "2026-08-06T13:25:49.000Z",
+      "merge_commit_sha": "c059e6ce487e1f344ed7a3a8a4eb67e985003fe4",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Microsoft Word task-pane integration for authenticated chat, tracked-change rewrites, workflows, and projects",
+      "series_id": "word-addin",
+      "dependencies": [
+        "Authenticated chat and streaming APIs",
+        "Project and workflow APIs",
+        "Document-context and rewrite contracts",
+        "Microsoft Office.js runtime and add-in manifest"
+      ],
+      "prerequisites": [
+        "Obtain the complete upstream patch at merge commit c059e6ce487e1f344ed7a3a8a4eb67e985003fe4",
+        "Security and privacy threat model for Word document transfer and mutation",
+        "Approve Office authentication, token storage, API-key handling, CORS, and deployment design",
+        "Create focused mocked Office.js and live Word test harnesses"
+      ],
+      "reason": "ROSS has reusable backend chat, project, workflow, authentication, and document seams, but the 82-file capability adds a privileged client surface involving secrets, document data, dependencies, a lockfile, and deployment. Metadata-only evidence cannot establish boundary compatibility or safe tracked-change behavior.",
+      "architecture_brief": "Implement as a separate ROSS Word task pane using narrow, versioned backend adapters over existing authenticated chat, project, workflow, and document services. Keep provider keys server-side, require ROSS account and MFA controls, enforce ownership on every resource, minimize transmitted document context, and isolate Office.js document mutations behind an auditable tracked-change adapter. Do not import the upstream vendored client architecture wholesale.",
+      "implementation_plan": [
+        "Review the complete diff and map every endpoint, token flow, dependency, and document-data path to current ROSS controls.",
+        "Define versioned add-in API contracts reusing existing backend routes where safe and adding only ownership-enforced adapters where necessary.",
+        "Prototype authentication without exposing provider keys or persistent bearer tokens to Office storage.",
+        "Build mocked Office.js tests for selection extraction, rewrite previews, tracked changes, cancellation, and failure recovery.",
+        "Run a live Word validation matrix covering authentication expiry, ownership denial, document minimization, rewrite fidelity, and rollback.",
+        "Perform dependency, privacy, security, licensing, deployment, and product-boundary review before approving implementation."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-14T18:36:29.766Z",
+      "processed_at": "2026-08-14T18:36:29.766Z",
+      "v2_attempted_at": "2026-08-14T18:36:29.766Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has reusable backend chat, project, workflow, authentication, and document seams, but the 82-file capability adds a privileged client surface involving secrets, document data, dependencies, a lockfile, and deployment. Metadata-only evidence cannot establish boundary compatibility or safe tracked-change behavior.",
+          "processed_at": "2026-08-14T18:36:29.766Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
