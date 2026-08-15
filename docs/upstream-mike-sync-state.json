@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-12T16:51:01Z",
+  "last_merged_at": "2026-08-13T16:59:55Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -887,25 +887,234 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-12T17:45:16.027Z"
+    },
+    {
+      "number": 293,
+      "title": "[Testing 17] ci: schema-drift check — fresh install vs upgraded deployment must converge",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/293",
+      "merged_at": "2026-08-12T18:15:09.000Z",
+      "merge_commit_sha": "1af9231040d5692a83e32440d11e118b80bd243d",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "schema-path-convergence",
+      "series_id": "testing-schema-convergence",
+      "dependencies": [
+        "Mike PR #256"
+      ],
+      "prerequisites": [
+        "Security and architecture approval",
+        "ROSS-native Supabase/RLS integration harness",
+        "Approved schema-baseline and migration strategy"
+      ],
+      "reason": "Useful drift detection, but it changes CI, schemas, migrations, grants, and Supabase security validation—all protected boundaries.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-14T17:36:31.479Z"
+    },
+    {
+      "number": 320,
+      "title": "fix(word-addin): review fixes for #299 — WebKit e2e gate, streaming perf, and correctness edges",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/320",
+      "merged_at": "2026-08-12T19:33:00.000Z",
+      "merge_commit_sha": "d6b13153ccafdff0baa0d9d8e568e2ab58b5339f",
+      "decision": "skip",
+      "outcome": "incompatible",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "word-addin-review-hardening",
+      "series_id": "word-addin-chat-299",
+      "dependencies": [
+        "Mike PR #299"
+      ],
+      "prerequisites": [
+        "Approved ROSS Word add-in architecture",
+        "Implemented Mike PR #299-equivalent capability"
+      ],
+      "reason": "ROSS has no Word add-in surface; the WebKit, Office identity, streaming, and modal fixes cannot form a complete native capability independently of #299.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-14T17:36:31.479Z"
+    },
+    {
+      "number": 317,
+      "title": "Refactor settings and enable local MFA",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/317",
+      "merged_at": "2026-08-13T08:23:20.000Z",
+      "merge_commit_sha": "7ec5a8657ad12affb20ffd6a200d94f3abe689ec",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "settings-and-local-mfa",
+      "series_id": "settings-security",
+      "dependencies": [],
+      "prerequisites": [
+        "Authentication and MFA security review",
+        "Product decision on Account-to-Settings migration",
+        "Legal-quality review of prompt changes",
+        "Deployment configuration review"
+      ],
+      "reason": "The settings presentation work is inseparable from MFA, authentication, provider-key, prompt, and deployment behavior requiring human judgment.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-14T17:36:31.479Z"
+    },
+    {
+      "number": 299,
+      "title": "feat(word-addin): align chat UI with web app",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/299",
+      "merged_at": "2026-08-13T09:46:08.000Z",
+      "merge_commit_sha": "7d5c065307beac4109df889ac61ff3944f6e7d4c",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "word-addin-chat-workspace",
+      "series_id": "word-addin-chat-299",
+      "dependencies": [
+        "Mike PR #221"
+      ],
+      "prerequisites": [
+        "Product and architecture approval for a ROSS Word add-in",
+        "Security, privacy, authentication, and data-boundary review",
+        "Public API, schema, dependency, and deployment design",
+        "ROSS-specific Ontario and beta-boundary UX review"
+      ],
+      "reason": "This expands a previously undecided Word add-in into persistent chat and document workflows across protected APIs, schemas, dependencies, and data boundaries.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-14T17:36:31.479Z"
+    },
+    {
+      "number": 329,
+      "title": "fix(workflows): review fixes — chat-path crash, catalog rewrite, silent UI failures",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/329",
+      "merged_at": "2026-08-13T13:11:56.000Z",
+      "merge_commit_sha": "b03d6ec62751cf8f6d970969b948e52113d54550",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "workflow-restructure-hardening",
+      "series_id": "workflow-restructure-309",
+      "dependencies": [
+        "Mike PR #309",
+        "Mike PR #299"
+      ],
+      "prerequisites": [
+        "Decision and implementation for the #309 workflow model",
+        "Approved workflow provenance and catalog policy",
+        "ROSS-native focused workflow/add-in test harness"
+      ],
+      "reason": "The fixes may be valuable, but they target the unimplemented #309 architecture and cannot be evaluated independently; retry after its product and governance decisions.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": "2026-08-28T00:00:00.000Z",
+      "processed_at": "2026-08-14T17:36:31.479Z"
+    },
+    {
+      "number": 309,
+      "title": "feat(workflows): restructure workflows and quick actions",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/309",
+      "merged_at": "2026-08-13T13:49:20.000Z",
+      "merge_commit_sha": "3382734de884b763630b4670764e0f246d48469f",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "editable-workflow-catalog",
+      "series_id": "workflow-restructure-309",
+      "dependencies": [
+        "Mike PR #299"
+      ],
+      "prerequisites": [
+        "Product decision on defaults and quick actions",
+        "Governance decision on reviewed-source attribution and provenance",
+        "Schema, authorization, storage, API, and data-boundary review",
+        "Ontario-specific workflow catalog evaluation"
+      ],
+      "reason": "The redesign changes schemas, APIs, storage, defaults, and provenance; removing provenance tracking conflicts with ROSS reviewed-source governance unless explicitly approved.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-14T17:36:31.479Z"
+    },
+    {
+      "number": 332,
+      "title": "fix(db): enforce auth user foreign keys",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/332",
+      "merged_at": "2026-08-13T16:24:15.000Z",
+      "merge_commit_sha": "867f735e92a9965000d98b34c1d2d453867877cc",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "auth-user-referential-integrity",
+      "series_id": "database-identity-integrity",
+      "dependencies": [
+        "Mike PR #293"
+      ],
+      "prerequisites": [
+        "Schema and migration review",
+        "Authentication and deletion-semantics review",
+        "ROSS-native upgrade and rollback validation",
+        "Backup and production rollout plan"
+      ],
+      "reason": "Referential integrity is useful, but converting identity columns and introducing cascading deletion materially affects schemas, authentication, retention, and production data.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-14T17:36:31.479Z"
+    },
+    {
+      "number": 333,
+      "title": "fix: make project sharing email matching case-insensitive",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/333",
+      "merged_at": "2026-08-13T16:59:55.000Z",
+      "merge_commit_sha": "e335bfabd078a304e1b7f7f854479a70028be4c4",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "case-insensitive-project-sharing",
+      "series_id": "project-sharing-authorization",
+      "dependencies": [],
+      "prerequisites": [
+        "Authorization and data-boundary review",
+        "Migration and legacy-data review",
+        "Focused ROSS sharing regression harness"
+      ],
+      "reason": "ROSS already lowercases new invitations and some access checks, but legacy normalization and remaining query consistency alter authorization and production data.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-14T17:36:31.479Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 59,
+      "needs-decision": 65,
       "equivalent": 11,
       "adapted": 1,
       "needs-test-harness": 2,
       "deferred": 1,
-      "incompatible": 1
+      "incompatible": 2,
+      "retryable": 1
     },
     "by_status": {
-      "needs-decision": 59,
-      "terminal": 14,
-      "retryable": 2
+      "needs-decision": 65,
+      "terminal": 15,
+      "retryable": 3
     },
     "by_risk": {
-      "none": 75
+      "none": 83
     }
   }
 }
