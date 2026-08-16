@@ -371,21 +371,74 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 271,
+      "title": "feature: add workspace history of actions (History page + audit_events)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/271",
+      "merged_at": "2026-08-12T16:37:29.000Z",
+      "merge_commit_sha": "53cb54e8070e96b7febb4d446610ea574a59b6ed",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Workspace-wide metadata-only action history with filtering, pagination, and CSV export",
+      "series_id": "workspace-audit-history",
+      "dependencies": [
+        "ROSS security_audit_events subsystem",
+        "ROSS project ownership and shared_with access model",
+        "ROSS account export and deletion flows",
+        "ROSS authenticated backend and frontend API seams"
+      ],
+      "prerequisites": [
+        "Approve retention, deletion, privacy, and export policy",
+        "Define event taxonomy and strictly allowlisted metadata",
+        "Approve owner/shared-member visibility and tenant-boundary rules",
+        "Specify RLS, service-role access, and audit-access auditing",
+        "Provide authorization, redaction, deletion, pagination, and CSV-injection test evidence"
+      ],
+      "reason": "ROSS has suitable seams in backend/src/index.ts, authenticated route modules, securityAudit.ts, mikeApi.ts, and AppSidebar.tsx, but this capability changes schemas, RLS/access boundaries, retention, privacy, and exports. The existing security audit is metadata-only and browser-inaccessible, while ADR-009 remains Proposed; adopting upstream visibility semantics without review could expose activity across shared projects.",
+      "architecture_brief": "Extend ROSS’s metadata-only audit design rather than copying Mike’s broad audit_events implementation. Use a constrained event store with validated event types, allowlisted scalar metadata, explicit retention/deletion behavior, and centralized authorization reusing project-access checks. Expose a rate-limited authenticated history API and CSV export only after visibility policy is approved; audit access to the history itself. Add the History page through the existing mikeApi.ts and AppSidebar.tsx seams.",
+      "implementation_plan": [
+        "Approve a threat model and data inventory covering titles, emails, model identifiers, shared-project events, exports, retention, deletion, and legal holds.",
+        "Design the ROSS-native schema, constraints, indexes, RLS/service-role policy, event taxonomy, and migration/rollback plan.",
+        "Centralize event recording and project visibility checks; instrument only approved chat, document, project, tabular, workflow, and export actions.",
+        "Implement bounded pagination/filtering and spreadsheet-safe CSV export with rate limiting and access auditing.",
+        "Add negative cross-user/shared-project tests, metadata redaction tests, deletion/retention tests, migration tests, and frontend API/page tests before rollout."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-16T15:58:45.742Z",
+      "processed_at": "2026-08-16T15:58:45.742Z",
+      "v2_attempted_at": "2026-08-16T15:58:45.742Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has suitable seams in backend/src/index.ts, authenticated route modules, securityAudit.ts, mikeApi.ts, and AppSidebar.tsx, but this capability changes schemas, RLS/access boundaries, retention, privacy, and exports. The existing security audit is metadata-only and browser-inaccessible, while ADR-009 remains Proposed; adopting upstream visibility semantics without review could expose activity across shared projects.",
+          "processed_at": "2026-08-16T15:58:45.742Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
