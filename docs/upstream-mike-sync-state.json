@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-13T17:35:35Z",
+  "last_merged_at": "2026-08-15T19:03:38Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1119,26 +1119,72 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-15T14:58:17.842Z"
+    },
+    {
+      "number": 342,
+      "title": "feat: refine quick actions and directory navigation",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/342",
+      "merged_at": "2026-08-15T17:53:46.000Z",
+      "merge_commit_sha": "d79c9a4261e479e8df50ee51932c1c6312a108ff",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "assistant-quick-actions-directory-navigation",
+      "series_id": "quick-actions-navigation",
+      "dependencies": [],
+      "prerequisites": [
+        "complete bounded patch evidence",
+        "ROSS architecture and product review",
+        "security, privacy, legal-source, and data-boundary review"
+      ],
+      "reason": "Metadata describes useful navigation and quick-action capabilities, but the omitted 100-file patch mixes them with schemas, migrations, authentication-adjacent routes, APIs, and data operations that require human judgment and cannot be reconstructed safely.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-16T14:36:55.944Z"
+    },
+    {
+      "number": 343,
+      "title": "refactor: make frontend icons canonical",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/343",
+      "merged_at": "2026-08-15T19:03:38.000Z",
+      "merge_commit_sha": "a6ec11386b41d5476b1116f15af7e36c847190ed",
+      "decision": "skip",
+      "outcome": "incompatible",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "frontend-canonical-shared-icons",
+      "series_id": "quick-actions-navigation",
+      "dependencies": [
+        "#342"
+      ],
+      "prerequisites": [],
+      "reason": "This refactor depends on the shared icon/add-in structure introduced by #342. Current ROSS has neither that shared icon package nor the Word add-in consumer, and its frontend assets are ROSS-specific, so the capability has no applicable native seam.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-16T14:36:55.944Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 66,
+      "needs-decision": 67,
       "equivalent": 11,
       "adapted": 1,
       "needs-test-harness": 2,
       "deferred": 1,
-      "incompatible": 2,
+      "incompatible": 3,
       "retryable": 1
     },
     "by_status": {
-      "needs-decision": 66,
-      "terminal": 15,
+      "needs-decision": 67,
+      "terminal": 16,
       "retryable": 3
     },
     "by_risk": {
-      "none": 84
+      "none": 86
     }
   }
 }
