@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-15T19:03:38Z",
+  "last_merged_at": "2026-08-17T03:12:52Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1165,6 +1165,30 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-16T14:36:55.944Z"
+    },
+    {
+      "number": 345,
+      "title": "Normalize assistant sources and unify frontend and Word UI",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/345",
+      "merged_at": "2026-08-17T03:12:52.000Z",
+      "merge_commit_sha": "c0ef3e3b08648fe9293d9c4cc7dc8c21de0a6bbf",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "unified-source-document-presentation",
+      "series_id": null,
+      "dependencies": [],
+      "prerequisites": [
+        "A bounded upstream patch with code-level evidence",
+        "ROSS-native mapping to provider-neutral source and citation contracts",
+        "Verification of reviewed-source attribution and Ontario coverage boundaries"
+      ],
+      "reason": "Potentially useful source normalization and shared web/Word presentation, but metadata alone cannot support safe adoption. The change spans dependencies, APIs, citation verification, legal-source behavior, and data-boundary-sensitive interfaces; retry when bounded code evidence is available.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-17T14:42:51.565Z"
     }
   ],
   "policy": "v2",
@@ -1176,15 +1200,15 @@
       "needs-test-harness": 2,
       "deferred": 1,
       "incompatible": 3,
-      "retryable": 1
+      "retryable": 2
     },
     "by_status": {
       "needs-decision": 67,
       "terminal": 16,
-      "retryable": 3
+      "retryable": 4
     },
     "by_risk": {
-      "none": 86
+      "none": 87
     }
   }
 }
