@@ -371,21 +371,73 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 254,
+      "title": "[Testing 21] test depth: mutation testing + SSE load harness (on-demand)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/254",
+      "merged_at": "2026-08-12T16:51:01.000Z",
+      "merge_commit_sha": "9df42324a1369e5c08e3867497f36d1a88e5aa80",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "ROSS-native mutation testing for critical backend logic plus an on-demand SSE concurrency/completion harness",
+      "series_id": "testing-21",
+      "dependencies": [
+        "Approved mutation-testing packages and lockfile changes",
+        "k6 runtime",
+        "Owned non-production backend with test authentication and provider configuration"
+      ],
+      "prerequisites": [
+        "Dependency and security review",
+        "ROSS-specific mutation baseline using the current node:test suite",
+        "Synthetic/non-confidential load-test account and data-cleanup policy",
+        "Enforced production-target prohibition",
+        "Measured cost, rate-limit, timeout, and false-positive bounds"
+      ],
+      "reason": "ROSS has matching seams in backend security libraries and the /chat SSE route, but its tests use node:test rather than Vitest, while safe load testing requires protected credentials, provider keys, infrastructure, and operational controls. PR #210 is not a dependency because this PR removed that obsolete reference.",
+      "architecture_brief": "Keep the tools separate and non-gating. Scope mutation testing to current ROSS modules and derive thresholds from repeated ROSS runs. Exercise /chat through an owned isolated environment using synthetic data, least-privilege test credentials, explicit target allowlisting, bounded concurrency/cost, and cleanup evidence; never transplant the upstream workflows wholesale.",
+      "implementation_plan": [
+        "Approve and pin mutation-testing dependencies through the normal dependency-review process.",
+        "Prototype a runner compatible with ROSS's node:test scripts and record repeated per-module mutation scores, runtime, timeouts, and surviving mutants before setting thresholds.",
+        "Define an owned non-production SSE target contract, credential lifecycle, provider-cost ceiling, rate-limit policy, data cleanup, and a fail-closed production-target guard.",
+        "Build a focused harness that verifies HTTP status, event-stream content type, stream start, terminal [DONE], handled errors, TTFB, and full-stream duration against current /chat behavior.",
+        "Run bounded trials, document reproducibility and false positives, then obtain human approval before adding any workflow or scheduled execution."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-17T16:01:42.006Z",
+      "processed_at": "2026-08-17T16:01:42.006Z",
+      "v2_attempted_at": "2026-08-17T16:01:42.006Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has matching seams in backend security libraries and the /chat SSE route, but its tests use node:test rather than Vitest, while safe load testing requires protected credentials, provider keys, infrastructure, and operational controls. PR #210 is not a dependency because this PR removed that obsolete reference.",
+          "processed_at": "2026-08-17T16:01:42.006Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
