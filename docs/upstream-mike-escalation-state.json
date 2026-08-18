@@ -371,21 +371,76 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 293,
+      "title": "[Testing 17] ci: schema-drift check — fresh install vs upgraded deployment must converge",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/293",
+      "merged_at": "2026-08-12T18:15:09.000Z",
+      "merge_commit_sha": "1af9231040d5692a83e32440d11e118b80bd243d",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Verify that a fresh install from backend/schema.sql and an existing deployment upgraded through dated migrations converge to the same behaviorally and security-relevant PostgreSQL schema.",
+      "series_id": "testing-17",
+      "dependencies": [
+        "Supabase/PostgreSQL disposable test stack",
+        "Canonical schema fingerprinting",
+        "A verified historical ROSS schema baseline",
+        "Ordered ROSS migration discovery",
+        "Prior schema-drift design work referenced as Mike PR #256"
+      ],
+      "prerequisites": [
+        "Identify and approve a ROSS commit where schema.sql and migrations demonstrably converged",
+        "Run both installation paths against ROSS's supported Supabase/PostgreSQL version",
+        "Validate fingerprint coverage for tables, columns, constraints, indexes, RLS policies, functions, triggers, views, enums, and effective privileges",
+        "Review the apparent current drift: workflow_open_source_submissions exists in a migration but not backend/schema.sql",
+        "Confirm any privilege-remediation migration against production upgrade and rollback procedures"
+      ],
+      "reason": "ROSS has the same dual schema seams—backend/schema.sql and backend/migrations—and current inspection already indicates plausible drift. However, adopting the control and any fixes affects schemas, migrations, Supabase/RLS, service-role privileges, CI, and production upgrade behavior; upstream cherry-pickability is irrelevant, and repository-only inspection cannot establish a safe baseline or runtime equivalence.",
+      "architecture_brief": "Implement a ROSS-native disposable-database evaluator that builds an upgraded database from an approved historical ROSS schema plus migrations added afterward, separately builds a fresh database from current backend/schema.sql, canonicalizes behaviorally and security-relevant catalog state, and fails on semantic differences. Keep baseline selection and privilege/schema remediation subject to explicit database-owner review.",
+      "implementation_plan": [
+        "Record an approved, evidence-backed ROSS convergence baseline rather than reusing Mike's commit pin.",
+        "Prototype the two-path build and canonical fingerprint in an isolated Supabase stack matching ROSS's supported runtime.",
+        "Add focused fixtures proving detection of missing tables, RLS/policy drift, function drift, and effective ACL drift while ignoring benign column and ACL ordering.",
+        "Run the harness on current main and classify every difference, including workflow_open_source_submissions, before changing schema or migrations.",
+        "Have database/security owners approve new forward-only, transactional remediations and rollback procedures.",
+        "Only after approval, add the reviewed harness and CI gate without altering shipped migrations or weakening existing controls."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-18T16:04:25.128Z",
+      "processed_at": "2026-08-18T16:04:25.128Z",
+      "v2_attempted_at": "2026-08-18T16:04:25.128Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has the same dual schema seams—backend/schema.sql and backend/migrations—and current inspection already indicates plausible drift. However, adopting the control and any fixes affects schemas, migrations, Supabase/RLS, service-role privileges, CI, and production upgrade behavior; upstream cherry-pickability is irrelevant, and repository-only inspection cannot establish a safe baseline or runtime equivalence.",
+          "processed_at": "2026-08-18T16:04:25.128Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
