@@ -371,21 +371,72 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 308,
+      "title": "Pagination Part 2",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/308",
+      "merged_at": "2026-08-12T09:50:34.000Z",
+      "merge_commit_sha": "26f4597b2120a00daf00594df161308cb8c5093c",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Cursor-based pagination and incremental loading for projects, workflows, tabular reviews, library documents, directories, and chat history",
+      "series_id": "pagination-v2",
+      "dependencies": [
+        "Mike PR #263 (likely Pagination Part 1 foundation)"
+      ],
+      "prerequisites": [
+        "Complete upstream patch and API/cursor contracts",
+        "ROSS-native schema and migration review",
+        "Authorization, RLS, and tenant-boundary regression tests",
+        "Pagination correctness, ordering, concurrency, and scale benchmarks",
+        "Upgrade, rollback, and schema-convergence validation"
+      ],
+      "reason": "ROSS has matching overview RPC, route, API-client, hook, and collection-component seams, but the metadata-only evidence omits the implementation and spans migrations, schemas, Supabase access, and authorization-sensitive queries.",
+      "architecture_brief": "Add bounded cursor contracts at the existing overview RPCs and authenticated collection routes, then consume them through ROSS-native API hooks and reusable load-more UI while preserving system-workflow ordering and all current access predicates.",
+      "implementation_plan": [
+        "Obtain and review the complete PR #308 patch and confirm its relationship to PR #263.",
+        "Specify stable cursor keys and response contracts independently for each ROSS collection.",
+        "Design additive RPC migrations that retain existing ownership, sharing, RLS, and filtering semantics.",
+        "Add route and Supabase integration tests covering page boundaries, duplicate/missing rows, concurrent inserts, and cross-user isolation.",
+        "Add frontend hook and component tests for reset, retry, filtering, deduplication, and load-more behavior.",
+        "Validate fresh-install and upgraded schemas, rollback behavior, and representative large datasets before rollout."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-15T15:58:23.507Z",
+      "processed_at": "2026-08-15T15:58:23.507Z",
+      "v2_attempted_at": "2026-08-15T15:58:23.507Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has matching overview RPC, route, API-client, hook, and collection-component seams, but the metadata-only evidence omits the implementation and spans migrations, schemas, Supabase access, and authorization-sensitive queries.",
+          "processed_at": "2026-08-15T15:58:23.507Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
