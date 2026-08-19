@@ -371,21 +371,72 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 317,
+      "title": "Refactor settings and enable local MFA",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/317",
+      "merged_at": "2026-08-13T08:23:20.000Z",
+      "merge_commit_sha": "7ec5a8657ad12affb20ffd6a200d94f3abe689ec",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "ROSS-native unified settings area with reproducible local MFA support",
+      "series_id": "settings-security",
+      "dependencies": [
+        "Mike PR #172 MFA enrollment and verification capability",
+        "Supabase Auth MFA and local CLI stack",
+        "Existing ROSS account settings, API-key, connector, privacy, and MFA enforcement seams"
+      ],
+      "prerequisites": [
+        "Security review comparing local Supabase MFA behavior with deployed authentication",
+        "Product decision on canonical /account versus /settings routes and redirects",
+        "Focused MFA enrollment, login-gate, step-up, unenrollment, and redirect test evidence",
+        "Review of Supabase configuration, schema, provider-key, privacy, and prompt changes"
+      ],
+      "reason": "ROSS already has the underlying account settings and MFA flows, but PR #317 couples their route/UI consolidation to authentication and Supabase configuration; equivalence and safe migration cannot be established without security and product decisions.",
+      "architecture_brief": "Retain ROSS MFA enforcement and data APIs; independently migrate the existing account pages to a settings shell with compatibility redirects, while treating local Supabase MFA configuration as a separately reviewed authentication-boundary change.",
+      "implementation_plan": [
+        "Define route ownership and backward-compatible redirects for every existing /account path.",
+        "Create a local Supabase MFA harness covering enrollment, AAL2 login enforcement, step-up operations, unenrollment, and redirect allow-lists.",
+        "Diff the proposed local configuration against deployed Supabase authentication policy and approve only intentional parity differences.",
+        "Migrate the presentation layer onto current ROSS settings seams without replacing MFA middleware, profile persistence, provider-key handling, or privacy controls.",
+        "Run focused frontend, backend, and end-to-end regression tests before adoption."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-19T14:56:40.165Z",
+      "processed_at": "2026-08-19T14:56:40.165Z",
+      "v2_attempted_at": "2026-08-19T14:56:40.165Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS already has the underlying account settings and MFA flows, but PR #317 couples their route/UI consolidation to authentication and Supabase configuration; equivalence and safe migration cannot be established without security and product decisions.",
+          "processed_at": "2026-08-19T14:56:40.165Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
