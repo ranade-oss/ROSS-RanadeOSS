@@ -371,21 +371,74 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 299,
+      "title": "feat(word-addin): align chat UI with web app",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/299",
+      "merged_at": "2026-08-13T09:46:08.000Z",
+      "merge_commit_sha": "7d5c065307beac4109df889ac61ff3944f6e7d4c",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "ROSS Word add-in assistant workspace with persistent chat, document context, workflows, and tracked-edit interactions",
+      "series_id": "word-addin-chat-299",
+      "dependencies": [
+        "Mike PR #221 foundational Word add-in",
+        "Mike PR #311 scroll and streaming follow-up",
+        "Mike PR #320 review-hardening follow-up"
+      ],
+      "prerequisites": [
+        "Product approval for a ROSS Word add-in",
+        "Complete upstream patch evidence",
+        "Authentication, privacy, and tenant/data-boundary threat review",
+        "Schema, migration, API, dependency, deployment, and Office-host compatibility review",
+        "Focused Word/WebKit end-to-end harness covering streaming, persistence, tracked edits, and failure recovery"
+      ],
+      "reason": "ROSS has reusable web assistant, chat streaming, workflow, and tracked-change seams but no Word add-in surface. The metadata-only change couples a new Office client to authentication, persistent schemas, APIs, dependencies, deployment, and document-data boundaries, requiring explicit architecture and security decisions.",
+      "architecture_brief": "Build a ROSS-native Office task pane that reuses presentation concepts from frontend assistant components while integrating through reviewed adapters to backend chat/project-chat streaming and docx tracked-change services. Keep Office identity, authentication, persistence, and tenant enforcement behind dedicated ROSS-owned boundaries rather than importing upstream architecture.",
+      "implementation_plan": [
+        "Define the Word add-in product scope, supported Office hosts, and document-data boundary.",
+        "Specify authenticated add-in APIs using current ROSS access and tenant controls.",
+        "Design chat persistence and migrations with RLS/data-lifecycle review.",
+        "Create adapters for current assistant streaming, workflows, document context, and tracked-change seams.",
+        "Establish Word/WebKit integration tests for authentication, streaming, history isolation, tracked edits, retries, and cleanup.",
+        "Review dependencies, manifest permissions, deployment topology, privacy implications, and the complete upstream patch before implementation."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-19T16:04:36.388Z",
+      "processed_at": "2026-08-19T16:04:36.388Z",
+      "v2_attempted_at": "2026-08-19T16:04:36.388Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has reusable web assistant, chat streaming, workflow, and tracked-change seams but no Word add-in surface. The metadata-only change couples a new Office client to authentication, persistent schemas, APIs, dependencies, deployment, and document-data boundaries, requiring explicit architecture and security decisions.",
+          "processed_at": "2026-08-19T16:04:36.388Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
