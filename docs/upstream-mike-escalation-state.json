@@ -371,21 +371,72 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 329,
+      "title": "fix(workflows): review fixes — chat-path crash, catalog rewrite, silent UI failures",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/329",
+      "merged_at": "2026-08-13T13:11:56.000Z",
+      "merge_commit_sha": "b03d6ec62751cf8f6d970969b948e52113d54550",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "workflow-restructure-hardening",
+      "series_id": "workflow-restructure-309",
+      "dependencies": [
+        "Mike PR #309",
+        "Mike PR #299"
+      ],
+      "prerequisites": [
+        "Approve or reject the #309 editable workflow-catalog model",
+        "Schema, migration, authorization, storage, and tenant-boundary review",
+        "Approve workflow provenance, defaults, add-on catalog, and quick-action policy",
+        "ROSS-native backend, frontend, and optional Word add-in test harness"
+      ],
+      "reason": "The crash, atomicity, error-state, and catalog-efficiency fixes are useful, but they harden #309’s unimplemented schema and catalog architecture and include protected migration, authorization, provenance, and CI changes.",
+      "architecture_brief": "If #309 is approved, implement its hardening at ROSS’s existing buildWorkflowStore, workflow routes, generated governed catalogs, and workflow UI seams while preserving Ontario provenance controls. Treat Word add-in behavior separately because current ROSS has no corresponding add-in seam.",
+      "implementation_plan": [
+        "Decide the #309 product model and whether PR #299’s Word add-in is in scope.",
+        "Threat-model ownership checks, catalog synchronization, asset replication, and tenant isolation.",
+        "Design migrations and rollback against current ROSS schema and RLS expectations.",
+        "Map failure containment into buildWorkflowStore and route error handling without weakening validation.",
+        "Add focused fault-injection, atomic replication, catalog idempotency, provenance, ownership, and UI error-state tests.",
+        "Implement bounded ROSS-native slices only after architecture and governance approval."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-20T16:06:09.407Z",
+      "processed_at": "2026-08-20T16:06:09.407Z",
+      "v2_attempted_at": "2026-08-20T16:06:09.407Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "The crash, atomicity, error-state, and catalog-efficiency fixes are useful, but they harden #309’s unimplemented schema and catalog architecture and include protected migration, authorization, provenance, and CI changes.",
+          "processed_at": "2026-08-20T16:06:09.407Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
