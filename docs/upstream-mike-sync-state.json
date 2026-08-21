@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-19T10:31:59Z",
+  "last_merged_at": "2026-08-20T07:24:31Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1338,13 +1338,33 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-19T14:53:01.702Z"
+    },
+    {
+      "number": 347,
+      "title": "[Word] Edit cards: reliable resolution on web + Mac, markdown context, and multi-occurrence editing (replace one or all)",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/347",
+      "merged_at": "2026-08-20T07:24:31.000Z",
+      "merge_commit_sha": "7269447e33cc64186f6fee9ec468fc2090d8b6f1",
+      "decision": "skip",
+      "outcome": "equivalent",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "multi-edit-resolution",
+      "series_id": "edit-card-resolution",
+      "dependencies": [],
+      "prerequisites": [],
+      "reason": "ROSS already supports ID-based individual and bulk tracked-edit resolution, optimistic rollback, DOCX viewing, and Markdown chat rendering through its web-native seams. The remaining changes target an absent Word add-in architecture, and the omitted patch cannot be reconstructed or applied.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-20T14:54:22.022Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "needs-decision": 70,
-      "equivalent": 12,
+      "equivalent": 13,
       "adapted": 1,
       "needs-test-harness": 4,
       "deferred": 1,
@@ -1353,11 +1373,11 @@
     },
     "by_status": {
       "needs-decision": 70,
-      "terminal": 17,
+      "terminal": 18,
       "retryable": 6
     },
     "by_risk": {
-      "none": 93
+      "none": 94
     }
   }
 }
