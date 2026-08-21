@@ -339,29 +339,35 @@
       "merged_at": "2026-08-06T10:58:49.000Z",
       "merge_commit_sha": "9179dd2b77e16dc61be0a2dd80d8be3bbe4b17d2",
       "decision": "investigate",
-      "outcome": "needs-test-harness",
-      "status": "retryable",
-      "risk": "medium",
-      "capability": "ROSS-native contract tests for frontend API wrappers, reducer/model helpers, and a measured no-regression coverage ratchet",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "ROSS-native contract tests for frontend API wrappers and model helpers, backed by a measured no-regression coverage ratchet",
       "series_id": "frontend-lib-coverage",
       "dependencies": [
         "Mike PR #228 (minimal Vitest harness)",
         "Mike PR #255 (initial frontend API-client tests)"
       ],
       "prerequisites": [
-        "Approved ROSS-native frontend test/coverage harness",
-        "Focused mapping from upstream cases to current frontend/src/app/lib/mikeApi.ts, folderDeleteState.ts, and modelAvailability.ts",
-        "Baseline ROSS coverage measurements before setting ratchet floors"
+        "Approval to add frontend test dependencies and update lockfiles",
+        "Baseline coverage measurement for current ROSS frontend library seams",
+        "Focused mapping of upstream cases to ROSS-specific API routes and provider behavior"
       ],
-      "reason": "The current ROSS library seams exist, but frontend/package.json has no test or coverage scripts/dependencies and ROSS has no Vitest configuration; upstream routes and provider assumptions also diverge, so the tests and thresholds require a focused ROSS-native evaluation.",
-      "architecture_brief": null,
-      "implementation_plan": [],
-      "next_review_at": "2026-08-20T18:42:47.291Z",
+      "reason": "ROSS has mikeApi.ts and modelAvailability.ts seams, but no frontend test scripts, Vitest configuration, or test dependencies; folderDeleteState.ts is absent. Upstream tests and thresholds therefore cannot be adopted reliably without an approved ROSS-native harness and fresh measurements.",
+      "architecture_brief": "Add an isolated frontend unit-test layer around current ROSS library contracts, using mocked transport boundaries and coverage limited to stable library seams. Establish ratchet floors only from reproducible ROSS measurements, not upstream values.",
+      "implementation_plan": [
+        "Decide whether Vitest and its coverage provider may be added to frontend devDependencies and lockfiles.",
+        "Create a minimal ROSS-native Vitest configuration and test scripts without changing CI workflows.",
+        "Map current mikeApi.ts endpoints and modelAvailability.ts branches to table-driven contract tests; exclude absent Mike-only seams.",
+        "Run repeated clean coverage measurements and select conservative no-regression floors.",
+        "Validate lint, type-check, unit tests, coverage enforcement, and existing repository baseline tests before adoption."
+      ],
+      "next_review_at": null,
       "policy": "v2",
-      "attempts": 1,
+      "attempts": 2,
       "first_processed_at": "2026-08-13T18:42:47.291Z",
-      "processed_at": "2026-08-13T18:42:47.291Z",
-      "v2_attempted_at": "2026-08-13T18:42:47.291Z",
+      "processed_at": "2026-08-21T16:05:27.837Z",
+      "v2_attempted_at": "2026-08-21T16:05:27.837Z",
       "history": [
         {
           "outcome": "needs-test-harness",
@@ -369,6 +375,13 @@
           "risk": "medium",
           "reason": "The current ROSS library seams exist, but frontend/package.json has no test or coverage scripts/dependencies and ROSS has no Vitest configuration; upstream routes and provider assumptions also diverge, so the tests and thresholds require a focused ROSS-native evaluation.",
           "processed_at": "2026-08-13T18:42:47.291Z"
+        },
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has mikeApi.ts and modelAvailability.ts seams, but no frontend test scripts, Vitest configuration, or test dependencies; folderDeleteState.ts is absent. Upstream tests and thresholds therefore cannot be adopted reliably without an approved ROSS-native harness and fresh measurements.",
+          "processed_at": "2026-08-21T16:05:27.837Z"
         }
       ]
     }
@@ -377,15 +390,16 @@
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 1,
+      "high": 1
     }
   }
 }
