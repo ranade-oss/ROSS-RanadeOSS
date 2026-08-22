@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-20T07:24:31Z",
+  "last_merged_at": "2026-08-21T09:10:10Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1358,26 +1358,166 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-20T14:54:22.022Z"
+    },
+    {
+      "number": 360,
+      "title": "feat(word-addin): refine review flow and shared assistant UI",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/360",
+      "merged_at": "2026-08-20T15:46:29.000Z",
+      "merge_commit_sha": "5989c3a46c9da3c7cc89a50c6ad6518ee8dc99ed",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "durable Word review workflow",
+      "series_id": "word-review-v2",
+      "dependencies": [
+        "#347"
+      ],
+      "prerequisites": [
+        "Architecture and product review",
+        "Security and data-boundary review",
+        "Migration and RLS review",
+        "Complete patch evidence"
+      ],
+      "reason": "Potentially useful, but normalized edit storage, authenticated routes, migrations, RLS, and document mutation semantics require human decisions and exceed the low-risk queue.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-21T14:53:46.908Z"
+    },
+    {
+      "number": 325,
+      "title": "feat: add PRD template for scoping larger features",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/325",
+      "merged_at": "2026-08-20T15:47:56.000Z",
+      "merge_commit_sha": "31ee5da355d2d0a7beab5f4940db41631e829b9a",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "large-change PRD intake",
+      "series_id": "contributor-governance",
+      "dependencies": [],
+      "prerequisites": [],
+      "reason": "The low-risk candidate changed a protected path: .github/ISSUE_TEMPLATE/prd.md",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": "2026-08-28T14:53:46.790Z",
+      "processed_at": "2026-08-21T14:53:46.908Z"
+    },
+    {
+      "number": 362,
+      "title": "feat(auth): add email confirmation and password recovery",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/362",
+      "merged_at": "2026-08-20T16:52:23.000Z",
+      "merge_commit_sha": "d97f3491b2562f868a396f4538a78590ed67d82c",
+      "decision": "skip",
+      "outcome": "equivalent",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "account confirmation and recovery",
+      "series_id": "auth-lifecycle",
+      "dependencies": [],
+      "prerequisites": [],
+      "reason": "ROSS already has forgot/reset-password screens, recovery documentation, callback configuration guidance, and confirmed-email requirements. Authentication and schema changes are also outside this queue.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-21T14:53:46.908Z"
+    },
+    {
+      "number": 357,
+      "title": "feat: formalize design system on existing shadcn/Tailwind foundation",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/357",
+      "merged_at": "2026-08-20T17:28:31.000Z",
+      "merge_commit_sha": "5b441de08ea797dd7ea51c207fa7166d0c39753d",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "accessible shared UI primitives",
+      "series_id": "design-system-accessibility",
+      "dependencies": [],
+      "prerequisites": [
+        "Complete patch evidence",
+        "Focused accessibility and shared-surface regression tests"
+      ],
+      "reason": "The accessibility capability is useful, but the patch is omitted and the broad refactor cannot be assessed or reconstructed safely from metadata.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-21T14:53:46.908Z"
+    },
+    {
+      "number": 340,
+      "title": "feat: add OpenCode Go as a third model router",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/340",
+      "merged_at": "2026-08-21T06:29:36.000Z",
+      "merge_commit_sha": "2ae4ca7937af12aa00bcb94571bad3e11f52d534",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "additional model router",
+      "series_id": "model-router-expansion",
+      "dependencies": [
+        "#357"
+      ],
+      "prerequisites": [
+        "Provider procurement decision",
+        "Security and privacy review",
+        "Data-boundary and model-governance review",
+        "Complete patch evidence"
+      ],
+      "reason": "A new provider, user keys, migration, model catalogue, and outbound data path require security, governance, and architecture decisions and are prohibited from this queue.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-21T14:53:46.908Z"
+    },
+    {
+      "number": 328,
+      "title": "fix(docx): disable numeric coercion of Word text runs",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/328",
+      "merged_at": "2026-08-21T09:10:10.000Z",
+      "merge_commit_sha": "d8183be43aa5f42b80f7ee7ff3cabd2f94abb584",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "DOCX text-value fidelity",
+      "series_id": "docx-fidelity",
+      "dependencies": [],
+      "prerequisites": [
+        "Focused synthetic DOCX regression harness on current ROSS",
+        "Verification of extraction and unrelated-edit round trips"
+      ],
+      "reason": "Preserving numeric-looking Word text is useful, but current ROSS lacks the upstream test file; a focused synthetic harness must establish behavior before changing document-processing semantics.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-21T14:53:46.908Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 70,
-      "equivalent": 13,
+      "needs-decision": 72,
+      "equivalent": 14,
       "adapted": 1,
-      "needs-test-harness": 4,
+      "needs-test-harness": 5,
       "deferred": 1,
       "incompatible": 3,
-      "retryable": 2
+      "retryable": 4
     },
     "by_status": {
-      "needs-decision": 70,
-      "terminal": 18,
-      "retryable": 6
+      "needs-decision": 72,
+      "terminal": 19,
+      "retryable": 9
     },
     "by_risk": {
-      "none": 94
+      "none": 100
     }
   }
 }
