@@ -371,21 +371,73 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 332,
+      "title": "fix(db): enforce auth user foreign keys",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/332",
+      "merged_at": "2026-08-13T16:24:15.000Z",
+      "merge_commit_sha": "867f735e92a9965000d98b34c1d2d453867877cc",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Enforce foreign keys from application-owned user identifiers to Supabase auth.users, with explicit deletion semantics and auth-backed integration fixtures.",
+      "series_id": "auth-user-referential-integrity",
+      "dependencies": [
+        "Supabase auth.users",
+        "Current ROSS ownership schema and RPC contracts",
+        "Auth-backed database integration fixtures"
+      ],
+      "prerequisites": [
+        "Inventory every current ROSS user-reference column and intended ON DELETE behavior",
+        "Audit production-like data for malformed UUIDs and orphaned users",
+        "Rehearse migration, validation, rollback, and RPC compatibility against a disposable Supabase database",
+        "Add focused tests for valid ownership, orphan rejection, deletion behavior, and text-to-UUID API boundaries"
+      ],
+      "reason": "The capability is valuable, but upstream targets tables and RPCs that diverge from current ROSS while ROSS still stores several ownership IDs as text. Because this changes schemas, Supabase boundaries, deletion behavior, and existing data, it needs an explicit architecture and migration decision rather than direct adoption.",
+      "architecture_brief": "Implement at the ROSS database seam through a new dated migration plus synchronized backend/schema.sql updates. Derive constraints only from current ROSS tables, preserve public RPC parameter/return compatibility where required, choose cascade versus set-null per data-retention policy, and validate existing rows before committing constraints. Do not import upstream workflow changes.",
+      "implementation_plan": [
+        "Create a current-schema matrix of user-reference columns, types, nullability, ownership meaning, and retention requirements.",
+        "Decide deletion semantics for projects, documents, workflows, chats, reviews, shares, submissions, and audit records.",
+        "Build an idempotent ROSS-native migration that detects malformed and orphaned identifiers before conversion, adds NOT VALID constraints, then validates them transactionally.",
+        "Update affected RPC bodies with explicit boundary casts while retaining existing API signatures.",
+        "Create disposable-Supabase integration fixtures backed by real auth users and test constraint enforcement, cascades, set-null behavior, RPC pagination, and rollback.",
+        "Run the migration against a sanitized production-shaped snapshot and obtain security/data-retention approval before release."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-22T15:58:29.694Z",
+      "processed_at": "2026-08-22T15:58:29.694Z",
+      "v2_attempted_at": "2026-08-22T15:58:29.694Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "The capability is valuable, but upstream targets tables and RPCs that diverge from current ROSS while ROSS still stores several ownership IDs as text. Because this changes schemas, Supabase boundaries, deletion behavior, and existing data, it needs an explicit architecture and migration decision rather than direct adoption.",
+          "processed_at": "2026-08-22T15:58:29.694Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
