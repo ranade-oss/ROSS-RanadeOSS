@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-23T04:11:29Z",
+  "last_merged_at": "2026-08-23T14:06:23Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1709,26 +1709,75 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-23T14:38:40.032Z"
+    },
+    {
+      "number": 335,
+      "title": "feat: per-user dark mode",
+      "url": "https://github.com/open-legal-products/mike/pull/335",
+      "merged_at": "2026-08-23T06:35:20.000Z",
+      "merge_commit_sha": "3ad9a5ffafd6ad21624a7c11a23188d3dc674b7d",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "per-user-dark-mode",
+      "series_id": "appearance-theme-v1",
+      "dependencies": [],
+      "prerequisites": [
+        "product and architecture decision for theme persistence",
+        "escalated review of schema, migration, and profile API changes"
+      ],
+      "reason": "Useful appearance capability, but upstream persistence changes protected schema, migration, and public profile API surfaces; ROSS already has dormant dark-theme tokens but needs a human persistence decision.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-23T14:42:30.539Z"
+    },
+    {
+      "number": 377,
+      "title": "Refactor liquid glass surfaces and dark mode styling",
+      "url": "https://github.com/open-legal-products/mike/pull/377",
+      "merged_at": "2026-08-23T14:06:23.000Z",
+      "merge_commit_sha": "7411b1be11f9e15452fd3ab21d19354cc0a864a4",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "dark-glass-surface-system",
+      "series_id": "appearance-theme-v1",
+      "dependencies": [
+        "#335"
+      ],
+      "prerequisites": [
+        "complete upstream patch evidence",
+        "resolution of #335 theme-persistence decision",
+        "focused dark-theme accessibility and visual-regression harness"
+      ],
+      "reason": "ROSS has native glass surfaces and dark tokens, but the metadata-only 100-file refactor cannot establish equivalence or support a bounded adaptation without patch evidence and focused evaluation.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": "2026-09-06T00:00:00.000Z",
+      "processed_at": "2026-08-23T14:42:30.539Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 79,
+      "needs-decision": 80,
       "equivalent": 15,
       "adapted": 1,
       "needs-test-harness": 5,
       "deferred": 1,
       "incompatible": 3,
-      "retryable": 5
+      "retryable": 6
     },
     "by_status": {
-      "needs-decision": 79,
+      "needs-decision": 80,
       "terminal": 20,
-      "retryable": 10
+      "retryable": 11
     },
     "by_risk": {
-      "none": 109
+      "none": 111
     }
   }
 }
