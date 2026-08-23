@@ -371,21 +371,72 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 334,
+      "title": "fix: log storage errors and reuse Supabase admin client",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/334",
+      "merged_at": "2026-08-13T17:35:35.000Z",
+      "merge_commit_sha": "8c678e65b8d410f22faf8f95ea0e201a664e2d9b",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Sanitized storage-failure logging plus centralized reuse of the server Supabase admin client in authentication and MFA middleware",
+      "series_id": null,
+      "dependencies": [
+        "backend/src/lib/safeError.ts",
+        "backend/src/lib/storage.ts",
+        "backend/src/lib/supabase.ts",
+        "backend/src/middleware/auth.ts",
+        "@supabase/supabase-js",
+        "AWS S3 SDK"
+      ],
+      "prerequisites": [
+        "Security approval for caching a service-role client across requests",
+        "ROSS-native node:test coverage for auth, MFA, configuration changes, and sanitized storage errors"
+      ],
+      "reason": "ROSS has matching seams and safeErrorLog already exists, but the upstream tests use unavailable Vitest and do not establish that shared service-role client reuse preserves token isolation, MFA enforcement, configuration rotation, and secret redaction.",
+      "architecture_brief": "Add sanitized failure logging only at storage operation boundaries. If approved, keep the service-role client cache private to backend/src/lib/supabase.ts, disable session persistence and token refresh, invalidate it when URL or key changes, and make auth/MFA middleware obtain the client exclusively through that factory without changing response semantics.",
+      "implementation_plan": [
+        "Create ROSS node:test harnesses for download and signed-URL failures, asserting redaction and object-key handling.",
+        "Test factory reuse, configuration validation and rotation, disabled session persistence and refresh, and isolation across sequential requests with different bearer tokens.",
+        "Exercise requireAuth and requireMfaIfEnrolled for missing configuration, invalid tokens, verified-email enforcement, AAL1/AAL2 transitions, and MFA bootstrap routes.",
+        "Obtain security review of service-role client lifetime and logged object-key sensitivity, then implement the storage and auth portions as separately reviewable changes."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-23T15:59:21.828Z",
+      "processed_at": "2026-08-23T15:59:21.828Z",
+      "v2_attempted_at": "2026-08-23T15:59:21.828Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has matching seams and safeErrorLog already exists, but the upstream tests use unavailable Vitest and do not establish that shared service-role client reuse preserves token isolation, MFA enforcement, configuration rotation, and secret redaction.",
+          "processed_at": "2026-08-23T15:59:21.828Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
