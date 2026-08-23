@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-21T19:21:19Z",
+  "last_merged_at": "2026-08-23T04:11:29Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1523,26 +1523,212 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-22T14:36:44.500Z"
+    },
+    {
+      "number": 372,
+      "title": "Sanitize user-facing backend and frontend errors",
+      "url": "https://github.com/open-legal-products/mike/pull/372",
+      "merged_at": "2026-08-22T16:44:29.000Z",
+      "merge_commit_sha": "e37aba03c719208eb059b8dd968973ec8d4dc7d6",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "user-safe-error-boundary",
+      "series_id": "error-safety",
+      "dependencies": [],
+      "prerequisites": [
+        "Security and privacy review of client-visible error contracts",
+        "Focused route, streaming, authentication, and frontend error regression coverage"
+      ],
+      "reason": "Useful, but the metadata-only change spans authentication, API error contracts, logging, and potential sensitive-data disclosure. It requires ROSS-specific security review and cannot be reconstructed from metadata.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-23T14:38:40.032Z"
+    },
+    {
+      "number": 367,
+      "title": "Review fixes for #365: gate exemptions, lossless autosave, migration fallback, add-in OAuth hardening",
+      "url": "https://github.com/open-legal-products/mike/pull/367",
+      "merged_at": "2026-08-22T16:52:32.000Z",
+      "merge_commit_sha": "090a60d7e54d59e294dd7a75c9aba3eb021afcba",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "onboarding-settings-hardening",
+      "series_id": "auth-personalisation",
+      "dependencies": [
+        "mike-pr-365"
+      ],
+      "prerequisites": [
+        "Decision on PR #365's authentication and personalisation architecture",
+        "Security review of recovery gating and add-in OAuth token handling",
+        "Migration and settings-persistence evaluation"
+      ],
+      "reason": "These fixes depend on PR #365 and affect authentication, OAuth tokens, migrations, and persisted user settings, all outside low-risk synchronization.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-23T14:38:40.032Z"
+    },
+    {
+      "number": 337,
+      "title": "fix(docx): avoid numbering generated letter paragraphs",
+      "url": "https://github.com/open-legal-products/mike/pull/337",
+      "merged_at": "2026-08-22T16:58:40.000Z",
+      "merge_commit_sha": "8362692a615d65bb880fcb21ed90661c94aaddf6",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "opt-in-docx-numbering",
+      "series_id": "document-generation",
+      "dependencies": [],
+      "prerequisites": [
+        "Product decision on default generated-document numbering",
+        "Focused DOCX XML and Ontario workflow-output evaluation",
+        "Review of the generate_docx tool contract change"
+      ],
+      "reason": "Opt-in section numbering could improve letters, but it changes a public tool contract and substantive document-generation behavior; ROSS requires product and architecture approval plus workflow evaluation.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-23T14:38:40.032Z"
+    },
+    {
+      "number": 365,
+      "title": "feat(auth): add Google OAuth onboarding and personalisation",
+      "url": "https://github.com/open-legal-products/mike/pull/365",
+      "merged_at": "2026-08-22T17:06:54.000Z",
+      "merge_commit_sha": "9d95ecbcf42937f2efabdcf63544f7d091b937ca",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "oauth-onboarding-personalisation",
+      "series_id": "auth-personalisation",
+      "dependencies": [],
+      "prerequisites": [
+        "Authentication and MFA architecture decision",
+        "Privacy and governance review of personalisation data",
+        "Schema, migration, OAuth, and add-in threat review"
+      ],
+      "reason": "The capability changes OAuth, onboarding, MFA-adjacent flows, schemas, migrations, personalisation data, dependencies, and deployment configuration. Human security, privacy, and product decisions are required.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-23T14:38:40.032Z"
+    },
+    {
+      "number": 373,
+      "title": "Support folder uploads and multi-row document actions",
+      "url": "https://github.com/open-legal-products/mike/pull/373",
+      "merged_at": "2026-08-22T17:08:04.000Z",
+      "merge_commit_sha": "e7c69fc3f5a8eb9235c752bf7fd8ece1b1782911",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "folder-upload-bulk-actions",
+      "series_id": "document-library",
+      "dependencies": [],
+      "prerequisites": [
+        "Data-boundary and upload-scanning design review",
+        "Authorization and path-conflict threat analysis",
+        "Schema and migration approval",
+        "Focused directory-upload and bulk-action evaluation"
+      ],
+      "reason": "Folder uploads and bulk actions are useful, but the implementation changes schemas, APIs, upload concurrency, path handling, and document data boundaries.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-23T14:38:40.032Z"
+    },
+    {
+      "number": 374,
+      "title": "feat(tabular): add stoppable and isolated review generation",
+      "url": "https://github.com/open-legal-products/mike/pull/374",
+      "merged_at": "2026-08-22T17:22:29.000Z",
+      "merge_commit_sha": "5ed80dd537e1ca67a9d9339d8b863fe8571f759e",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "stoppable-isolated-review-generation",
+      "series_id": "tabular-generation",
+      "dependencies": [],
+      "prerequisites": [
+        "Architecture decision for generation leases and cancellation semantics",
+        "Schema and migration approval",
+        "Authorization, concurrency, and recovery evaluation"
+      ],
+      "reason": "Stopping and isolating review generation changes schemas, APIs, concurrent mutations, and production job behavior; it requires an architecture and operational decision.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-23T14:38:40.032Z"
+    },
+    {
+      "number": 375,
+      "title": "Polish warning controls and table loading states",
+      "url": "https://github.com/open-legal-products/mike/pull/375",
+      "merged_at": "2026-08-22T18:08:09.000Z",
+      "merge_commit_sha": "78dbac19c7a8f68ab5089dc9b1f3e7c2085c95b1",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "warning-control-keyboard-focus",
+      "series_id": "ui-control-polish",
+      "dependencies": [],
+      "prerequisites": [],
+      "reason": "The ROSS-native candidate patch did not apply cleanly to the exact scanned main base.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": "2026-08-30T14:38:39.925Z",
+      "processed_at": "2026-08-23T14:38:40.032Z"
+    },
+    {
+      "number": 376,
+      "title": "Unify Mike workflows in the database",
+      "url": "https://github.com/open-legal-products/mike/pull/376",
+      "merged_at": "2026-08-23T04:11:29.000Z",
+      "merge_commit_sha": "a4126eabec03222e1c78cccd11462c285827c8dc",
+      "decision": "skip",
+      "outcome": "equivalent",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "governed-unified-workflow-catalogue",
+      "series_id": "workflow-catalogue",
+      "dependencies": [],
+      "prerequisites": [],
+      "reason": "ROSS already exposes a unified runtime catalogue through repository-generated Ontario workflows with reviewed-source provenance and fail-closed professional-validation gates. Moving it into the database would add migrations and weaken the deliberate governance seam.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-23T14:38:40.032Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 73,
-      "equivalent": 14,
+      "needs-decision": 79,
+      "equivalent": 15,
       "adapted": 1,
       "needs-test-harness": 5,
       "deferred": 1,
       "incompatible": 3,
-      "retryable": 4
+      "retryable": 5
     },
     "by_status": {
-      "needs-decision": 73,
-      "terminal": 19,
-      "retryable": 9
+      "needs-decision": 79,
+      "terminal": 20,
+      "retryable": 10
     },
     "by_risk": {
-      "none": 101
+      "none": 109
     }
   }
 }
