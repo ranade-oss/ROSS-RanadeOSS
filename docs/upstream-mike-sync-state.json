@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-21T09:10:10Z",
+  "last_merged_at": "2026-08-21T19:21:19Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1498,12 +1498,37 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-21T14:53:46.908Z"
+    },
+    {
+      "number": 368,
+      "title": "Migrate backend LLM providers to Vercel AI SDK",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/368",
+      "merged_at": "2026-08-21T19:21:19.000Z",
+      "merge_commit_sha": "a94ff4c33d0005af434c917f0227f34622b4b930",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "unified-llm-provider-runtime",
+      "series_id": null,
+      "dependencies": [],
+      "prerequisites": [
+        "Accept the model-provider control architecture in ADR-008",
+        "Inventory provider data flows, credentials, retention, training, regional processing, and hosted/self-hosted behavior",
+        "Approve the Vercel AI SDK dependency and provider configurations",
+        "Establish focused provider-routing, tool-call, citation, streaming, and edit-card regression coverage"
+      ],
+      "reason": "A unified provider runtime may be useful, but this migration changes dependencies, lockfiles, provider-key handling, model routing, and privacy-sensitive provider behavior. ROSS has native provider seams, yet ADR-008 remains proposed and requires human architecture, security, privacy, and governance approval before selecting or adapting this SDK.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-22T14:36:44.500Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 72,
+      "needs-decision": 73,
       "equivalent": 14,
       "adapted": 1,
       "needs-test-harness": 5,
@@ -1512,12 +1537,12 @@
       "retryable": 4
     },
     "by_status": {
-      "needs-decision": 72,
+      "needs-decision": 73,
       "terminal": 19,
       "retryable": 9
     },
     "by_risk": {
-      "none": 100
+      "none": 101
     }
   }
 }
