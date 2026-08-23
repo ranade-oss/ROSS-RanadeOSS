@@ -371,21 +371,74 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 333,
+      "title": "fix: make project sharing email matching case-insensitive",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/333",
+      "merged_at": "2026-08-13T16:59:55.000Z",
+      "merge_commit_sha": "e335bfabd078a304e1b7f7f854479a70028be4c4",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Canonicalize project-sharing email identities so access is case-insensitive and whitespace-safe across detail, listing, audit, overview, and export paths.",
+      "series_id": "project-sharing-email-canonicalization",
+      "dependencies": [
+        "Existing normalized POST/PATCH project-sharing writes",
+        "projects.shared_with JSONB containment queries and GIN index",
+        "Project overview/filter RPCs",
+        "Central project access helper"
+      ],
+      "prerequisites": [
+        "Inventory every project-sharing authorization and collection-query seam",
+        "Validate legacy shared_with data shape and normalization impact on a production-like database",
+        "Test owner/shared/non-member access across mixed-case, whitespace, duplicate, blank, and malformed entries",
+        "Confirm RPC and application checks use one canonical email rule",
+        "Review migration rollback, locking, query plans, and tenant-isolation behavior"
+      ],
+      "reason": "Current ROSS already normalizes new project-sharing writes and performs partial case-insensitive checks, but indexed collection queries and some routes still require exact stored values. PR #333 addresses that inconsistency, yet its data rewrite and authorization changes affect schema and tenant boundaries and cannot be safely adopted without explicit review.",
+      "architecture_brief": "Define one ROSS email canonicalization contract at the authentication/access boundary, apply it consistently to project-sharing writes and all read/query seams, and backfill projects.shared_with with a reviewed idempotent migration. Preserve centralized checkProjectAccess authorization and JSONB index compatibility; separately assess whether tabular-review and workflow sharing belong to the same series.",
+      "implementation_plan": [
+        "Map all direct shared_with comparisons, containment filters, RPC parameters, exports, and audit queries in current ROSS.",
+        "Add authorization-focused unit and integration tests proving identical decisions for canonical and mixed-case identities without cross-tenant access.",
+        "Review and rehearse an idempotent legacy-data migration, including duplicate removal, malformed JSONB handling, locking, rollback, and query plans.",
+        "Implement a shared canonicalization helper and route project detail access through checkProjectAccess; update collection/RPC seams only after their database contracts are verified.",
+        "Run migration and access-control tests against a production-like snapshot, then obtain security/data-boundary approval before release."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-23T14:41:55.952Z",
+      "processed_at": "2026-08-23T14:41:55.952Z",
+      "v2_attempted_at": "2026-08-23T14:41:55.952Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "Current ROSS already normalizes new project-sharing writes and performs partial case-insensitive checks, but indexed collection queries and some routes still require exact stored values. PR #333 addresses that inconsistency, yet its data rewrite and authorization changes affect schema and tenant boundaries and cannot be safely adopted without explicit review.",
+          "processed_at": "2026-08-23T14:41:55.952Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
