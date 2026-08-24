@@ -371,21 +371,71 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 342,
+      "title": "feat: refine quick actions and directory navigation",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/342",
+      "merged_at": "2026-08-15T17:53:46.000Z",
+      "merge_commit_sha": "d79c9a4261e479e8df50ee51932c1c6312a108ff",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Assistant quick-action management with folder-aware directory navigation across web and Word add-in",
+      "series_id": "quick-actions-navigation",
+      "dependencies": [
+        "Mike PR #309 workflow and quick-actions model",
+        "Mike PR #299 workflow foundation"
+      ],
+      "prerequisites": [
+        "Complete upstream diff",
+        "Product decision on quick-action defaults and visibility",
+        "Schema, migration, authorization, privacy, and data-boundary review",
+        "ROSS-native API, migration, frontend, and add-in regression tests"
+      ],
+      "reason": "Current ROSS has directory and assistant seams but lacks the proposed quick-actions route, modal, and migration. Metadata cannot establish safe behavior for this 136-file cross-layer change.",
+      "architecture_brief": "Implement through ROSS’s existing workflow catalog, assistant InitialView, FileDirectory/useDirectoryData, AppSidebar, user API, and Word add-in seams. Keep folder access server-authorized and introduce quick-action persistence only through a separately reviewed migration and API contract.",
+      "implementation_plan": [
+        "Extract a bounded specification and diff for quick-action CRUD, visibility, and folder routes.",
+        "Review the proposed migration, RLS/authorization behavior, defaults, rollback, and legacy-data handling.",
+        "Map UI behavior onto current ROSS assistant and directory components without importing upstream shared-icon architecture wholesale.",
+        "Add focused backend authorization/migration tests plus web and Word add-in navigation tests.",
+        "Approve and implement the database/API slice before enabling dependent UI."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-24T16:17:47.016Z",
+      "processed_at": "2026-08-24T16:17:47.016Z",
+      "v2_attempted_at": "2026-08-24T16:17:47.016Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "Current ROSS has directory and assistant seams but lacks the proposed quick-actions route, modal, and migration. Metadata cannot establish safe behavior for this 136-file cross-layer change.",
+          "processed_at": "2026-08-24T16:17:47.016Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
