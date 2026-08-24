@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-23T14:06:23Z",
+  "last_merged_at": "2026-08-24T14:34:44Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1758,6 +1758,31 @@
       "implementation_plan": [],
       "next_review_at": "2026-09-06T00:00:00.000Z",
       "processed_at": "2026-08-23T14:42:30.539Z"
+    },
+    {
+      "number": 380,
+      "title": "Improve workflow commands and document review UX",
+      "url": "https://github.com/open-legal-products/mike/pull/380",
+      "merged_at": "2026-08-24T14:34:44.000Z",
+      "merge_commit_sha": "54681b550d991f8c885f19f93dec762f1967ab3f",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "workflow-command-review-ux",
+      "series_id": null,
+      "dependencies": [],
+      "prerequisites": [
+        "Complete bounded upstream patch",
+        "Capability-level decomposition",
+        "Focused ROSS-native frontend and Word add-in tests",
+        "ROSS workflow-governance review"
+      ],
+      "reason": "ROSS has native workflow and document-review seams, but the omitted 42-file patch spans several UI surfaces. Metadata alone cannot establish equivalence or a smallest safe adaptation without risking governed workflow behavior.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-24T14:59:06.586Z"
     }
   ],
   "policy": "v2",
@@ -1769,15 +1794,15 @@
       "needs-test-harness": 5,
       "deferred": 1,
       "incompatible": 3,
-      "retryable": 6
+      "retryable": 7
     },
     "by_status": {
       "needs-decision": 80,
       "terminal": 20,
-      "retryable": 11
+      "retryable": 12
     },
     "by_risk": {
-      "none": 111
+      "none": 112
     }
   }
 }
