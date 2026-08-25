@@ -371,21 +371,72 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 345,
+      "title": "Normalize assistant sources and unify frontend and Word UI",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/345",
+      "merged_at": "2026-08-17T03:12:52.000Z",
+      "merge_commit_sha": "c0ef3e3b08648fe9293d9c4cc7dc8c21de0a6bbf",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Provider-neutral assistant source-document normalization with shared citation, document-event, and edit-card presentation across web and Word clients",
+      "series_id": "assistant-source-ui-convergence",
+      "dependencies": [
+        "Likely upstream Word add-in foundation (#299)",
+        "Likely canonical shared frontend assets (#343)"
+      ],
+      "prerequisites": [
+        "Complete upstream patch and dependency diff",
+        "Contract tests for normalized document, case-law, and citation sources",
+        "Legal-source attribution and citation-verification review",
+        "Data-boundary and source-document authorization review",
+        "ROSS product decision on a Word add-in runtime"
+      ],
+      "reason": "The omitted 118-file change spans dependencies and lockfiles, source APIs, citation verification, legal-source behavior, data boundaries, and an absent ROSS Word client. Current ROSS seams exist in backend citation/legal-source routes and frontend shared types/assistant panels, but metadata cannot establish safe contract compatibility.",
+      "architecture_brief": "Implement any approved subset at ROSS’s existing seams: normalize provider-neutral source records behind backend citation and legal-source contracts, expose them through authenticated source-document routes, and resolve them in frontend shared types and AssistantSidePanel. Keep ROSS legal-source verification and data-boundary controls authoritative; treat Word UI sharing as a separate capability requiring an approved Word runtime.",
+      "implementation_plan": [
+        "Obtain and review the full upstream patch, package manifests, lockfile delta, and API examples.",
+        "Specify a ROSS-native normalized source contract covering uploaded documents, cases, provider authorities, quotes, attribution, and stable identifiers.",
+        "Map authorization, ownership, hosted-data-boundary, and citation-verification invariants before adding any route.",
+        "Build backend contract tests and frontend panel-resolution tests using document, case-law, and Ontario legal-source fixtures.",
+        "Evaluate the web-only implementation independently; separately decide whether Word add-in architecture and shared UI packaging are in scope."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-25T15:07:20.993Z",
+      "processed_at": "2026-08-25T15:07:20.993Z",
+      "v2_attempted_at": "2026-08-25T15:07:20.993Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "The omitted 118-file change spans dependencies and lockfiles, source APIs, citation verification, legal-source behavior, data boundaries, and an absent ROSS Word client. Current ROSS seams exist in backend citation/legal-source routes and frontend shared types/assistant panels, but metadata cannot establish safe contract compatibility.",
+          "processed_at": "2026-08-25T15:07:20.993Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 1,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 1,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "high": 1
     }
   }
 }
