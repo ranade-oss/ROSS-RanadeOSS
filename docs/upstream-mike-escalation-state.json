@@ -371,21 +371,57 @@
           "processed_at": "2026-08-13T18:42:47.291Z"
         }
       ]
+    },
+    {
+      "number": 348,
+      "title": "Align Word tracked-change edit cards with frontend",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/348",
+      "merged_at": "2026-08-18T03:28:03.000Z",
+      "merge_commit_sha": "a2571b53d66ab7b28b5babcae3f49f133009610a",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "Tracked-change card alignment with simplified single-card presentation",
+      "series_id": null,
+      "dependencies": [],
+      "prerequisites": [
+        "Focused ROSS frontend component-test harness for single-card and multi-card tracked-change rendering"
+      ],
+      "reason": "ROSS already has precise DOCX edits, Accept/Reject/View controls, bulk sections, and native pill styling, but no Word add-in. Only the single-card wrapper simplification remains useful, and it lacks regression coverage.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": "2026-09-01T16:19:41.624Z",
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-25T16:19:41.624Z",
+      "processed_at": "2026-08-25T16:19:41.624Z",
+      "v2_attempted_at": "2026-08-25T16:19:41.624Z",
+      "history": [
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "none",
+          "reason": "ROSS already has precise DOCX edits, Accept/Reject/View controls, bulk sections, and native pill styling, but no Word add-in. Only the single-card wrapper simplification remains useful, and it lacks regression coverage.",
+          "processed_at": "2026-08-25T16:19:41.624Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 1
+      "needs-test-harness": 2
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 1
+      "retryable": 2
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2
+      "medium": 2,
+      "none": 1
     }
   }
 }
