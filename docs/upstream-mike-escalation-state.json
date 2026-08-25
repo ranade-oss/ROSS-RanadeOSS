@@ -406,22 +406,79 @@
           "processed_at": "2026-08-25T16:19:41.624Z"
         }
       ]
+    },
+    {
+      "number": 350,
+      "title": "feat: expand model routing and assistant input workflows",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/350",
+      "merged_at": "2026-08-19T00:56:33.000Z",
+      "merge_commit_sha": "c83a238805605cfe09a82f1deb13acd6364e806b",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "User-configurable multi-provider model routing and expanded structured assistant-input workflows",
+      "series_id": "model-routing-assistant-inputs",
+      "dependencies": [
+        "ROSS runtime provider allowlisting",
+        "Encrypted per-user API-key storage",
+        "Structured ask-input event and response pipeline",
+        "Model catalogue and selection UI"
+      ],
+      "prerequisites": [
+        "Approve each hosted router configuration under ADR-008",
+        "Review gateway retention, training, region, logging, subprocessors, and data classes",
+        "Threat-model provider-key handling and gateway trust boundaries",
+        "Validate proposed schema, migration, RLS, export, and deletion behavior",
+        "Add integration coverage for tenant isolation and router-model authorization",
+        "Verify selected models and request controls against live provider contracts",
+        "Decide separately whether any Railpack deployment configuration belongs in ROSS"
+      ],
+      "reason": "ROSS already contains the relevant seams in runtimeModels/model capabilities, userApiKeys, ModelToggle, and the ask-input pipeline, including parts of the upstream behavior. The remaining router catalogue and persistence capability crosses secrets, provider policy, schema/RLS, tenant data, and deployment boundaries, so equivalence or adoption cannot be concluded safely without governance and integration evidence.",
+      "architecture_brief": "Implement only through ROSS’s approved-provider runtime boundary: expose router models from a server-validated catalogue, persist selections under user-scoped RLS, resolve credentials through the existing encrypted key service, and enforce provider/data-class approval before dispatch. Reuse the existing structured ask-input pipeline. Keep deployment packaging outside this capability decision.",
+      "implementation_plan": [
+        "Inventory PR #350 behavior against current ROSS to isolate missing router-routing behavior from already-equivalent model and ask-input features.",
+        "Produce an ADR-008 provider-selection record for OpenRouter and any Vercel gateway configuration.",
+        "Define and review the user-router-model schema, RLS policies, deletion/export behavior, and migration rollback plan.",
+        "Add server-side catalogue validation, runtime allowlisting, credential-source enforcement, and tenant-isolation tests.",
+        "Adapt the account model settings and ModelToggle UI to the approved server catalogue with unavailable-state disclosures.",
+        "Run focused backend, frontend, Supabase integration, privacy/security, and live-provider contract tests before reconsideration.",
+        "Evaluate Railpack deployment support as a separate infrastructure candidate."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-25T16:23:29.503Z",
+      "processed_at": "2026-08-25T16:23:29.503Z",
+      "v2_attempted_at": "2026-08-25T16:23:29.503Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS already contains the relevant seams in runtimeModels/model capabilities, userApiKeys, ModelToggle, and the ask-input pipeline, including parts of the upstream behavior. The remaining router catalogue and persistence capability crosses secrets, provider policy, schema/RLS, tenant data, and deployment boundaries, so equivalence or adoption cannot be concluded safely without governance and integration evidence.",
+          "processed_at": "2026-08-25T16:23:29.503Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 2
+      "needs-test-harness": 2,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 2
+      "retryable": 2,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 2,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
