@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-24T14:34:44Z",
+  "last_merged_at": "2026-08-25T14:36:06Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1783,26 +1783,97 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-24T14:59:06.586Z"
+    },
+    {
+      "number": 366,
+      "title": "Word add-in: client-executed tool loop for tracked edits",
+      "url": "https://github.com/open-legal-products/mike/pull/366",
+      "merged_at": "2026-08-25T13:34:14.000Z",
+      "merge_commit_sha": "cbe6fa153cf6e7ee3413a62d6c6a321e8ae26043",
+      "decision": "skip",
+      "outcome": "incompatible",
+      "status": "terminal",
+      "risk": "none",
+      "capability": "word-client-tool-loop",
+      "series_id": "word-tracked-edit-loop",
+      "dependencies": [],
+      "prerequisites": [
+        "Word add-in runtime in ROSS",
+        "approved client-executed tool architecture",
+        "security and product review of document mutation semantics"
+      ],
+      "reason": "ROSS has no Word add-in runtime. The capability requires a new bidirectional client-tool protocol and document-write trust boundary, exceeding low-risk sync scope.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-25T15:04:00.114Z"
+    },
+    {
+      "number": 382,
+      "title": "Secure authentication with HttpOnly cookies",
+      "url": "https://github.com/open-legal-products/mike/pull/382",
+      "merged_at": "2026-08-25T14:34:26.000Z",
+      "merge_commit_sha": "83db352799bbe8d397bfc0d8fcc31eb24b44aa5e",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "httponly-cookie-auth",
+      "series_id": "auth-session-hardening",
+      "dependencies": [],
+      "prerequisites": [
+        "complete upstream patch evidence",
+        "ROSS authentication architecture decision",
+        "security, privacy, migration, deployment, and governance review"
+      ],
+      "reason": "Metadata-only evidence describes a broad authentication rewrite spanning cookies, MFA, schemas, migrations, Supabase, dependencies, deployment, and runtime controls. It requires human security and architecture judgment.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-25T15:04:00.114Z"
+    },
+    {
+      "number": 379,
+      "title": "fix(chat): surface empty upstream model completions instead of silence",
+      "url": "https://github.com/open-legal-products/mike/pull/379",
+      "merged_at": "2026-08-25T14:36:06.000Z",
+      "merge_commit_sha": "6a62d01aed37e73ba97ee01c5d057a90e8406eaf",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "empty-completion-feedback",
+      "series_id": "chat-stream-resilience",
+      "dependencies": [],
+      "prerequisites": [
+        "focused authenticated chat-route SSE integration harness",
+        "tests distinguishing empty completions from valid tool-only event streams"
+      ],
+      "reason": "Visible feedback for empty model completions is useful, but ROSS lacks the upstream route integration harness. The change also alters the streamed API completion contract, so it cannot be automatically applied without focused evaluation.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-25T15:04:00.114Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 80,
+      "needs-decision": 81,
       "equivalent": 15,
       "adapted": 1,
-      "needs-test-harness": 5,
+      "needs-test-harness": 6,
       "deferred": 1,
-      "incompatible": 3,
+      "incompatible": 4,
       "retryable": 7
     },
     "by_status": {
-      "needs-decision": 80,
-      "terminal": 20,
-      "retryable": 12
+      "needs-decision": 81,
+      "terminal": 21,
+      "retryable": 13
     },
     "by_risk": {
-      "none": 112
+      "none": 115
     }
   }
 }
