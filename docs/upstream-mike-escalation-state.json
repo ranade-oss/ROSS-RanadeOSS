@@ -406,22 +406,77 @@
           "processed_at": "2026-08-25T16:19:41.624Z"
         }
       ]
+    },
+    {
+      "number": 353,
+      "title": "Model routing hardening",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/353",
+      "merged_at": "2026-08-19T09:45:07.000Z",
+      "merge_commit_sha": "64e2865a1fd0c9182d02b639d656492b7c098896",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "End-to-end hardening of user-configured router model selection, authorization, persistence, provider normalization, and client parity.",
+      "series_id": "mike-model-routing-hardening",
+      "dependencies": [
+        "User-scoped router-model catalog and persistence contract",
+        "Canonical model-ID and provider-adapter translation contract",
+        "Server-side request-model allowlist enforcement",
+        "Web and Word add-in selection parity",
+        "OpenRouter/Vercel adapters",
+        "Atomic saved-model replacement"
+      ],
+      "prerequisites": [
+        "Decide whether ROSS supports user-configured router catalogs",
+        "Threat-model user-controlled model IDs and routing authorization",
+        "Review schema, RLS, migration, rollback, and concurrency behavior",
+        "Create backend/frontend contract and integration tests",
+        "Decide whether Word add-in parity is in scope"
+      ],
+      "reason": "PR #353 changes security boundaries, provider routing, user-scoped persistence, schema/migrations, and API-key-dependent execution. ROSS has curated model registry, catalog, resolver, and composer seams, but no equivalent user_router_models boundary; safe adoption therefore requires product, security, and data-model decisions plus ROSS-native tests.",
+      "architecture_brief": "Retain ROSS's model capability registry and runtime resolver as the compatibility boundary. If configurable routers are approved, add an RLS-protected user catalog service that validates canonical IDs, performs atomic updates, and intersects saved selections with provider availability on every request. Backend request handling must authorize models; provider-specific ID translation and stream normalization stay inside adapters.",
+      "implementation_plan": [
+        "Document supported routers, canonical IDs, catalog ownership, and add-in scope.",
+        "Define authorization, isolation, stale-catalog, degraded-state, and credential invariants.",
+        "Design and review atomic persistence with RLS, concurrency, rollback, and missing-table handling.",
+        "Implement normalization and authorization at ROSS catalog, resolver, settings, streaming, and adapter seams.",
+        "Build tests for duplicate prefixes, unauthorized models, concurrent replacement, degraded profiles, tool arguments, stream ordering, migrations/RLS, and client parity."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-26T16:39:19.289Z",
+      "processed_at": "2026-08-26T16:39:19.289Z",
+      "v2_attempted_at": "2026-08-26T16:39:19.289Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "PR #353 changes security boundaries, provider routing, user-scoped persistence, schema/migrations, and API-key-dependent execution. ROSS has curated model registry, catalog, resolver, and composer seams, but no equivalent user_router_models boundary; safe adoption therefore requires product, security, and data-model decisions plus ROSS-native tests.",
+          "processed_at": "2026-08-26T16:39:19.289Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 2
+      "needs-test-harness": 2,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 2
+      "retryable": 2,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 2,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
