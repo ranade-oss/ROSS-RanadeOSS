@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-25T14:36:06Z",
+  "last_merged_at": "2026-08-26T19:16:17Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1854,12 +1854,37 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-25T15:04:00.114Z"
+    },
+    {
+      "number": 383,
+      "title": "feat: persist model and reasoning selections",
+      "url": "https://github.com/open-legal-products/mike/pull/383",
+      "merged_at": "2026-08-26T19:16:17.000Z",
+      "merge_commit_sha": "1b58c7aa0520ff185c44698cea1a9e0c96af50ab",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "model-reasoning-selection-persistence",
+      "series_id": null,
+      "dependencies": [],
+      "prerequisites": [
+        "Full upstream patch and focused behavioral evidence",
+        "Architecture and product decision on persistence scope",
+        "Security, privacy, and data-boundary review",
+        "Schema and migration review"
+      ],
+      "reason": "ROSS already persists model choice browser-locally, while reasoning choice remains component-local. Extending persistence across chat, project, tabular, and Word surfaces affects prohibited schemas, APIs, provider-key paths, and governance boundaries; metadata alone is insufficient for implementation.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-27T23:47:37.052Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 81,
+      "needs-decision": 82,
       "equivalent": 15,
       "adapted": 1,
       "needs-test-harness": 6,
@@ -1868,12 +1893,12 @@
       "retryable": 7
     },
     "by_status": {
-      "needs-decision": 81,
+      "needs-decision": 82,
       "terminal": 21,
       "retryable": 13
     },
     "by_risk": {
-      "none": 115
+      "none": 116
     }
   }
 }
