@@ -406,21 +406,61 @@
           "processed_at": "2026-08-25T16:19:41.624Z"
         }
       ]
+    },
+    {
+      "number": 354,
+      "title": "[Ask input findings] Ask-inputs caps and failed-submit recovery",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/354",
+      "merged_at": "2026-08-19T09:47:11.000Z",
+      "merge_commit_sha": "c02d07ed45f6fb229b39b841e56791fa315765db",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "medium",
+      "capability": "ask-input-submit-integrity",
+      "series_id": "model-routing-350",
+      "dependencies": [
+        "Mike PR #350",
+        "Mike PR #353"
+      ],
+      "prerequisites": [
+        "Request-boundary tests for both ROSS chat routes",
+        "Frontend tests covering rejected and resolved-null submissions",
+        "Synthetic/non-confidential prompt replay evaluation"
+      ],
+      "reason": "ROSS has matching seams in response normalization, AskInputPopup, ChatView, and useAssistantChat, but currently truncates oversized answers silently and permanently hides submitted inputs even when handleChat resolves null. Focused tests are required before aligning caps and recovery behavior.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": "2026-09-04T00:37:44.885Z",
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-28T00:37:44.885Z",
+      "processed_at": "2026-08-28T00:37:44.885Z",
+      "v2_attempted_at": "2026-08-28T00:37:44.885Z",
+      "history": [
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "ROSS has matching seams in response normalization, AskInputPopup, ChatView, and useAssistantChat, but currently truncates oversized answers silently and permanently hides submitted inputs even when handleChat resolves null. Focused tests are required before aligning caps and recovery behavior.",
+          "processed_at": "2026-08-28T00:37:44.885Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 2
+      "needs-test-harness": 3
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 2
+      "retryable": 3
     },
     "by_risk": {
       "defer": 54,
-      "medium": 2,
+      "medium": 3,
       "none": 1
     }
   }
