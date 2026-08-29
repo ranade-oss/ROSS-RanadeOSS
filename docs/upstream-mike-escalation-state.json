@@ -446,21 +446,66 @@
           "processed_at": "2026-08-28T00:37:44.885Z"
         }
       ]
+    },
+    {
+      "number": 355,
+      "title": "[Document panel updates] Version-panel resilience",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/355",
+      "merged_at": "2026-08-19T10:31:59.000Z",
+      "merge_commit_sha": "f9659461aa63d49ae03b0d865ca7fe6efe30db66",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "medium",
+      "capability": "Resolve assistant document links to concrete, non-deleted versions before creating tabs; preserve consistent tab identity and surface lookup/unavailable-version failures.",
+      "series_id": "assistant-versioned-panel-tabs",
+      "dependencies": [
+        "Per-version assistant panel tab identity",
+        "A shared panel-document version resolver across citation, edit, and document entry points"
+      ],
+      "prerequisites": [
+        "Add Vitest and React component-test configuration for the frontend",
+        "Establish focused tests for version resolution, soft-deleted versions, failure warnings, and cross-entry-point tab identity"
+      ],
+      "reason": "ROSS already exposes version IDs/numbers, deleted_at, and listDocumentVersions, so the resolver fits its API seam. However, ChatView currently keys and deduplicates tabs by document ID, has no shared resolver, and the frontend has no test script, Vitest dependency, or relevant tests. Adapting this safely requires the missing harness and preceding per-version tab-identity capability.",
+      "architecture_brief": "Implement at ChatView’s openCitation, openEditor, and openDocument boundary, backed by a small resolver using listDocumentVersions. Generate tab IDs from document ID plus resolved version ID, reject deleted or missing historical versions, and show an existing warning popup without creating a misleading fallback tab.",
+      "implementation_plan": [
+        "Introduce the focused frontend test harness and capture current document-ID tab behavior.",
+        "Add version-aware tab identity while preserving case and authority tab behavior.",
+        "Add a resolver that accepts explicit versions, resolves current or numbered versions, excludes deleted rows, and returns typed failure reasons.",
+        "Route every document-opening entry point through the resolver and display retry/unavailable warnings.",
+        "Verify duplicate-tab prevention, historical-version fidelity, soft-delete handling, lookup retry, and existing panel behavior."
+      ],
+      "next_review_at": "2026-09-05T00:08:42.298Z",
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-29T00:08:42.298Z",
+      "processed_at": "2026-08-29T00:08:42.298Z",
+      "v2_attempted_at": "2026-08-29T00:08:42.298Z",
+      "history": [
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "ROSS already exposes version IDs/numbers, deleted_at, and listDocumentVersions, so the resolver fits its API seam. However, ChatView currently keys and deduplicates tabs by document ID, has no shared resolver, and the frontend has no test script, Vitest dependency, or relevant tests. Adapting this safely requires the missing harness and preceding per-version tab-identity capability.",
+          "processed_at": "2026-08-29T00:08:42.298Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 3
+      "needs-test-harness": 4
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 3
+      "retryable": 4
     },
     "by_risk": {
       "defer": 54,
-      "medium": 3,
+      "medium": 4,
       "none": 1
     }
   }
