@@ -491,22 +491,74 @@
           "processed_at": "2026-08-29T00:08:42.298Z"
         }
       ]
+    },
+    {
+      "number": 360,
+      "title": "feat(word-addin): refine review flow and shared assistant UI",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/360",
+      "merged_at": "2026-08-20T15:46:29.000Z",
+      "merge_commit_sha": "5989c3a46c9da3c7cc89a50c6ad6518ee8dc99ed",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Durable Word review workflow with shared assistant UI and persisted document-edit resolution",
+      "series_id": "word-review-v2",
+      "dependencies": [
+        "Mike PR #347",
+        "Mike PR #299",
+        "Mike PR #221"
+      ],
+      "prerequisites": [
+        "Complete upstream patch evidence",
+        "Product approval for a ROSS Word add-in",
+        "Authentication, privacy, and tenant/data-boundary review",
+        "Schema, migration, and RLS review",
+        "Word document-mutation test harness"
+      ],
+      "reason": "ROSS has web-native tracked-edit seams but no Word add-in. This metadata-only candidate adds authenticated routes, persistent edit schemas, migrations, RLS-sensitive storage, and document mutation semantics, requiring human review.",
+      "architecture_brief": "Implement only through ROSS access-controlled chat/document services and existing tracked-change model, with a separately approved Word client adapter; preserve tenant checks, version lineage, idempotent edit resolution, and RLS guarantees.",
+      "implementation_plan": [
+        "Obtain and audit the complete patch and map its behavior to ROSS document_edits, versioning, chat streaming, and shared assistant components.",
+        "Define Word add-in authentication, deployment, document identity, and tenant-boundary architecture.",
+        "Review proposed tables, migrations, grants, and RLS policies against ROSS security invariants.",
+        "Build focused integration and Word host tests for edit persistence, conflicts, retries, accept/reject, replace-one/all, and cross-tenant denial.",
+        "Implement a bounded ROSS-native slice only after architecture and security approval."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-29T18:53:37.038Z",
+      "processed_at": "2026-08-29T18:53:37.038Z",
+      "v2_attempted_at": "2026-08-29T18:53:37.038Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has web-native tracked-edit seams but no Word add-in. This metadata-only candidate adds authenticated routes, persistent edit schemas, migrations, RLS-sensitive storage, and document mutation semantics, requiring human review.",
+          "processed_at": "2026-08-29T18:53:37.038Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 4
+      "needs-test-harness": 4,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 4
+      "retryable": 4,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 4,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
