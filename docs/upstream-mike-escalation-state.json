@@ -491,22 +491,70 @@
           "processed_at": "2026-08-29T00:08:42.298Z"
         }
       ]
+    },
+    {
+      "number": 325,
+      "title": "feat: add PRD template for scoping larger features",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/325",
+      "merged_at": "2026-08-20T15:47:56.000Z",
+      "merge_commit_sha": "31ee5da355d2d0a7beab5f4940db41631e829b9a",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Lightweight PRD intake template for scoping large cross-cutting changes",
+      "series_id": null,
+      "dependencies": [
+        "GitHub issue-template support",
+        "ROSS contribution governance",
+        "Existing ADR process"
+      ],
+      "prerequisites": [
+        "Maintainer approval of PRD ownership, required-use criteria, and relationship to ADRs"
+      ],
+      "reason": "ROSS has an ADR template and PR checklist but no general feature-scoping template. The capability fits the contribution/documentation seam, yet adopting a mandatory PRD gate changes governance and risks duplicating ADRs. As metadata-only governance work, it receives no patch.",
+      "architecture_brief": "Implement, if approved, at the contribution-governance seam: a ROSS-specific issue template plus a reusable documentation template referenced by CONTRIBUTING.md. Define PRDs as pre-implementation scoping records and ADRs as durable architecture decisions.",
+      "implementation_plan": [
+        "Decide which changes require a PRD and who approves it.",
+        "Define when a PRD must create or reference an ADR.",
+        "Adapt terminology and affected-area guidance to ROSS boundaries.",
+        "Verify GitHub renders the template correctly and all documentation links resolve.",
+        "Review the final metadata diff for consistency with existing contribution and release controls."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-30T18:49:32.590Z",
+      "processed_at": "2026-08-30T18:49:32.590Z",
+      "v2_attempted_at": "2026-08-30T18:49:32.590Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has an ADR template and PR checklist but no general feature-scoping template. The capability fits the contribution/documentation seam, yet adopting a mandatory PRD gate changes governance and risks duplicating ADRs. As metadata-only governance work, it receives no patch.",
+          "processed_at": "2026-08-30T18:49:32.590Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 4
+      "needs-test-harness": 4,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 4
+      "retryable": 4,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 4,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
