@@ -491,21 +491,69 @@
           "processed_at": "2026-08-29T00:08:42.298Z"
         }
       ]
+    },
+    {
+      "number": 357,
+      "title": "feat: formalize design system on existing shadcn/Tailwind foundation",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/357",
+      "merged_at": "2026-08-20T17:28:31.000Z",
+      "merge_commit_sha": "5b441de08ea797dd7ea51c207fa7166d0c39753d",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "medium",
+      "capability": "Formalized shadcn/Tailwind design system with reusable UI primitives and accessibility conventions",
+      "series_id": "design-system-foundation",
+      "dependencies": [
+        "frontend/components.json shadcn configuration",
+        "frontend/src/app/globals.css Tailwind tokens",
+        "frontend/src/app/components/ui",
+        "frontend/src/app/components/shared/TablePrimitive.tsx",
+        "frontend/src/app/components/modals/Modal.tsx"
+      ],
+      "prerequisites": [
+        "Add a focused React component accessibility test harness",
+        "Add representative visual regression coverage for shared primitives and empty states",
+        "Inventory duplicate ROSS-native controls against current component seams"
+      ],
+      "reason": "ROSS has the same shadcn/Tailwind foundation, but upstream targets missing or divergent shared-ui seams and spans 42 files. Existing ROSS has no component-test script or testing dependencies, so build/lint alone cannot reliably validate interaction, ARIA, or visual behavior.",
+      "architecture_brief": "Implement incrementally in ROSS at frontend/src/app/components/ui, composing existing app-level seams such as TableEmptyState and Modal. Preserve ROSS branding and feature components; introduce only primitives proven to replace repeated markup.",
+      "implementation_plan": [
+        "Establish focused tests for keyboard focus, accessible names, button types, and state semantics",
+        "Capture representative visual baselines for modal controls, selection indicators, and empty states",
+        "Inventory repeated ROSS markup and select one bounded primitive migration",
+        "Run component tests, lint, build, and targeted end-to-end flows before reconsidering adaptation"
+      ],
+      "next_review_at": "2026-09-07T21:07:33.127Z",
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-08-31T21:07:33.127Z",
+      "processed_at": "2026-08-31T21:07:33.127Z",
+      "v2_attempted_at": "2026-08-31T21:07:33.127Z",
+      "history": [
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "ROSS has the same shadcn/Tailwind foundation, but upstream targets missing or divergent shared-ui seams and spans 42 files. Existing ROSS has no component-test script or testing dependencies, so build/lint alone cannot reliably validate interaction, ARIA, or visual behavior.",
+          "processed_at": "2026-08-31T21:07:33.127Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 4
+      "needs-test-harness": 5
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 4
+      "retryable": 5
     },
     "by_risk": {
       "defer": 54,
-      "medium": 4,
+      "medium": 5,
       "none": 1
     }
   }
