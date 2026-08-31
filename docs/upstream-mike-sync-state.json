@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-26T19:16:17Z",
+  "last_merged_at": "2026-08-31T15:41:38Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1879,6 +1879,29 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-27T23:47:37.052Z"
+    },
+    {
+      "number": 390,
+      "title": "test(history): pin the clock so the calendar suite stops betting on the date",
+      "url": "https://github.com/open-legal-products/mike/pull/390",
+      "merged_at": "2026-08-31T15:41:38.000Z",
+      "merge_commit_sha": "6c77dda0aefbfcb569e2180a1e8425d8633349cc",
+      "decision": "investigate",
+      "outcome": "needs-test-harness",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "deterministic-history-calendar-tests",
+      "series_id": null,
+      "dependencies": [],
+      "prerequisites": [
+        "ROSS history-calendar test surface",
+        "focused frontend component test harness with fake-Date support"
+      ],
+      "reason": "ROSS has neither the upstream history page nor a frontend component-test runner, so the useful clock-pinning capability cannot yet be implemented or verified.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-08-31T20:02:26.074Z"
     }
   ],
   "policy": "v2",
@@ -1887,7 +1910,7 @@
       "needs-decision": 82,
       "equivalent": 15,
       "adapted": 1,
-      "needs-test-harness": 6,
+      "needs-test-harness": 7,
       "deferred": 1,
       "incompatible": 4,
       "retryable": 7
@@ -1895,10 +1918,10 @@
     "by_status": {
       "needs-decision": 82,
       "terminal": 21,
-      "retryable": 13
+      "retryable": 14
     },
     "by_risk": {
-      "none": 116
+      "none": 117
     }
   }
 }
