@@ -378,25 +378,26 @@
       "url": "https://github.com/Open-Legal-Products/mike/pull/348",
       "merged_at": "2026-08-18T03:28:03.000Z",
       "merge_commit_sha": "a2571b53d66ab7b28b5babcae3f49f133009610a",
-      "decision": "investigate",
-      "outcome": "needs-test-harness",
-      "status": "retryable",
+      "decision": "skip",
+      "outcome": "equivalent",
+      "status": "terminal",
       "risk": "none",
       "capability": "Tracked-change card alignment with simplified single-card presentation",
-      "series_id": null,
-      "dependencies": [],
-      "prerequisites": [
-        "Focused ROSS frontend component-test harness for single-card and multi-card tracked-change rendering"
+      "series_id": "word-addin-chat-299",
+      "dependencies": [
+        "Mike PR #221",
+        "Mike PR #299"
       ],
-      "reason": "ROSS already has precise DOCX edits, Accept/Reject/View controls, bulk sections, and native pill styling, but no Word add-in. Only the single-card wrapper simplification remains useful, and it lacks regression coverage.",
+      "prerequisites": [],
+      "reason": "ROSS already renders a lone tracked edit without bulk/collapse UI, preserves multi-edit grouping, requests precise minimal DOCX substitutions, orders Accept/Reject/View controls, and uses a native shared pill-button seam. ROSS has no Word add-in consumer, so the remaining cross-surface refactor adds no capability.",
       "architecture_brief": null,
       "implementation_plan": [],
-      "next_review_at": "2026-09-01T16:19:41.624Z",
+      "next_review_at": null,
       "policy": "v2",
-      "attempts": 1,
+      "attempts": 2,
       "first_processed_at": "2026-08-25T16:19:41.624Z",
-      "processed_at": "2026-08-25T16:19:41.624Z",
-      "v2_attempted_at": "2026-08-25T16:19:41.624Z",
+      "processed_at": "2026-09-01T18:52:06.135Z",
+      "v2_attempted_at": "2026-09-01T18:52:06.135Z",
       "history": [
         {
           "outcome": "needs-test-harness",
@@ -404,6 +405,13 @@
           "risk": "none",
           "reason": "ROSS already has precise DOCX edits, Accept/Reject/View controls, bulk sections, and native pill styling, but no Word add-in. Only the single-card wrapper simplification remains useful, and it lacks regression coverage.",
           "processed_at": "2026-08-25T16:19:41.624Z"
+        },
+        {
+          "outcome": "equivalent",
+          "status": "terminal",
+          "risk": "none",
+          "reason": "ROSS already renders a lone tracked edit without bulk/collapse UI, preserves multi-edit grouping, requests precise minimal DOCX substitutions, orders Accept/Reject/View controls, and uses a native shared pill-button seam. ROSS has no Word add-in consumer, so the remaining cross-surface refactor adds no capability.",
+          "processed_at": "2026-09-01T18:52:06.135Z"
         }
       ]
     },
@@ -545,11 +553,12 @@
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 4,
+      "equivalent": 1
     },
     "by_status": {
-      "terminal": 55,
-      "retryable": 5
+      "terminal": 56,
+      "retryable": 4
     },
     "by_risk": {
       "defer": 54,
