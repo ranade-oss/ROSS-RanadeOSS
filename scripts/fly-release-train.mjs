@@ -731,6 +731,7 @@ function rehearse() {
                 candidate.api,
                 { privateOnly: true },
             );
+            startRehearsalMachines(stageApps);
             verifyImage(stageApps.worker, candidate.worker);
             verifyImage(stageApps.api, candidate.api);
             verifyImage(stageApps.web, baseline.web);
