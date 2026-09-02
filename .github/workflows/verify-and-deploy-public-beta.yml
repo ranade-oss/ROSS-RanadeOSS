@@ -85,7 +85,7 @@ jobs:
       ROSS_SECURITY_ALERT_WEBHOOK_SECRET: ${{ secrets.ROSS_SECURITY_ALERT_WEBHOOK_SECRET }}
       FLY_ORG: personal
       PROD_API_APP: ross-ranadeoss-api
-      PROD_WEB_APP: ross-ranadeoss-public
+      PROD_WEB_APP: ross-ranadeoss-private
       PROD_WORKER_APP: ross-ranadeoss-file-worker
       STAGE_API_APP: ross-ranadeoss-api-rehearsal
       STAGE_WEB_APP: ross-ranadeoss-web-rehearsal
