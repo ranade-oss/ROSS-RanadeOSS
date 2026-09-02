@@ -50,8 +50,13 @@ test("legacy minimatch compatibility patching is deterministic and fail closed",
 
 test("security-sensitive transitive dependencies stay on fixed releases", () => {
   const workspaces = {
-    backend: { fastUri: "3.1.5", ipAddress: "10.4.0" },
-    website: { fastUri: "3.1.5", undici: "7.29.0" },
+    backend: { fastUri: "3.1.6", ipAddress: "10.4.0" },
+    frontend: { browserslist: "4.28.7" },
+    website: {
+      browserslist: "4.28.7",
+      fastUri: "3.1.6",
+      undici: "7.29.0",
+    },
   };
 
   for (const [workspace, expected] of Object.entries(workspaces)) {
@@ -60,6 +65,9 @@ test("security-sensitive transitive dependencies stay on fixed releases", () => 
     const overrides = packageJson.overrides ?? {};
 
     for (const [dependency, version] of Object.entries({
+      ...(expected.browserslist
+        ? { browserslist: expected.browserslist }
+        : {}),
       ...(expected.fastUri ? { "fast-uri": expected.fastUri } : {}),
       ...(expected.ipAddress ? { "ip-address": expected.ipAddress } : {}),
       ...(expected.undici ? { undici: expected.undici } : {}),
