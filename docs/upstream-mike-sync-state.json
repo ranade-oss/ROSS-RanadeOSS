@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-09-01T11:25:17Z",
+  "last_merged_at": "2026-09-02T09:16:57Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1957,26 +1957,126 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-09-01T12:04:46.214Z"
+    },
+    {
+      "number": 399,
+      "title": "Improve workflow assets and document table interactions",
+      "url": "https://github.com/open-legal-products/mike/pull/399",
+      "merged_at": "2026-09-01T13:44:08.000Z",
+      "merge_commit_sha": "fdd4ed19449876b313a3e12b5f42388c07f4d867",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "none",
+      "capability": "workflow-document-table-interactions",
+      "series_id": null,
+      "dependencies": [],
+      "prerequisites": [
+        "Bounded upstream patch",
+        "Focused workflow-asset and document-table tests against current ROSS seams"
+      ],
+      "reason": "Potentially useful UI capability is inseparable in the available metadata from migrations, schemas, access controls, storage, and data-boundary changes; omitted code must not be reconstructed.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": "2026-09-09T00:00:00.000Z",
+      "processed_at": "2026-09-02T17:54:35.654Z"
+    },
+    {
+      "number": 251,
+      "title": "[Security 8/9] Supply-chain hygiene: CVE patches, audit ratchet, Dependabot",
+      "url": "https://github.com/open-legal-products/mike/pull/251",
+      "merged_at": "2026-09-01T17:23:13.000Z",
+      "merge_commit_sha": "dd91a85ba274f9e31f942ee7a69feab4a7f8afe1",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "supply-chain-audit-ratchet",
+      "series_id": "security-hardening-8-of-9",
+      "dependencies": [],
+      "prerequisites": [
+        "Security-owner review",
+        "Governed dependency and lockfile review",
+        "CI/release-control approval",
+        "Exact-head baseline verification"
+      ],
+      "reason": "ROSS already has a high-severity workspace audit, but CVE upgrades, lockfiles, Dependabot, allowlists, and security workflows affect protected dependency, security, governance, and release controls.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-09-02T17:54:35.654Z"
+    },
+    {
+      "number": 268,
+      "title": "[Orgs] 2 Organization management UI + role-aware permission gating (stacked on #267)",
+      "url": "https://github.com/open-legal-products/mike/pull/268",
+      "merged_at": "2026-09-02T09:15:52.000Z",
+      "merge_commit_sha": "3a38efe52d52134311ab220f4f38a7156b8975a7",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "organization-role-management",
+      "series_id": "organizations-rbac",
+      "dependencies": [
+        "#267"
+      ],
+      "prerequisites": [
+        "Review and formally replace the organization-deployment product boundary",
+        "Authorization and data-boundary architecture approval",
+        "Focused role-permission test plan"
+      ],
+      "reason": "Organization management and role gating depend on #267 and cross authorization, public APIs, and product governance; organization-wide deployment is an explicit ROSS boundary review trigger.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-09-02T17:54:35.654Z"
+    },
+    {
+      "number": 363,
+      "title": "[Orgs] 3 Chat permission parity: chats join the project role ladder (stacked on #268)",
+      "url": "https://github.com/open-legal-products/mike/pull/363",
+      "merged_at": "2026-09-02T09:16:57.000Z",
+      "merge_commit_sha": "b2f3d40a6848cde6a3f054fd3f672b3dc81b7eab",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "chat-role-permission-parity",
+      "series_id": "organizations-rbac",
+      "dependencies": [
+        "#268"
+      ],
+      "prerequisites": [
+        "Approved #267/#268 organization-role architecture",
+        "Authorization and migration review",
+        "Focused chat-permission integration harness"
+      ],
+      "reason": "Chat role parity is stacked on #268 and changes migrations, RLS-equivalent access behavior, tool gating, routes, and project data boundaries, requiring security and architecture judgment.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-09-02T17:54:35.654Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 84,
+      "needs-decision": 87,
       "equivalent": 15,
       "adapted": 1,
       "needs-test-harness": 7,
       "deferred": 1,
       "incompatible": 4,
-      "retryable": 7
+      "retryable": 8
     },
     "by_status": {
-      "needs-decision": 84,
+      "needs-decision": 87,
       "terminal": 21,
-      "retryable": 14
+      "retryable": 15
     },
     "by_risk": {
-      "none": 119
+      "none": 123
     }
   }
 }
