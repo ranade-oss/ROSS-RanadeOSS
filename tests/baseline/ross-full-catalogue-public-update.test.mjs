@@ -64,7 +64,10 @@ test("the release train rehearses by default and generates release IDs automatic
   assert.doesNotMatch(workflow, /a2aj-canlii-v1/);
   assert.match(workflow, /Run complete engineering gate/);
   assert.match(workflow, /run: npm run check/);
-  assert.match(workflow, /environment: public-beta/);
+  assert.match(workflow, /environment: private-online/);
+  assert.doesNotMatch(workflow, /environment: public-beta/);
+  assert.match(workflow, /Reject unsupported public application promotion/);
+  assert.match(workflow, /PROD_WEB_APP: ross-ranadeoss-private/);
   assert.match(workflow, /build-release-train-images\.sh/);
   assert.match(workflow, /fly-release-train\.mjs rehearse/);
   assert.match(workflow, /if: inputs\.promote_public/);

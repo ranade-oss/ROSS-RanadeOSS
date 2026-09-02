@@ -60,7 +60,7 @@ test("only immutable Fly digest references can enter the release ledger", () => 
 test("production and rehearsal app names are fixed, distinct, and isolated", () => {
   const apps = {
     prodApi: "ross-ranadeoss-api",
-    prodWeb: "ross-ranadeoss-public",
+    prodWeb: "ross-ranadeoss-private",
     prodWorker: "ross-ranadeoss-file-worker",
     stageApi: "ross-ranadeoss-api-rehearsal",
     stageWeb: "ross-ranadeoss-web-rehearsal",
@@ -77,8 +77,14 @@ test("production and rehearsal app names are fixed, distinct, and isolated", () 
   );
 });
 
-test("the supported workflow is one-button rehearsal with optional public promotion", () => {
+test("the supported workflow rehearses private images and blocks unsupported public promotion", () => {
   const workflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
+  const unsupportedPromotion = workflow.indexOf(
+    "name: Reject unsupported public application promotion",
+  );
+  const protectedSecrets = workflow.indexOf(
+    "name: Validate existing protected secrets",
+  );
   const fullGate = workflow.indexOf("name: Run complete engineering gate");
   const sourceGate = workflow.indexOf(
     "name: Observe live legal sources for production gate",
@@ -102,6 +108,19 @@ test("the supported workflow is one-button rehearsal with optional public promot
   );
 
   assert.match(workflow, /promote_public:[\s\S]*?default: false/);
+  assert.match(workflow, /environment: private-online/);
+  assert.doesNotMatch(workflow, /environment: public-beta/);
+  assert.ok(unsupportedPromotion >= 0);
+  assert.ok(unsupportedPromotion < protectedSecrets);
+  assert.ok(protectedSecrets < build);
+  assert.match(
+    workflow,
+    /if: inputs\.promote_public[\s\S]*?Public beta has no independent Supabase-backed application deployment[\s\S]*?exit 1/,
+  );
+  assert.match(
+    workflow,
+    /Required private-online rehearsal secret is missing/,
+  );
   assert.doesNotMatch(
     workflow,
     /release_id:|fly_organization:|api_app_name:|web_app_name:|confirm_deployment:/,
@@ -391,7 +410,7 @@ test("a fake Fly run proves forced failure, full rollback, and later promotion",
 
   const apps = {
     prodApi: "ross-ranadeoss-api",
-    prodWeb: "ross-ranadeoss-public",
+    prodWeb: "ross-ranadeoss-private",
     prodWorker: "ross-ranadeoss-file-worker",
     stageApi: "ross-ranadeoss-api-rehearsal",
     stageWeb: "ross-ranadeoss-web-rehearsal",
@@ -541,7 +560,7 @@ if (command === "ssh" && subcommand === "console") {
     probe.includes("http://ross-ranadeoss-worker-rehearsal.flycast");
   const production =
     probe.includes("https://ross-ranadeoss-api.fly.dev") &&
-    probe.includes("https://ross-ranadeoss-public.fly.dev") &&
+    probe.includes("https://ross-ranadeoss-private.fly.dev") &&
     probe.includes("http://ross-ranadeoss-file-worker.flycast");
   if (!rehearsal && !production) {
     process.stderr.write("Probe did not use the required Fly Proxy routes.");
@@ -555,7 +574,7 @@ if (command === "ssh" && subcommand === "console") {
       ]
     : [
         "ross-ranadeoss-api",
-        "ross-ranadeoss-public",
+        "ross-ranadeoss-private",
         "ross-ranadeoss-file-worker",
       ];
   if (requiredApps.some((requiredApp) => state.apps[requiredApp]?.state !== "started")) {

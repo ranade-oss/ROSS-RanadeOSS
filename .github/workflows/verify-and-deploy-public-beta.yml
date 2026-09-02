@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       promote_public:
-        description: Promote the rehearsed image digests to public production
+        description: Request public application promotion (blocked until public beta has an independent backend)
         required: true
         default: false
         type: boolean
@@ -65,11 +65,11 @@ jobs:
         run: git diff --exit-code
 
   release-train:
-    name: Rehearse and optionally promote exact image digests
+    name: Rehearse exact private application image digests
     needs: qualify
     runs-on: ubuntu-latest
     timeout-minutes: 150
-    environment: public-beta
+    environment: private-online
     permissions:
       contents: write
     env:
@@ -85,7 +85,7 @@ jobs:
       ROSS_SECURITY_ALERT_WEBHOOK_SECRET: ${{ secrets.ROSS_SECURITY_ALERT_WEBHOOK_SECRET }}
       FLY_ORG: personal
       PROD_API_APP: ross-ranadeoss-api
-      PROD_WEB_APP: ross-ranadeoss-public
+      PROD_WEB_APP: ross-ranadeoss-private
       PROD_WORKER_APP: ross-ranadeoss-file-worker
       STAGE_API_APP: ross-ranadeoss-api-rehearsal
       STAGE_WEB_APP: ross-ranadeoss-web-rehearsal
@@ -109,6 +109,13 @@ jobs:
         with:
           version: 0.4.49
 
+      - name: Reject unsupported public application promotion
+        if: inputs.promote_public
+        shell: bash
+        run: |
+          echo "Public beta has no independent Supabase-backed application deployment. Publish the public website through its dedicated hosting path; use Deploy private ROSS for the private application." >&2
+          exit 1
+
       - name: Validate existing protected secrets
         shell: bash
         run: |
@@ -125,7 +132,7 @@ jobs:
             ROSS_SECURITY_ALERT_WEBHOOK_URL \
             ROSS_SECURITY_ALERT_WEBHOOK_SECRET; do
             if [ -z "${!name:-}" ]; then
-              echo "Required public-beta environment secret is missing: ${name}" >&2
+              echo "Required private-online rehearsal secret is missing: ${name}" >&2
               exit 1
             fi
           done

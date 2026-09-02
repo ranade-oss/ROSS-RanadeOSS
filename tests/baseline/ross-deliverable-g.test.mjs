@@ -20,7 +20,7 @@ test("Deliverable G records verified public registration without expanding the d
   assert.equal(plan.providerStrategy.canliiWebsiteAutomationAllowed, false);
 });
 
-test("public deployment is manual, gated, verified-email only, and separately reversible", () => {
+test("private release rehearsal is gated and unsupported public promotion fails closed", () => {
   const publicWorkflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
   const releaseTrain = read("scripts/fly-release-train.mjs");
   const imageBuild = read("scripts/build-release-train-images.sh");
@@ -28,7 +28,10 @@ test("public deployment is manual, gated, verified-email only, and separately re
 
   assert.match(publicWorkflow, /workflow_dispatch:/);
   assert.doesNotMatch(publicWorkflow, /^\s*push:/m);
-  assert.match(publicWorkflow, /environment: public-beta/);
+  assert.match(publicWorkflow, /environment: private-online/);
+  assert.doesNotMatch(publicWorkflow, /environment: public-beta/);
+  assert.match(publicWorkflow, /Reject unsupported public application promotion/);
+  assert.match(publicWorkflow, /PROD_WEB_APP: ross-ranadeoss-private/);
   assert.match(publicWorkflow, /validate-release-id\.mjs/);
   assert.match(publicWorkflow, /if: inputs\.promote_public/);
   assert.match(releaseTrain, /ROSS_REQUIRE_VERIFIED_EMAIL: "true"/);
