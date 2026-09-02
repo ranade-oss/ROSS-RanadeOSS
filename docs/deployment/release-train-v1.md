@@ -1,9 +1,9 @@
 # ROSS Release Train v1
 
-ROSS now qualifies, rehearses, and optionally promotes one immutable set of
-API, worker, and frontend image digests. The same frontend image uses a small
-public runtime configuration so staging and public production can use different
-API origins without rebuilding.
+ROSS qualifies and rehearses one immutable set of private API, worker, and
+frontend image digests. Public application promotion remains fail-closed
+because the separately hosted public beta has no independent Supabase-backed
+application deployment.
 
 ## Human workload
 
