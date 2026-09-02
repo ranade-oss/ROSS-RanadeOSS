@@ -517,8 +517,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "b50581d83d645b0f05399090dd7016ddfd6cabf85d00b2b4210fe2885274c306",
-      "sizeBytes": 28844
+      "sha256": "8aecbf1017ff262beda795b724d985b6942d6e484deffca21c258a479ed9ce64",
+      "sizeBytes": 29351
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
@@ -607,8 +607,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "2458f9ba79bf887fffc89b1b705a414dd47b451503f9a96a3953f26185f03cc0",
-      "sizeBytes": 30867
+      "sha256": "10fdfa1c47b96474a909f871134f834dbebc499d532fc26bac88f58850bdc266",
+      "sizeBytes": 31309
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
