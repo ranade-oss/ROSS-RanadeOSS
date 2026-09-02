@@ -539,21 +539,63 @@
           "processed_at": "2026-08-31T21:07:33.127Z"
         }
       ]
+    },
+    {
+      "number": 328,
+      "title": "fix(docx): disable numeric coercion of Word text runs",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/328",
+      "merged_at": "2026-08-21T09:10:10.000Z",
+      "merge_commit_sha": "d8183be43aa5f42b80f7ee7ff3cabd2f94abb584",
+      "decision": "investigate",
+      "outcome": "retryable",
+      "status": "retryable",
+      "risk": "medium",
+      "capability": "Prevent numeric coercion of Word text runs so values such as “12.10” survive unrelated tracked edits unchanged.",
+      "series_id": "docx-tracked-changes-correctness",
+      "dependencies": [
+        "backend/src/lib/docxTrackedChanges.ts shared XML parser",
+        "fast-xml-parser",
+        "jszip"
+      ],
+      "prerequisites": [],
+      "reason": "The bounded candidate attempt needs new evidence.",
+      "architecture_brief": null,
+      "implementation_plan": [
+        "Disable tag-value coercion in the shared DOCX XML parser.",
+        "Add a focused numeric-text tracked-edit round-trip regression test.",
+        "Run the new test and backend TypeScript build after installing existing dependencies."
+      ],
+      "next_review_at": "2026-09-09T19:00:07.768Z",
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-09-02T19:00:07.832Z",
+      "processed_at": "2026-09-02T19:00:07.832Z",
+      "v2_attempted_at": "2026-09-02T19:00:07.832Z",
+      "history": [
+        {
+          "outcome": "retryable",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "The bounded candidate attempt needs new evidence.",
+          "processed_at": "2026-09-02T19:00:07.832Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 5,
+      "retryable": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 5
+      "retryable": 6
     },
     "by_risk": {
       "defer": 54,
-      "medium": 5,
+      "medium": 6,
       "none": 1
     }
   }
