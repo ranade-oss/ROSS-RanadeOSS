@@ -517,8 +517,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "8aecbf1017ff262beda795b724d985b6942d6e484deffca21c258a479ed9ce64",
-      "sizeBytes": 29351
+      "sha256": "6d1fddf4e7dfe6530d5aa1b99bcced4ec8628f7a0d7333ec3f48c2122a8ebfdb",
+      "sizeBytes": 29398
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
