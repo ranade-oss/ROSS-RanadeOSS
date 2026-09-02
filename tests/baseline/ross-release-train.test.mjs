@@ -223,6 +223,11 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   );
 
   assert.match(train, /--no-public-ips/);
+  assert.match(
+    train,
+    /timeout: options\.timeoutMs \?\? commandTimeoutMs/,
+  );
+  assert.match(train, /function verifyRehearsalSet\(/);
   assert.ok(train.includes('`http://${apiApp}.flycast`'));
   assert.ok(train.includes('`http://${webApp}.flycast`'));
   assert.ok(train.includes('`http://${workerApp}.flycast`'));
@@ -515,7 +520,13 @@ if (command === "deploy") {
   process.exit(0);
 }
 if (command === "image" && subcommand === "show") {
-  const current = state.apps[flag("--app")]?.image;
+  const app = flag("--app");
+  const current = state.apps[app]?.image;
+  state.imageShows = [...(state.imageShows || []), {
+    app,
+    state: state.apps[app]?.state,
+  }];
+  save();
   if (!current) process.exit(1);
   const withoutRegistry = current.replace("registry.fly.io/", "");
   const [repository, digest] = withoutRegistry.split("@");
@@ -783,6 +794,11 @@ exec ${process.execPath} "$@"
       ({ expectedState, actualState }) =>
         expectedState === "started" && actualState === "started",
     ),
+  );
+  assert.ok(
+    state.imageShows
+      .filter(({ app }) => app.includes("-rehearsal"))
+      .every(({ state: machineState }) => machineState === "started"),
   );
   assert.ok(
     state.probes.some((probe) =>

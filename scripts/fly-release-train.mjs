@@ -60,6 +60,18 @@ const flyOrg = required("FLY_ORG");
 const releaseId = required("ROSS_RELEASE_ID");
 const policyVersion =
     process.env.POLICY_VERSION?.trim() || "2026-07-17-public-beta";
+const commandTimeoutMs = Number(
+    process.env.ROSS_RELEASE_COMMAND_TIMEOUT_MS ?? "300000",
+);
+if (
+    !Number.isInteger(commandTimeoutMs) ||
+    commandTimeoutMs < 1000 ||
+    commandTimeoutMs > 600000
+) {
+    throw new Error(
+        "ROSS_RELEASE_COMMAND_TIMEOUT_MS must be an integer from 1000 through 600000.",
+    );
+}
 
 function run(executable, args, options = {}) {
     const capture = options.capture === true;
@@ -68,6 +80,7 @@ function run(executable, args, options = {}) {
         encoding: "utf8",
         input: options.input,
         env: process.env,
+        timeout: options.timeoutMs ?? commandTimeoutMs,
         stdio: capture ? ["pipe", "pipe", "pipe"] : "inherit",
     });
     if (result.error) throw result.error;
@@ -368,6 +381,18 @@ function verifySet(targetApps, images) {
     verifyImage(targetApps.worker, images.worker);
     verifyImage(targetApps.api, images.api);
     verifyImage(targetApps.web, images.web);
+}
+
+function verifyRehearsalSet(images, { full = false } = {}) {
+    smoke("rehearsal", { full });
+    verifySet(
+        {
+            worker: apps.stageWorker,
+            api: apps.stageApi,
+            web: apps.stageWeb,
+        },
+        images,
+    );
 }
 
 function runRemoteProbe(app, machineId, args) {
@@ -690,8 +715,7 @@ function rehearse() {
         deploySet(stageApps, rehearsalConfig, baseline, {
             privateOnly: true,
         });
-        verifySet(stageApps, baseline);
-        smoke("rehearsal");
+        verifyRehearsalSet(baseline);
 
         let forcedFailureError = null;
         try {
@@ -707,6 +731,7 @@ function rehearse() {
                 candidate.api,
                 { privateOnly: true },
             );
+            startRehearsalMachines(stageApps);
             verifyImage(stageApps.worker, candidate.worker);
             verifyImage(stageApps.api, candidate.api);
             verifyImage(stageApps.web, baseline.web);
@@ -732,8 +757,7 @@ function rehearse() {
             deploySet(stageApps, rehearsalConfig, baseline, {
                 privateOnly: true,
             });
-            verifySet(stageApps, baseline);
-            smoke("rehearsal");
+            verifyRehearsalSet(baseline);
             ledger.rehearsal.rollbackVerified = true;
             saveLedger();
         }
@@ -747,8 +771,7 @@ function rehearse() {
             deploySet(stageApps, rehearsalConfig, candidate, {
                 privateOnly: true,
             });
-            verifySet(stageApps, candidate);
-            smoke("rehearsal", { full: true });
+            verifyRehearsalSet(candidate, { full: true });
             observeLegalSources(
                 "artifacts/release-train-legal-source-health.json",
             );
@@ -761,8 +784,7 @@ function rehearse() {
                 deploySet(stageApps, rehearsalConfig, baseline, {
                     privateOnly: true,
                 });
-                verifySet(stageApps, baseline);
-                smoke("rehearsal");
+                verifyRehearsalSet(baseline);
                 ledger.rehearsal.candidateFailureRollbackVerified = true;
             } catch (rollbackError) {
                 ledger.rehearsal.candidateFailureRollbackVerified = false;
