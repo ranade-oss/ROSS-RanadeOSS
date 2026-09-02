@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "upstream": "Open-Legal-Products/mike",
-  "last_merged_at": "2026-08-31T15:41:38Z",
+  "last_merged_at": "2026-09-01T11:25:17Z",
   "backfill": {
     "enabled": true,
     "started_at": "2026-07-29T00:00:00Z",
@@ -1902,12 +1902,67 @@
       "implementation_plan": [],
       "next_review_at": null,
       "processed_at": "2026-08-31T20:02:26.074Z"
+    },
+    {
+      "number": 294,
+      "title": "[Architecture] feat: durable job queues — BullMQ-primary with Postgres fallback, worker threads, async-on for new installs",
+      "url": "https://github.com/open-legal-products/mike/pull/294",
+      "merged_at": "2026-09-01T07:45:45.000Z",
+      "merge_commit_sha": "18974c934465467eea52c966e5d670e982e3dded",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "durable background jobs",
+      "series_id": "durable-jobs-v1",
+      "dependencies": [],
+      "prerequisites": [
+        "Human architecture and operations decision",
+        "Security and privacy review",
+        "Queue failure, retry, and recovery evaluation",
+        "Approved schema and deployment plan"
+      ],
+      "reason": "ROSS has a durable Postgres-backed scan queue and private worker, but not this generalized BullMQ/Postgres job architecture. Metadata alone cannot establish a safe ROSS-native scope, and the capability changes protected schemas, dependencies, infrastructure, deployment, privacy operations, and production behavior.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-09-01T12:04:46.214Z"
+    },
+    {
+      "number": 409,
+      "title": "feat: direct upload sessions rebased onto durable job queues (#397 + #400 on #294)",
+      "url": "https://github.com/open-legal-products/mike/pull/409",
+      "merged_at": "2026-09-01T11:25:17.000Z",
+      "merge_commit_sha": "0648fbaef7b0dc17d77fba1d964795fe05e106f4",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "none",
+      "capability": "durable direct uploads",
+      "series_id": "durable-uploads-v1",
+      "dependencies": [
+        "#294",
+        "#397",
+        "#400"
+      ],
+      "prerequisites": [
+        "Decision on #294 durable-job architecture",
+        "Upload threat-model review",
+        "Storage, authorization, quarantine, and data-boundary design",
+        "Focused upload concurrency and failure-recovery harness",
+        "Approved schema and deployment plan"
+      ],
+      "reason": "ROSS already quarantines uploads behind a persistent scan queue, but direct upload sessions would alter storage, authorization, schemas, APIs, infrastructure, and the synthetic/non-confidential upload boundary. The omitted patch provides insufficient evidence to assess those protected changes safely.",
+      "architecture_brief": null,
+      "implementation_plan": [],
+      "next_review_at": null,
+      "processed_at": "2026-09-01T12:04:46.214Z"
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
-      "needs-decision": 82,
+      "needs-decision": 84,
       "equivalent": 15,
       "adapted": 1,
       "needs-test-harness": 7,
@@ -1916,12 +1971,12 @@
       "retryable": 7
     },
     "by_status": {
-      "needs-decision": 82,
+      "needs-decision": 84,
       "terminal": 21,
       "retryable": 14
     },
     "by_risk": {
-      "none": 117
+      "none": 119
     }
   }
 }
