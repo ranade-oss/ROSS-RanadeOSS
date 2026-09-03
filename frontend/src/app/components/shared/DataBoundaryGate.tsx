@@ -26,9 +26,6 @@ export function DataBoundaryGate({ children }: { children: React.ReactNode }) {
         () => ROSS_HOSTED_MODE !== "controlled-beta",
     );
     const [confirmed, setConfirmed] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
     if (acknowledged) return children;
 
     return (
@@ -75,35 +72,26 @@ export function DataBoundaryGate({ children }: { children: React.ReactNode }) {
                 </label>
                 <button
                     type="button"
-                    disabled={!confirmed || saving}
-                    onClick={async () => {
-                        setSaving(true);
-                        setError(null);
-                        try {
-                            await recordDataBoundaryAcknowledgement({
-                                version: ROSS_DATA_BOUNDARY_VERSION,
-                                acknowledgement:
-                                    "provider-responsibility-acknowledged",
-                            });
-                            acknowledgeDataBoundary();
-                        } catch {
-                            setError(
-                                "ROSS could not record the acknowledgement. Please try again.",
-                            );
-                            setSaving(false);
-                        }
+                    disabled={!confirmed}
+                    onClick={() => {
+                        // The browser acknowledgement controls the policy
+                        // header and must not depend on optional server-side
+                        // audit storage being available.
+                        acknowledgeDataBoundary();
+                        void recordDataBoundaryAcknowledgement({
+                            version: ROSS_DATA_BOUNDARY_VERSION,
+                            acknowledgement:
+                                "provider-responsibility-acknowledged",
+                        }).catch(() => {
+                            // The durable server mirror is best effort. The
+                            // explicit browser record remains authoritative
+                            // for this device and policy version.
+                        });
                     }}
                     className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                    {saving
-                        ? "Recording acknowledgement…"
-                        : "Enter controlled beta"}
+                    Enter controlled beta
                 </button>
-                {error && (
-                    <p role="alert" className="mt-4 text-sm text-red-700">
-                        {error}
-                    </p>
-                )}
             </section>
         </main>
     );

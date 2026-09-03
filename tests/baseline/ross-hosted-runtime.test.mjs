@@ -24,6 +24,18 @@ test("controlled-beta direct mutations carry the data-boundary acknowledgement",
 });
 
 
+test("controlled-beta entry does not depend on the optional server audit", () => {
+  const gate = read(
+    "frontend/src/app/components/shared/DataBoundaryGate.tsx",
+  );
+  const localRecord = gate.indexOf("acknowledgeDataBoundary();");
+  const serverMirror = gate.indexOf("void recordDataBoundaryAcknowledgement");
+  assert.ok(localRecord >= 0);
+  assert.ok(serverMirror > localRecord);
+  assert.match(gate, /durable server mirror is best effort/i);
+  assert.doesNotMatch(gate, /could not record the acknowledgement/i);
+});
+
 test("controlled-beta acknowledgement survives optional schema drift and rejected sessions", () => {
   const userRoute = read("backend/src/routes/user.ts");
   assert.match(userRoute, /db\.auth\.admin\.updateUserById/);
