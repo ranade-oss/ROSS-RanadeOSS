@@ -4,7 +4,9 @@
 
 ROSS (Ranade OSS) is an independently governed, Ontario-focused legal AI workspace for lawyers, paralegals, legal technologists, and open-source contributors. It combines document-assisted work, multiple model providers, legal-source tooling, and controlled release safeguards in a self-hostable application.
 
-> **Public beta:** [Launch ROSS](https://ross-ranadeoss-public.fly.dev)
+> **Public website:** [ROSS Ontario](https://ross.soundmarklaw.com)
+>
+> **Public-beta application:** [Launch ROSS](https://ross-ranadeoss-public.fly.dev)
 >
 > A verified account is required. Use synthetic or affirmatively non-confidential materials only. The hosted beta is not approved for unrestricted confidential or production legal work.
 

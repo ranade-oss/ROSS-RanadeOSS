@@ -13,10 +13,10 @@
     "legalContentOwner": "AR"
   },
   "urls": {
-    "website": "https://ross-ontario.augustmaat.chatgpt.site",
+    "website": "https://ross.soundmarklaw.com",
     "app": "https://ross-ranadeoss-public.fly.dev",
     "api": "https://ross-ranadeoss-api.fly.dev",
-    "status": "https://ross-ontario.augustmaat.chatgpt.site/status",
+    "status": "https://ross.soundmarklaw.com/status",
     "support": "mailto:abhi@soundmarklaw.com",
     "security": "https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new",
     "source": "https://github.com/ranade-oss/ROSS-RanadeOSS",

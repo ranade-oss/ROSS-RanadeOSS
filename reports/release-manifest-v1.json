@@ -22,8 +22,8 @@
     },
     {
       "path": ".github/workflows/deploy-private-ross.yml",
-      "sha256": "c8d859646fc8143964afdd1277fc6f291c8f6efeb0904e2f397fbd518e18b228",
-      "sizeBytes": 11614
+      "sha256": "594dc268fe98181c3728a0f2cd29d201ab0ee096b307f1bbb440b75bc3d837fd",
+      "sizeBytes": 11599
     },
     {
       "path": ".github/workflows/refresh-release-manifest.yml",
@@ -37,8 +37,8 @@
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
-      "sha256": "1cec9a0286eaf5e52a0ee2939b23cc075110922f3262e7086cc2cf2fe0632d90",
-      "sizeBytes": 11212
+      "sha256": "51fc89251f8cdc76c2cc29aa96ed80ac23a1a1e195cd42c71eeeb71e97aa0392",
+      "sizeBytes": 10803
     },
     {
       "path": ".github/workflows/verify-ontario-sources.yml",
@@ -212,8 +212,8 @@
     },
     {
       "path": "config/ross-brand.json",
-      "sha256": "c512203410bfb7dcbbd64558eb0764c6dfc6a7d507ffe1f9ebd5cae8dc9da9b0",
-      "sizeBytes": 2056
+      "sha256": "181368057a18f6805b5be5f7625ddfe9a05c15995d24400df2fa3a777ed98ad3",
+      "sizeBytes": 2026
     },
     {
       "path": "config/ross-brand.schema.json",
@@ -332,8 +332,8 @@
     },
     {
       "path": "docs/deployment/release-train-v1.md",
-      "sha256": "9951510e8b07218dc373939c43b0edf52c5bdc1da6b608d500dabb999f0d9fd4",
-      "sizeBytes": 5350
+      "sha256": "06a8ba8160eb143622dd160e63555a768654d43b20190b2b5e3a9d2beca02c9c",
+      "sizeBytes": 6086
     },
     {
       "path": "docs/staging-debug-release-train.md",
@@ -607,8 +607,8 @@
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "10fdfa1c47b96474a909f871134f834dbebc499d532fc26bac88f58850bdc266",
-      "sizeBytes": 31309
+      "sha256": "0ae5ed9ad3f9b737f7dac6bd2e38b1730d1f4c80b93e9d6be231cb0a17c81a2b",
+      "sizeBytes": 30862
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
@@ -637,8 +637,8 @@
     },
     {
       "path": "website/app/generated-brand-config.ts",
-      "sha256": "c8d6ddbb256b3ac6a6af85134b93c9f90df0e1885f2b09dbd37ec27fdc6476a1",
-      "sizeBytes": 1650
+      "sha256": "765617aac3428beef2172cdcc57cb393d0bb5c05c456436cc5e8c1c5fa035c0e",
+      "sizeBytes": 1620
     },
     {
       "path": "website/vendor/image-size/index.d.ts",

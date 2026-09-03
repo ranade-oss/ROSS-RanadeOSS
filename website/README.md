@@ -9,7 +9,9 @@ isolated from the authenticated application in `../frontend` and the API in
 The site is a governed public-content build for an authenticated public beta
 using synthetic or non-confidential materials only. The separate public site
 does not authenticate visitors, load application or client data, collect form
-submissions, or run product analytics.
+submissions, or run product analytics. Its Try ROSS, Log in, Create account,
+and workflow links open the separately hosted public-beta application configured
+by `config/ross-brand.json`.
 
 An engineering checkpoint is deployed through Sites. The production operator,
 final domains, hosting/vendor disclosures, effective legal notices, contact

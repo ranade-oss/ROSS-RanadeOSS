@@ -1,9 +1,9 @@
 # ROSS Release Train v1
 
-ROSS qualifies and rehearses one immutable set of private API, worker, and
-frontend image digests. Public application promotion remains fail-closed
-because the separately hosted public beta has no independent Supabase-backed
-application deployment.
+ROSS now qualifies, rehearses, and optionally promotes one immutable set of
+API, worker, and frontend image digests. The same frontend image uses a small
+public runtime configuration so staging and public production can use different
+API origins without rebuilding.
 
 ## Human workload
 
@@ -12,7 +12,7 @@ For the required non-production rehearsal:
 1. Open **Actions → ROSS release train → Run workflow** on `main`.
 2. Leave **Promote the rehearsed image digests to public production**
    unchecked.
-3. If GitHub pauses at the existing `private-online` environment, click its
+3. If GitHub pauses at the existing `public-beta` environment, click its
    approval button once.
 4. Read the final green or red summary.
 
@@ -20,12 +20,14 @@ There is no release ID, app name, Fly command, secret value, cleanup command,
 or rollback command for the operator to enter. A protected environment that
 does not require reviewer approval reduces the rehearsal to one Run button.
 
-The workflow uses the existing `private-online` environment secrets because
-the three-service rehearsal exercises the private Supabase-backed application.
-The public beta has no independent Supabase project and the workflow must not
-request private application secrets from `public-beta`. All three rehearsal
-apps have no public IPs, signups are disabled, and the API background document
-dispatcher is disabled. The checks read the authentication settings, verify authentication,
+The workflow runs behind the protected `public-beta` environment and consumes
+the existing GitHub Actions credentials for the shared Supabase-backed beta
+infrastructure. The public application does not have a second Supabase project;
+that does not make it the same deployment as the private frontend. Do not create
+duplicate environment-specific secrets when the existing repository or
+organization secrets are already available to the protected job. All three
+rehearsal apps have no public IPs, signups are disabled, and the API background
+document dispatcher is disabled. The checks read the authentication settings, verify authentication,
 CORS, and upload guards, validate API-to-worker authorization with an invalid
 no-write request, and observe public legal-source health. They do not create a
 user, upload a document, rotate a production secret, alter production, or
@@ -80,22 +82,32 @@ subsequent three-component rollback. A real failure, missing rollback, wrong
 digest, unhealthy service, stale manifest, or missing secret fails closed.
 The workflow attempts to stop rehearsal Machines even after a failed step.
 
-## Public application promotion is intentionally blocked
+## Later public promotion
 
-The public beta is a separately hosted website and has no independent Supabase
-project. Selecting **Promote the rehearsed image digests to public production**
-therefore fails before secret validation, image building, or any Fly change.
-Do not copy `private-online` credentials into `public-beta` to bypass this
-guard.
+Public promotion is a separate operator decision. Run the same workflow and
+check **Promote the rehearsed image digests to public production**. It repeats
+the non-production rehearsal in that same run, snapshots the current
+production digests, verifies that all three current production services are
+healthy, verifies the existing production secret names without reading or
+changing their values, promotes the already-tested candidate digests without
+rebuilding, and rolls all three production apps back if any deployment, health
+check, or final release-record operation fails.
 
-A future public application backend requires a separate architecture decision,
-independent data services and credentials, updated governance evidence, and
-regression coverage before this guard can be removed.
+The workflow automatically chooses the next unused
+`ross-public-beta-YYYYMMDD-rcN` identifier. Before production, it performs a
+no-write permission and tag preflight. It creates the immutable tag and GitHub
+release only after all three public services pass. The release ledger maps the
+Git commit, candidate digests, baseline digests, forced failure, rollback
+result, staging result, integration checks, legal-source observation, and
+production result.
 
 ## Supported path
 
-**ROSS release train** is the supported private application rehearsal path.
-**Deploy private ROSS** remains the private deployment path. The public website
-uses its dedicated hosting path; no Supabase-backed public application release
-is currently supported. The workflow named **Legacy: deploy previously governed
-public beta** is permanently blocked before it can request secrets or touch Fly.
+**ROSS release train** is the only supported public deployment path. The
+workflow named **Legacy: deploy previously governed public beta** is
+permanently blocked before it can request secrets or touch Fly.
+
+The authenticated public-beta application is deployed to
+`https://ross-ranadeoss-public.fly.dev`. The separate informational website is
+published at `https://ross.soundmarklaw.com` and links to the application; it
+does not host the application or its Supabase-backed runtime.

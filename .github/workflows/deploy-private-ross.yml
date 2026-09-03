@@ -51,7 +51,7 @@ jobs:
       WEB_APP: ${{ inputs.web_app_name }}
       WORKER_APP: ${{ inputs.file_worker_app_name }}
       FLY_ORG: ${{ inputs.fly_organization }}
-      PUBLIC_WEBSITE_URL: https://ross-ontario.augustmaat.chatgpt.site
+      PUBLIC_WEBSITE_URL: https://ross.soundmarklaw.com
       POLICY_VERSION: 2026-07-17-public-beta
     steps:
       - uses: actions/checkout@v7
