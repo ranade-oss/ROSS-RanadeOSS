@@ -66,9 +66,22 @@ export function isMfaRequiredError(error: unknown) {
 }
 
 async function getAuthHeader(): Promise<Record<string, string>> {
-  const {
+  let {
     data: { session },
   } = await supabase.auth.getSession();
+
+  // A browser tab can retain a session whose access token has just expired.
+  // Refresh before sending it to the API so a valid login is not rejected as
+  // an invalid token during the controlled-beta acknowledgement or any other
+  // authenticated request.
+  if (
+    session?.expires_at &&
+    session.expires_at <= Math.floor(Date.now() / 1000) + 30
+  ) {
+    const refreshed = await supabase.auth.refreshSession();
+    session = refreshed.data.session ?? null;
+  }
+
   if (!session?.access_token) return {};
   return { Authorization: `Bearer ${session.access_token}` };
 }
