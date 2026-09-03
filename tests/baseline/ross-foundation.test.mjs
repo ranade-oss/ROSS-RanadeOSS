@@ -59,7 +59,7 @@ test("central brand configuration uses approved safe defaults", () => {
   assert.equal(brand.policy.canliiScrapingAllowed, false);
   assert.equal(brand.policy.governmentAffiliation, false);
 
-  assert.equal(new URL(brand.urls.website).hostname, "ross-ontario.augustmaat.chatgpt.site");
+  assert.equal(new URL(brand.urls.website).hostname, "ross.soundmarklaw.com");
   assert.equal(new URL(brand.urls.app).hostname, "ross-ranadeoss-public.fly.dev");
   assert.equal(new URL(brand.urls.api).hostname, "ross-ranadeoss-api.fly.dev");
   assert.equal(brand.urls.status, `${brand.urls.website}/status`);

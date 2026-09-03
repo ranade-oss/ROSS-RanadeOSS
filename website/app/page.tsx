@@ -48,7 +48,7 @@ export default function Home() {
           <div className="hero-copy">
             <p className="status-pill">
               <span />
-              Invitation-only beta foundation
+              Verified-account public beta
             </p>
             <h1>
               Ontario-first legal work, <em>built in the open.</em>
@@ -69,7 +69,8 @@ export default function Home() {
             <p className="hero-note">
               <strong>Current mode:</strong> synthetic or non-confidential
               materials only. Engineering integrations exist; live availability
-              and comprehensive Ontario coverage are not verified.
+              and comprehensive Ontario coverage are not verified. The ROSS
+              application opens on its separately hosted Fly service.
             </p>
           </div>
           <OntarioLayer />

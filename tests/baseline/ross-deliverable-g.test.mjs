@@ -20,7 +20,7 @@ test("Deliverable G records verified public registration without expanding the d
   assert.equal(plan.providerStrategy.canliiWebsiteAutomationAllowed, false);
 });
 
-test("private release rehearsal is gated and unsupported public promotion fails closed", () => {
+test("public deployment is manual, gated, verified-email only, and separately reversible", () => {
   const publicWorkflow = read(".github/workflows/verify-and-deploy-public-beta.yml");
   const releaseTrain = read("scripts/fly-release-train.mjs");
   const imageBuild = read("scripts/build-release-train-images.sh");
@@ -28,10 +28,7 @@ test("private release rehearsal is gated and unsupported public promotion fails 
 
   assert.match(publicWorkflow, /workflow_dispatch:/);
   assert.doesNotMatch(publicWorkflow, /^\s*push:/m);
-  assert.match(publicWorkflow, /environment: private-online/);
-  assert.doesNotMatch(publicWorkflow, /environment: public-beta/);
-  assert.match(publicWorkflow, /Reject unsupported public application promotion/);
-  assert.match(publicWorkflow, /PROD_WEB_APP: ross-ranadeoss-private/);
+  assert.match(publicWorkflow, /environment: public-beta/);
   assert.match(publicWorkflow, /validate-release-id\.mjs/);
   assert.match(publicWorkflow, /if: inputs\.promote_public/);
   assert.match(releaseTrain, /ROSS_REQUIRE_VERIFIED_EMAIL: "true"/);
@@ -72,9 +69,16 @@ test("signup records versioned policies and waits for email verification", () =>
 test("public website offers account creation and states the hosted boundary", () => {
   const shell = read("website/app/site-shell.tsx");
   const landing = read("website/app/page.tsx");
+  const siteConfig = read("website/app/site-config.ts");
   const brand = json("config/ross-brand.json");
 
   assert.match(shell, /Create account/);
+  assert.match(shell, /siteConfig\.appUrl\}\/login/);
+  assert.match(shell, /siteConfig\.appUrl\}\/signup/);
+  assert.match(landing, /href=\{siteConfig\.appUrl\}/);
+  assert.match(siteConfig, /brand\.urls\.app/);
+  assert.equal(brand.urls.website, "https://ross.soundmarklaw.com");
+  assert.equal(brand.urls.app, "https://ross-ranadeoss-public.fly.dev");
   assert.match(landing, /Verified public registration/);
   assert.match(landing, /bring a model[\s\S]*API key/i);
   assert.match(brand.product.betaLabel, /verified account required/i);
