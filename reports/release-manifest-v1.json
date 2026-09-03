@@ -172,8 +172,8 @@
     },
     {
       "path": "backend/src/routes/user.ts",
-      "sha256": "4beb0968f5bda66b416604b168841dbf9c9dc0ef143ee21bce1510ed6a6c20d7",
-      "sizeBytes": 42033
+      "sha256": "f75e0c8e8492c2988506ace3c7c50a0ad6b631dc62aa43cc20a9fb385eb165c8",
+      "sizeBytes": 43278
     },
     {
       "path": "config/legal-source-operations.v1.json",
@@ -442,8 +442,8 @@
     },
     {
       "path": "frontend/src/app/lib/mikeApi.ts",
-      "sha256": "3c6532de4e757b32fd264606028bf77fc9c50a78656c3fdd4682ac5d48f49276",
-      "sizeBytes": 39718
+      "sha256": "7ccb37bbf3edec3375919d6451bd5c13b7e9f9ef0ff5ad311cdc15bd8a4a490c",
+      "sizeBytes": 40110
     },
     {
       "path": "frontend/src/app/lib/dataBoundary.ts",
