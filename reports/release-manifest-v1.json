@@ -27,8 +27,8 @@
     },
     {
       "path": ".github/workflows/refresh-release-manifest.yml",
-      "sha256": "71ed98cf97f57617aa1fde12530a3271d43df467f68457829082f5223a7ce758",
-      "sizeBytes": 2184
+      "sha256": "1429fc017f627cdb8d816e71761fc5245a33b14da35c0b38a9af8fa5a5d46537",
+      "sizeBytes": 2377
     },
     {
       "path": ".github/workflows/staging-debug-release-train.yml",
