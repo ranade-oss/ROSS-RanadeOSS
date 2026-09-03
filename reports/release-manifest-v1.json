@@ -307,8 +307,8 @@
     },
     {
       "path": "docs/architecture/ADR-013-connected-provider-responsibility.md",
-      "sha256": "fcbdb4417f06163e11e34eeadd92a910e3cdb7be159d6547d07cac25ac50d473",
-      "sizeBytes": 3643
+      "sha256": "37857412ef58fc9db1829747e9b11780341a6774cb711831bf15b1f8c9e5a738",
+      "sizeBytes": 3910
     },
     {
       "path": "docs/privacy/data-inventory.json",
@@ -367,8 +367,8 @@
     },
     {
       "path": "frontend/src/app/components/shared/DataBoundaryGate.tsx",
-      "sha256": "a8744d852d7b4d3e292a26824a6dcbd682a2b566f9978cae7b1bdb23d9ee3d2d",
-      "sizeBytes": 4874
+      "sha256": "1d36a8539750408c52c5ebc3aafab99ed57b132ff3f2c0c7bead84e4273af925",
+      "sizeBytes": 4540
     },
     {
       "path": "frontend/src/app/components/shared/RowActions.tsx",
