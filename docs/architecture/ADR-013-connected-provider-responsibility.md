@@ -52,6 +52,10 @@ selected legal-work provider path.
 - The policy version is `2026-09-03-provider-responsibility`.
 - Existing acknowledgements do not satisfy the new version; users must
   acknowledge the changed policy.
+- The browser records the current acknowledgement before entering the
+  workspace and supplies it with content-bearing requests. ROSS also attempts
+  a durable server-side copy, but failure of that optional mirror does not
+  block the user after explicit acceptance.
 - The backend continues to reject content-bearing requests without the current
   acknowledgement.
 - ROSS continues to prohibit raw model-stream logging outside local
