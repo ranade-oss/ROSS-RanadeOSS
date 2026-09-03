@@ -539,22 +539,77 @@
           "processed_at": "2026-08-31T21:07:33.127Z"
         }
       ]
+    },
+    {
+      "number": 340,
+      "title": "feat: add OpenCode Go as a third model router",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/340",
+      "merged_at": "2026-08-21T06:29:36.000Z",
+      "merge_commit_sha": "2ae4ca7937af12aa00bcb94571bad3e11f52d534",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "OpenCode Go hosted model gateway with live catalog discovery, protocol-aware streaming, encrypted user/operator keys, selection allowlisting, and model-picker exposure.",
+      "series_id": "opencode-go-router",
+      "dependencies": [
+        "PR #340's four-commit internal series",
+        "ROSS model discovery and capability registry",
+        "LLM streaming adapters",
+        "Encrypted user API-key storage",
+        "Authenticated model-selection enforcement"
+      ],
+      "prerequisites": [
+        "Approve hosted-gateway support and operator-funded usage policy",
+        "Review credential precedence, tenant isolation, and spending boundaries",
+        "Review the user_api_keys schema migration",
+        "Verify OpenAI-compatible and Messages protocol behavior with a controlled endpoint",
+        "Add authorization and integration test coverage"
+      ],
+      "reason": "Current ROSS uses direct-provider discovery through modelDiscovery.ts, models.ts, openaiCompatible.ts, and llm/index.ts, not Mike’s routerModels/openrouter architecture. Implementing this capability would alter provider credentials, database constraints, request authorization, and external model execution; inability to cherry-pick is not evidence of incompatibility.",
+      "architecture_brief": "If approved, add a ROSS-native gateway provider at the existing model-capability, discovery, and streaming seams. Namespace catalog IDs, attach explicit protocol metadata, and enforce the authenticated user’s allowed model before resolving user or operator credentials. Extend encrypted-key storage only through a reviewed migration; do not transplant Mike’s router abstraction or obsolete add-in paths.",
+      "implementation_plan": [
+        "Record an architecture decision covering gateway support, catalog trust, supported protocols, credential precedence, and operator-funded usage.",
+        "Create controlled contract tests for catalog normalization, both streaming protocols, invalid IDs, unsupported protocols, and upstream failures.",
+        "Prove arbitrary or stale model IDs cannot spend operator credentials and user keys remain tenant-scoped and absent from clients and logs.",
+        "After schema and security approval, add the provider constraint migration and encrypted-key plumbing with rollback and schema-drift validation.",
+        "Implement the adapter through ROSS modelDiscovery.ts, models.ts, openaiCompatible.ts or a dedicated Messages adapter, and llm/index.ts.",
+        "Expose only compatibility-tested models through the existing frontend catalog and selector, with backend/frontend integration tests."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-09-01T12:04:57.983Z",
+      "processed_at": "2026-09-01T12:04:57.983Z",
+      "v2_attempted_at": "2026-09-01T12:04:57.983Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "Current ROSS uses direct-provider discovery through modelDiscovery.ts, models.ts, openaiCompatible.ts, and llm/index.ts, not Mike’s routerModels/openrouter architecture. Implementing this capability would alter provider credentials, database constraints, request authorization, and external model execution; inability to cherry-pick is not evidence of incompatibility.",
+          "processed_at": "2026-09-01T12:04:57.983Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 5,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 5
+      "retryable": 5,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 5,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
