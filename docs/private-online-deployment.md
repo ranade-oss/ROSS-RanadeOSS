@@ -65,7 +65,7 @@ summary. In Supabase **Authentication → URL Configuration**:
 1. Open the `/login` URL from the workflow summary.
 2. Sign in with the manually created owner account.
 3. Confirm `/signup` reports that registrations are unavailable.
-4. Accept the controlled-beta boundary using synthetic/non-confidential data.
+4. Accept the connected-provider responsibility notice using synthetic verification data.
 5. Add an OpenAI API key under **Account → API Keys** if model features are to
    be exercised. The backend encrypts this key before storing it.
 6. Upload a synthetic document, download it, then delete it to verify private

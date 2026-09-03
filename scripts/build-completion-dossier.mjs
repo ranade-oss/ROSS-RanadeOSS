@@ -37,7 +37,7 @@ const output = `# ROSS final completion dossier\n\n` +
   `## Pending operational evidence\n\n${listPending(operations.evidence).join("\n")}\n\n` +
   `## Pending launch decisions\n\n${listPending(launch.decisions).join("\n")}\n\n` +
   `## Stop condition\n\nAny pending, failed, stale, contradictory, or release-mismatched item blocks promotion. ` +
-  `Confidential use and public indexing require separate approval and are not authorized by this dossier.\n`;
+  `ADR-013 records the operator's connected-provider responsibility decision. Public indexing and any provider-suitability claim require separate approval.\n`;
 const path = resolve(root, "reports/final-completion-dossier.md");
 
 if (process.argv.includes("--check")) {

@@ -1,8 +1,9 @@
-export const ROSS_DATA_BOUNDARY_VALUE = "synthetic-or-non-confidential";
+export const ROSS_DATA_BOUNDARY_VALUE = "provider-responsibility-acknowledged";
 export const ROSS_DATA_BOUNDARY_HEADER = "X-ROSS-Data-Boundary";
 export const ROSS_DATA_BOUNDARY_EVENT = "ross-data-boundary-changed";
 export const ROSS_DATA_BOUNDARY_VERSION =
-    process.env.NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION ?? "2026-07-16";
+    process.env.NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION ??
+    "2026-09-03-provider-responsibility";
 export const ROSS_HOSTED_MODE =
     process.env.NEXT_PUBLIC_ROSS_HOSTED_MODE ?? "self-hosted";
 

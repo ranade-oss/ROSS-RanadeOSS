@@ -20,7 +20,7 @@ The seed questions and expected results were created for software verification a
 - CourtListener remains available only as an optional U.S. provider and is not an Ontario authority source.
 - Comprehensive judicial treatment data is unavailable, so ROSS must not claim that a decision is good law from silence.
 - Ontario forms, regional directions, deadlines, and workflow outputs require current official-source checks and human review.
-- The hosted beta accepts only synthetic or non-confidential material. Real confidential or privileged client files are outside the approved boundary.
+- The hosted beta sends relevant information to user-selected services. Confidential or privileged use is at the user's own risk, and users must choose providers and settings that meet their professional obligations. See ADR-013.
 
 ## Release state
 

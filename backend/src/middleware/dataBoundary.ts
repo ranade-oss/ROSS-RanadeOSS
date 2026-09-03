@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import type { RuntimeConfig } from "../config/runtime";
 
 export const ROSS_DATA_BOUNDARY_HEADER = "x-ross-data-boundary";
-export const ROSS_DATA_BOUNDARY_VALUE = "synthetic-or-non-confidential";
+export const ROSS_DATA_BOUNDARY_VALUE = "provider-responsibility-acknowledged";
 
 const CONTENT_PATHS = [
     /^\/chat(?:\/|$)/,
@@ -32,7 +32,7 @@ export function enforceHostedDataBoundary(config: RuntimeConfig) {
         ) {
             res.status(428).json({
                 code: "ross_data_boundary_acknowledgement_required",
-                detail: "The controlled beta accepts only synthetic or affirmatively non-confidential material. Acknowledge the current data boundary before submitting content.",
+                detail: "ROSS sends relevant information to the model and connected services selected by the user. Acknowledge responsibility for choosing providers and settings appropriate for the information before submitting content.",
                 boundaryVersion: config.dataBoundaryVersion,
             });
             return;

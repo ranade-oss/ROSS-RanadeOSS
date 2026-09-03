@@ -150,8 +150,8 @@
     }
   ],
   "confidentialDataBoundary": {
-    "status": "synthetic-or-non-confidential-only",
-    "confidentialUseApproved": false,
-    "approvalEvidence": null
+    "status": "connected-provider-responsibility",
+    "confidentialUseApproved": true,
+    "approvalEvidence": "docs/architecture/ADR-013-connected-provider-responsibility.md"
   }
 }

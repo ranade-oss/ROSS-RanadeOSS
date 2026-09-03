@@ -91,7 +91,7 @@ jobs:
       STAGE_WEB_APP: ross-ranadeoss-web-rehearsal
       STAGE_WORKER_APP: ross-ranadeoss-worker-rehearsal
       PUBLIC_WEBSITE_URL: https://ross.soundmarklaw.com
-      POLICY_VERSION: 2026-07-17-public-beta
+      POLICY_VERSION: 2026-09-03-provider-responsibility
       ROSS_QUALIFICATION_STATUS: passed
       GH_TOKEN: ${{ github.token }}
     steps:

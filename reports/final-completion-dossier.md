@@ -2,11 +2,11 @@
 
 Generated from governed records. This report is evidence inventory, not approval.
 
-- Version: 1.2.0-controlled-beta-approved
-- As of: 2026-07-18
+- Version: 1.3.0-provider-responsibility
+- As of: 2026-09-03
 - Release ID: ross-public-beta-20260717-rc1
 - Status: completed-approved-for-controlled-beta
-- Data boundary: synthetic-or-non-confidential-only
+- Data boundary: connected-provider-responsibility
 
 ## Workstreams
 
@@ -41,4 +41,4 @@ Generated from governed records. This report is evidence inventory, not approval
 
 ## Stop condition
 
-Any pending, failed, stale, contradictory, or release-mismatched item blocks promotion. Confidential use and public indexing require separate approval and are not authorized by this dossier.
+Any pending, failed, stale, contradictory, or release-mismatched item blocks promotion. ADR-013 records the operator's connected-provider responsibility decision. Public indexing and any provider-suitability claim require separate approval.

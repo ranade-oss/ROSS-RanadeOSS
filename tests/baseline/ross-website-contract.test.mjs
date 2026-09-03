@@ -104,15 +104,15 @@ test("the public site communicates beta limits and does not use application data
     read("website/app/page-content.ts"),
     read("website/app/site-shell.tsx"),
   ].join("\n");
-  assert.match(publicSurface, /synthetic or non-confidential/i);
-  assert.match(publicSurface, /live availability[\s\S]*not verified/i);
+  assert.match(publicSurface, /confidential or privileged use is at your own risk/i);
+  assert.match(publicSurface, /Comprehensive Ontario\s+coverage is not guaranteed/i);
   assert.match(publicSurface, /Operator: \{siteConfig\.operator\}/);
   assert.doesNotMatch(publicSurface, /@supabase|createClient\s*\(/i);
 
   const robots = read("website/app/robots.ts");
   const layout = read("website/app/layout.tsx");
-  assert.match(robots, /publicLaunchApproved/);
-  assert.match(robots, /disallow: "\/"/);
+  assert.match(robots, /allow: "\/"/);
+  assert.doesNotMatch(robots, /disallow/);
   assert.match(layout, /index: siteConfig\.publicLaunchApproved/);
   assert.match(layout, /follow: siteConfig\.publicLaunchApproved/);
   assert.match(read("website/app/site-config.ts"), /legalOperator !== "TBD"/);

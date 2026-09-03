@@ -238,7 +238,7 @@ test("rehearsal is private, read-only, and cannot dispatch production jobs", () 
   assert.match(train, /ROSS_DISABLE_DOCUMENT_SCAN_DISPATCHER: "true"/);
   assert.match(
     probe,
-    /"X-ROSS-Data-Boundary": "synthetic-or-non-confidential"/,
+    /"X-ROSS-Data-Boundary": "provider-responsibility-acknowledged"/,
   );
   assert.match(probe, /expectStatus\(protectedUpload, 401/);
   assert.match(probe, /expected HTTP " \+ expected \+ " but received HTTP "/);
@@ -311,7 +311,7 @@ test("the exact shared full probe executes every read-only contract", async () =
       if (
         (options.method ?? "GET") === "POST" &&
         new Headers(options.headers).get("x-ross-data-boundary") !==
-          "synthetic-or-non-confidential"
+          "provider-responsibility-acknowledged"
       ) {
         return Response.json(
           { code: "ross_data_boundary_acknowledgement_required" },
@@ -384,7 +384,7 @@ test("the exact shared full probe executes every read-only contract", async () =
   assert.equal(requests[5].origin, "https://untrusted.example");
   assert.equal(requests[6].origin, publicWeb);
   assert.equal(requests[7].origin, publicWeb);
-  assert.equal(requests[7].boundary, "synthetic-or-non-confidential");
+  assert.equal(requests[7].boundary, "provider-responsibility-acknowledged");
   assert.equal(
     requests[9].authorization,
     "Bearer synthetic-worker-secret",

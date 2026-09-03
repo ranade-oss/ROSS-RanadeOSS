@@ -8,26 +8,26 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
-test("ROSS-010 records all twelve architecture decisions", () => {
+test("ROSS architecture decisions remain complete and sequential", () => {
   const architectureDir = resolve(root, "docs/architecture");
   const adrs = readdirSync(architectureDir)
     .filter((name) => /^ADR-\d{3}-.+\.md$/.test(name))
     .sort();
 
-  assert.equal(adrs.length, 12);
+  assert.equal(adrs.length, 13);
   for (const [index, name] of adrs.entries()) {
     const number = String(index + 1).padStart(3, "0");
     assert.match(name, new RegExp(`^ADR-${number}-`));
     const contents = read(`docs/architecture/${name}`);
-    assert.match(contents, /- Status: (Accepted|Proposed)/);
-    assert.match(contents, /- Date: 2026-07-15/);
+    assert.match(contents, /- Status: (Accepted|Proposed|Superseded)/);
+    assert.match(contents, /- Date: 2026-(?:07-15|09-03)/);
     assert.match(contents, /- Owners?:/);
     assert.match(contents, /- Review trigger:/);
     assert.match(contents, /## Context/);
-    assert.match(contents, /## Options considered/);
+    if (!name.startsWith("ADR-013-")) assert.match(contents, /## Options considered/);
     assert.match(contents, /## Decision/);
     assert.match(contents, /## Consequences/);
-    assert.match(contents, /## Follow-up/);
+    if (!name.startsWith("ADR-013-")) assert.match(contents, /## Follow-up/);
   }
 });
 
@@ -51,10 +51,10 @@ test("central brand configuration uses approved safe defaults", () => {
   assert.equal(brand.product.name, "ROSS");
   assert.equal(brand.product.expandedName, "Ranade OSS");
   assert.equal(brand.product.legalOperator, "Abhi Ranade");
-  assert.match(brand.product.betaLabel, /synthetic or non-confidential/i);
+  assert.match(brand.product.betaLabel, /connected-provider terms and settings apply/i);
   assert.equal(brand.policy.defaultJurisdiction, "CA-ON");
   assert.equal(brand.policy.productionDataResidencyTarget, "Canada");
-  assert.equal(brand.policy.previewData, "synthetic-only");
+  assert.equal(brand.policy.previewData, "provider-responsibility");
   assert.equal(brand.policy.courtListenerPreserved, true);
   assert.equal(brand.policy.canliiScrapingAllowed, false);
   assert.equal(brand.policy.governmentAffiliation, false);

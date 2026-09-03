@@ -2,7 +2,7 @@
 
 ## Boundary
 
-This draft cross-checks a synthetic or non-confidential affidavit. It does not assess credibility, invent personal knowledge, decide admissibility, or approve swearing or filing.
+This draft cross-checks an affidavit. If it contains confidential or privileged information, the user must choose connected providers and settings appropriate for that information. The draft does not assess credibility, invent personal knowledge, decide admissibility, or approve swearing or filing.
 
 ## Instructions
 

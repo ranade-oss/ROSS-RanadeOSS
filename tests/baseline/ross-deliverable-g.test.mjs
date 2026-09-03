@@ -8,14 +8,15 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
-test("Deliverable G records verified public registration without expanding the data boundary", () => {
+test("Deliverable G records verified public registration and the provider-responsibility boundary", () => {
   const boundary = read("docs/product-boundary.md");
   const plan = json("config/final-completion.v1.json");
 
   assert.match(boundary, /public-registration web application/i);
   assert.match(boundary, /anonymous uploads and AI requests are not permitted/i);
   assert.equal(plan.target.release, "public-registration Ontario controlled beta");
-  assert.equal(plan.target.confidentialUseApproved, false);
+  assert.equal(plan.target.confidentialUseApproved, true);
+  assert.equal(plan.target.dataBoundary, "connected-provider-responsibility");
   assert.equal(plan.target.publicIndexingApproved, false);
   assert.equal(plan.providerStrategy.canliiWebsiteAutomationAllowed, false);
 });
@@ -47,7 +48,7 @@ test("signup records versioned policies and waits for email verification", () =>
 
   assert.match(signup, /ross_terms_version/);
   assert.match(signup, /ross_privacy_version/);
-  assert.match(signup, /synthetic-or-non-confidential/);
+  assert.match(signup, /provider-responsibility-acknowledged/);
   assert.match(signup, /Verify your email/);
   assert.doesNotMatch(signup, /setTimeout\(/);
   assert.match(auth, /ROSS_REQUIRE_VERIFIED_EMAIL/);
@@ -82,5 +83,5 @@ test("public website offers account creation and states the hosted boundary", ()
   assert.match(landing, /Verified public registration/);
   assert.match(landing, /bring a model[\s\S]*API key/i);
   assert.match(brand.product.betaLabel, /verified account required/i);
-  assert.match(brand.product.betaLabel, /synthetic or non-confidential/i);
+  assert.match(brand.product.betaLabel, /connected-provider terms and settings apply/i);
 });

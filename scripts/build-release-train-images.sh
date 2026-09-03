@@ -100,9 +100,9 @@ build_web() {
     --build-arg "NEXT_PUBLIC_ROSS_APP_URL=https://${runtime_web_app}.fly.dev" \
     --build-arg "NEXT_PUBLIC_ROSS_WEBSITE_URL=https://ross-ontario.augustmaat.chatgpt.site" \
     --build-arg "NEXT_PUBLIC_ROSS_HOSTED_MODE=controlled-beta" \
-    --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=2026-07-17-public-beta" \
-    --build-arg "NEXT_PUBLIC_ROSS_TERMS_VERSION=2026-07-17-public-beta" \
-    --build-arg "NEXT_PUBLIC_ROSS_PRIVACY_VERSION=2026-07-17-public-beta" \
+    --build-arg "NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=2026-09-03-provider-responsibility" \
+    --build-arg "NEXT_PUBLIC_ROSS_TERMS_VERSION=2026-09-03-provider-responsibility" \
+    --build-arg "NEXT_PUBLIC_ROSS_PRIVACY_VERSION=2026-09-03-provider-responsibility" \
     --build-arg "NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=${RELEASE_SIGNUPS_ENABLED:-true}" \
     --build-arg "ROSS_BUILD_RELEASE_ID=${ROSS_RELEASE_ID}"
 }

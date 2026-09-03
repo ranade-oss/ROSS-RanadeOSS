@@ -62,7 +62,7 @@ test("representative public pages meet the automated semantic accessibility cont
   }
 });
 
-test("sitemap covers dynamic public content while indexing remains intentionally blocked", async () => {
+test("sitemap covers dynamic public content and robots permit crawling", async () => {
   const sitemap = await render("/sitemap.xml");
   assert.equal(sitemap.response.status, 200);
   assert.match(sitemap.html, /updates\/foundation/);
@@ -71,7 +71,8 @@ test("sitemap covers dynamic public content while indexing remains intentionally
   assert.match(sitemap.html, /\/demo/);
   const robots = await render("/robots.txt");
   assert.equal(robots.response.status, 200);
-  assert.match(robots.html, /Disallow: \//);
+  assert.match(robots.html, /Allow: \//);
+  assert.doesNotMatch(robots.html, /Disallow:/i);
 });
 
 test("internal content links resolve in the built site", async () => {

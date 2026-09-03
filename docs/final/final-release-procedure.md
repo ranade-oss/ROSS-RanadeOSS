@@ -10,7 +10,7 @@
 4. Run `npm run build:completion-dossier`, `npm run build:release-manifest`, and
    `npm run check`.
 5. Deploy this exact commit to isolated staging and complete every evidence
-   exercise and source observation without confidential material.
+   exercise and source observation with synthetic verification material.
 6. Run/retain the ROSS release-train evidence and link its immutable run.
 7. Run `npm run final:status` for the readable inventory, then
    `npm run final:check` for the fail-closed gate.
@@ -33,8 +33,9 @@ events. Stop or roll back on any declared condition.
 
 ## Boundary after promotion
 
-The approved endpoint permits verified public self-registration and accepts
-synthetic or affirmatively non-confidential content. Anonymous use remains
-disabled. Expanding practice areas, source operations, public indexing,
-analytics, payment, or confidential/privileged data requires a successor
-decision and review; it is not an administrative toggle.
+The approved endpoint permits verified public self-registration. ROSS sends
+relevant information to user-selected services, and confidential or privileged
+use is at the user's own risk under ADR-013. Anonymous use remains disabled.
+Expanding practice areas, source operations, public indexing, analytics,
+payment, or claiming provider suitability for confidential data requires a
+successor decision and review; it is not an administrative toggle.

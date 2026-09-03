@@ -13,11 +13,12 @@ blocking.
 - Uploads and AI requests remain authenticated; there is no anonymous mode.
 - Users bring their own supported model-provider key. Existing encrypted BYOK
   storage and account export/deletion remain available.
-- The operator-hosted beta accepts only synthetic or affirmatively
-  non-confidential material. Self-hosted operators set and document their own
-  approved data boundary.
-- Public search indexing and confidential or privileged hosted use remain
-  outside this approval.
+- ROSS sends relevant information to user-selected models and connected
+  services so they can perform requested functions. Confidential or privileged
+  use is at the user's own risk; users must choose providers and settings that
+  meet their professional obligations.
+- Public search indexing is a separate website decision. Application content
+  remains authenticated and is not approved for public indexing.
 
 ## One-time Supabase preparation
 
@@ -55,7 +56,7 @@ environment deployment branches to `main`.
 - Register a new non-owner email and confirm that no session can use the API
   before the email link is opened.
 - Confirm both policy checkboxes and the data-boundary gate are required.
-- Add a test BYO model-provider key and run a synthetic prompt.
+- Add a test BYO model-provider key and run a synthetic verification prompt.
 - Confirm a second account cannot see the first account's projects or files.
 - Exercise download, export, deletion, throttling, rollback, and incident
   procedures; retain only non-secret evidence.

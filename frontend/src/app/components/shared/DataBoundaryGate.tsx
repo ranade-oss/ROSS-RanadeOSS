@@ -44,13 +44,21 @@ export function DataBoundaryGate({ children }: { children: React.ReactNode }) {
                     id="data-boundary-title"
                     className="mt-3 font-serif text-4xl"
                 >
-                    Use only synthetic or non-confidential material
+                    Choose services appropriate for your information
                 </h1>
                 <p className="mt-5 leading-7 text-slate-600">
-                    ROSS is not approved for privileged, confidential,
-                    proprietary, regulated, or real client material. This
-                    boundary applies to prompts, uploads, filenames,
-                    screenshots, support requests, and connector activity.
+                    ROSS sends relevant prompts, files, and context to the model
+                    and connected services you choose so they can perform the
+                    functions you request. Transmission is necessary for those
+                    features. Each service handles information under its own
+                    terms and settings.
+                </p>
+                <p className="mt-4 leading-7 text-slate-600">
+                    Confidential or privileged use is at your own risk. Review
+                    each provider&apos;s retention, training, human-review,
+                    security, and disclosure practices. You are responsible for
+                    choosing providers and settings that meet your duties to
+                    clients and the court.
                 </p>
                 <label className="mt-7 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <input
@@ -60,9 +68,9 @@ export function DataBoundaryGate({ children }: { children: React.ReactNode }) {
                         className="mt-1 h-4 w-4"
                     />
                     <span className="text-sm leading-6">
-                        I understand and will submit only synthetic or
-                        affirmatively non-confidential material during this
-                        controlled beta.
+                        I understand how ROSS uses connected services and accept
+                        responsibility for choosing providers and settings
+                        appropriate for the information I use.
                     </span>
                 </label>
                 <button
@@ -75,7 +83,7 @@ export function DataBoundaryGate({ children }: { children: React.ReactNode }) {
                             await recordDataBoundaryAcknowledgement({
                                 version: ROSS_DATA_BOUNDARY_VERSION,
                                 acknowledgement:
-                                    "synthetic-or-non-confidential",
+                                    "provider-responsibility-acknowledged",
                             });
                             acknowledgeDataBoundary();
                         } catch {

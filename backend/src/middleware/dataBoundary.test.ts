@@ -66,7 +66,7 @@ test("controlled beta rejects content without the exact acknowledgement", () => 
     assert.equal(nextCalled, false);
     assert.match(
         JSON.stringify(body),
-        /synthetic or affirmatively non-confidential/,
+        /responsibility for choosing providers and settings appropriate for the information/,
     );
 });
 
@@ -77,7 +77,7 @@ test("controlled beta accepts the exact acknowledgement and self-hosted mode is 
             method: "POST",
             originalUrl: "/projects/id/documents",
             path: "/projects/id/documents",
-            header: () => "synthetic-or-non-confidential",
+            header: () => "provider-responsibility-acknowledged",
         } as never,
         { setHeader() {} } as never,
         () => {

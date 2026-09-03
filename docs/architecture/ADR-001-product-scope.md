@@ -1,6 +1,6 @@
 # ADR-001 — Product scope and intended users
 
-- Status: Accepted
+- Status: Accepted; data-classification paragraph superseded by ADR-013
 - Date: 2026-07-15
 - Owners: Product owner TBD; legal-content owner TBD
 - Review trigger: Paid access, real client data, a new user class, or a claim of comprehensive Ontario coverage
@@ -21,11 +21,10 @@ claims are implemented. The inherited Mike capabilities must remain usable.
 
 ROSS will initially be a public-registration web application for Ontario
 lawyers and paralegals. Each user must verify an individual account; anonymous
-uploads and AI requests remain disabled. During beta it will use synthetic or
-non-confidential materials only, preserve all Mike functionality, and add
-verified Ontario and Canadian legal sources. It is a professional work-support
-tool, not a substitute for legal judgment and not a consumer legal-advice
-service.
+uploads and AI requests remain disabled. It will preserve all Mike functionality and
+adds verified Ontario and Canadian legal sources. It is a professional
+work-support tool, not a substitute for legal judgment and not a consumer
+legal-advice service. ADR-013 now governs confidential and privileged use.
 
 ## Consequences
 

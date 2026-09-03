@@ -338,7 +338,7 @@ export async function runOntarioResearchReadiness(): Promise<{
 
 export async function recordDataBoundaryAcknowledgement(payload: {
   version: string;
-  acknowledgement: "synthetic-or-non-confidential";
+  acknowledgement: "provider-responsibility-acknowledged";
 }): Promise<{ ok: true; boundaryVersion: string; acknowledgedAt: string }> {
   return apiRequest("/user/data-boundary/acknowledge", {
     method: "POST",

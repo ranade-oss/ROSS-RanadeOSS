@@ -10,12 +10,16 @@ const json = (path) => JSON.parse(read(path));
 
 test("the approved beta boundary is recorded", () => {
   const boundary = read("docs/product-boundary.md").replaceAll(/\s*>?\s+/g, " ");
+  const decision = read("docs/architecture/ADR-013-connected-provider-responsibility.md");
   assert.match(boundary, /public-registration web application/i);
   assert.match(boundary, /verify an individual account/i);
   assert.match(boundary, /anonymous uploads and AI requests are not permitted/i);
   assert.match(boundary, /Ontario lawyers and paralegals/i);
-  assert.match(boundary, /synthetic or non-confidential materials only/i);
+  assert.match(boundary, /confidential or privileged use is at the user's own risk/i);
   assert.match(boundary, /preserve all Mike functionality/i);
+  assert.match(decision, /Transmission is expected behaviour, not itself a\s+misuse/i);
+  assert.match(decision, /provider-responsibility-acknowledged/);
+  assert.match(decision, /independent review of this expanded policy is\s+pending/i);
 });
 
 test("the inherited Mike baseline is pinned and additive", () => {

@@ -27,13 +27,13 @@ test("completed final plan passes development integrity with no pending workstre
   );
 });
 
-test("development integrity rejects expanded data or CanLII automation", () => {
+test("development integrity rejects missing provider-risk evidence or CanLII automation", () => {
   const unsafe = structuredClone(plan);
-  unsafe.target.confidentialUseApproved = true;
+  unsafe.target.confidentialUseApprovalEvidence = null;
   unsafe.providerStrategy.canliiWebsiteAutomationAllowed = true;
   const result = evaluateFinalCompletion(unsafe, {}, {}, {}, {}, false);
   assert.equal(result.ready, false);
-  assert.ok(result.blockers.some((item) => /Confidential/.test(item)));
+  assert.ok(result.blockers.some((item) => /Confidential-use approval evidence/.test(item)));
   assert.ok(result.blockers.some((item) => /CanLII/.test(item)));
 });
 

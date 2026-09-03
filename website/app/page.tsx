@@ -67,10 +67,12 @@ export default function Home() {
               </a>
             </div>
             <p className="hero-note">
-              <strong>Current mode:</strong> synthetic or non-confidential
-              materials only. Engineering integrations exist; live availability
-              and comprehensive Ontario coverage are not verified. The ROSS
-              application opens on its separately hosted Fly service.
+              <strong>Current mode:</strong> ROSS sends relevant information to
+              the model and connected services you choose. Confidential or
+              privileged use is at your own risk; choose providers and settings
+              that meet your professional obligations. Comprehensive Ontario
+              coverage is not guaranteed. The ROSS application opens on its
+              separately hosted Fly service.
             </p>
           </div>
           <OntarioLayer />
@@ -193,11 +195,12 @@ export default function Home() {
             <p className="eyebrow">Two deployment paths</p>
             <h2>A controlled hosted beta, or infrastructure you operate.</h2>
             <p>
-              The operator-hosted service is limited to synthetic or
-              non-confidential material. Independent privacy and security
-              reviews are approved; operational launch evidence and final
-              vendor verification remain open. Self-hosting gives deployers
-              control—and responsibility—for their own configuration.
+              The hosted beta uses services selected by the user. Information
+              needed for a task is sent to those services. Review each
+              provider&apos;s terms, retention, training, security, and disclosure
+              settings before using confidential or privileged information.
+              Self-hosting gives deployers control—and responsibility—for their
+              own configuration.
             </p>
           </div>
           <div className="deployment-options">
@@ -206,7 +209,8 @@ export default function Home() {
               <h3>Verified public registration</h3>
               <p>
                 Create an individual account, verify your email, bring a model
-                API key, and acknowledge the hosted-beta data boundary.
+                API key, and acknowledge the connected-provider responsibility
+                notice.
               </p>
               <a href="/security">Review current boundaries →</a>
             </article>

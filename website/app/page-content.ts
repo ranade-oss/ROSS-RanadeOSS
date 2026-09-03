@@ -59,6 +59,15 @@ const ownerApproved = (owner: string): PublicPage["governance"] => ({
   nextReviewDate: "2026-08-16",
 });
 
+const currentPolicyApproved = (owner: string): PublicPage["governance"] => ({
+  owner,
+  reviewer: "Abhi Ranade — legal operator",
+  reviewStatus: "owner-approved",
+  effectiveDate: "2026-09-03",
+  lastReviewedDate: "2026-09-03",
+  nextReviewDate: "2026-10-03",
+});
+
 export const publicPages: Record<string, PublicPage> = {
   ontario: {
     title: "Ontario and Canadian capability",
@@ -115,7 +124,7 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "Five versioned Ontario workflows are approved for the controlled-beta boundary while the inherited Mike workflow library remains intact.",
     status:
-      "Ontario-lawyer review and independent adjudication are recorded; use remains limited to synthetic or affirmatively non-confidential material.",
+      "Ontario-lawyer review and independent adjudication are recorded. Confidential or privileged use is at your own risk.",
     governance: independentlyReviewed(
       "Ontario workflow owner — AR",
       "Independent Ontario lawyer; evidence retained by AR",
@@ -127,7 +136,7 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Current availability",
-        body: "Catalogue entries can be inspected publicly and opened in the authenticated application. They remain limited to synthetic or affirmatively non-confidential material throughout the controlled beta.",
+        body: "Catalogue entries can be inspected publicly and opened in the authenticated application. Users must choose connected providers and settings appropriate for the information they use.",
       },
     ],
   },
@@ -183,21 +192,18 @@ export const publicPages: Record<string, PublicPage> = {
     title: "Security",
     eyebrow: "Controls before claims",
     summary:
-      "ROSS is not yet approved for real confidential or privileged client material in an operator-hosted service.",
+      "ROSS sends relevant information to the model and connected services selected by the user. Confidential or privileged use is at the user's own risk.",
     status:
-      "Independent security and privacy reviews are approved with no unresolved Critical or High findings; production operator and vendor decisions remain open.",
-    governance: independentlyReviewed(
-      "Security owner — AR",
-      "Security reviewer report; approval evidence retained by AR",
-    ),
+      "The operator approved the changed provider-responsibility policy on 2026-09-03; independent review of this expansion is pending.",
+    governance: currentPolicyApproved("Legal operator and security owner — Abhi Ranade (AR)"),
     sections: [
       {
-        title: "Current beta boundary",
-        body: "Development, demos, previews, and hosted beta use synthetic or non-confidential materials only. This applies to documents, prompts, logs, screenshots, support, and analytics.",
+        title: "Connected services",
+        body: "ROSS sends the information needed for a requested task to the selected model, legal source, or connector. Transmission is necessary for the feature. The provider may retain, use, train on, secure, review, or disclose information under its own terms and settings.",
       },
       {
         title: "Architecture direction",
-        body: "The hosted route uses Supabase Free in Canada Central for authentication, database, Storage S3, and account email; Fly application/API/worker services in Toronto; user-directed OpenAI API access; and provider-native operational services. The public beta makes no confidential-data, comprehensive-source, or continuous-backup claim.",
+        body: "The hosted route uses Supabase Free in Canada Central for authentication, database, Storage S3, and account email; Fly application/API/worker services in Toronto; user-directed model-provider access; and provider-native operational services. ROSS does not claim that any provider is suitable for confidential work and makes no comprehensive-source or continuous-backup promise.",
       },
       {
         title: "Report safely",
@@ -207,15 +213,12 @@ export const publicPages: Record<string, PublicPage> = {
   },
   privacy: {
     title: "Privacy notice — public controlled beta",
-    eyebrow: "Effective 2026-07-18",
+    eyebrow: "Effective 2026-09-03",
     summary:
-      "Abhi Ranade operates ROSS. This notice describes the verified-account public controlled beta and the public website; neither is approved for privileged, confidential, regulated, proprietary, or real client material.",
+      "Abhi Ranade operates ROSS. This notice describes the public website, hosted application, and connected services selected by users.",
     status:
-      "Effective 2026-07-18 following independent privacy review and owner approval. Privacy questions, access or deletion requests, and complaints may be sent to abhi@soundmarklaw.com without including client information.",
-    governance: independentlyReviewed(
-      "Legal operator — Abhi Ranade; privacy evidence retained by AR",
-      "Independent privacy expert; evidence retained by AR",
-    ),
+      "Effective 2026-09-03 by operator approval. Independent review of this changed policy is pending. Privacy questions, access or deletion requests, and complaints may be sent to abhi@soundmarklaw.com without including client information.",
+    governance: currentPolicyApproved("Legal operator — Abhi Ranade"),
     sections: [
       {
         title: "Public website",
@@ -223,7 +226,11 @@ export const publicPages: Record<string, PublicPage> = {
       },
       {
         title: "Hosted application",
-        body: "The hosted application processes account and authentication data, settings, user-supplied provider keys, projects, prompts, uploaded files, generated content, source queries, connector data, security metadata, and support communications to provide, secure, troubleshoot, and improve the service. Use is restricted to verified accounts and synthetic or affirmatively non-confidential material.",
+        body: "The hosted application processes account and authentication data, settings, user-supplied provider keys, projects, prompts, uploaded files, generated content, source queries, connector data, security metadata, and support communications to provide, secure, troubleshoot, and improve the service. Use is restricted to verified accounts.",
+      },
+      {
+        title: "Services you choose",
+        body: "ROSS sends the relevant prompt, file, context, or request to a selected model, legal source, or connector so it can perform the task. The service may retain, use, train on, secure, review, or disclose information under its own terms and settings. Confidential or privileged use is at your own risk, and you are responsible for choosing suitable services and settings.",
       },
       {
         title: "Providers and processing locations",
@@ -237,20 +244,20 @@ export const publicPages: Record<string, PublicPage> = {
   },
   terms: {
     title: "Hosted-service terms — public controlled beta",
-    eyebrow: "Effective 2026-07-18",
+    eyebrow: "Effective 2026-09-03",
     summary:
       "These terms govern the ROSS service operated by Abhi Ranade. Creating an account or using the hosted service means accepting these terms and the effective acceptable-use and privacy notices.",
     status:
-      "Public controlled beta: verified account required; synthetic or affirmatively non-confidential material only; no service-level or data-recovery commitment.",
-    governance: ownerApproved("Legal operator — Abhi Ranade"),
+      "Public controlled beta: verified account required; connected-provider terms and settings apply; no service-level or data-recovery commitment.",
+    governance: currentPolicyApproved("Legal operator — Abhi Ranade"),
     sections: [
       {
         title: "Service and eligibility",
-        body: "ROSS is an evolving public beta for lawful professional use. Users must provide accurate account information, protect credentials, remain responsible for their provider accounts and charges, and use only synthetic or affirmatively non-confidential material. The operator may change, limit, suspend, or discontinue beta functions and may suspend accounts to protect users, providers, sources, or the service.",
+        body: "ROSS is an evolving public beta for lawful professional use. Users must provide accurate account information, protect credentials, and remain responsible for provider accounts, settings, and charges. ROSS sends relevant information to selected services so they can perform requested functions. The operator may change, limit, suspend, or discontinue beta functions and may suspend accounts to protect users, providers, sources, or the service.",
       },
       {
         title: "Professional responsibility",
-        body: "Users must verify sources, passages, currency, treatment, calculations, deadlines, and generated work; protect information; supervise every use; and exercise independent professional judgment. ROSS output is not legal advice and must not be presented as official, comprehensive, current, or human-reviewed unless independently verified.",
+        body: "Before using confidential or privileged information, users must have authority and review each provider's terms, retention, training, human-review, security, and disclosure settings. Users remain responsible for confidentiality, privilege, client authorization, supervision, professional conduct, source verification, and all generated work.",
       },
       {
         title: "No legal service or authority guarantee",
@@ -264,15 +271,15 @@ export const publicPages: Record<string, PublicPage> = {
   },
   "acceptable-use": {
     title: "Acceptable use — public controlled beta",
-    eyebrow: "Effective 2026-07-18",
+    eyebrow: "Effective 2026-09-03",
     summary:
-      "ROSS is intended for lawful professional work by registered beta participants using synthetic or non-confidential materials.",
+      "ROSS is intended for lawful professional work by registered beta participants who protect information and choose suitable connected services.",
     status: "Compliance is a condition of access; the operator may restrict or suspend use to protect users, providers, sources, or the service.",
-    governance: ownerApproved("Legal operator and security owner — Abhi Ranade (AR)"),
+    governance: currentPolicyApproved("Legal operator and security owner — Abhi Ranade (AR)"),
     sections: [
       {
         title: "Prohibited during beta",
-        body: "Do not submit privileged, confidential, regulated, proprietary, or real client material; facilitate unlawful conduct; provide unsupervised consumer legal advice; impersonate another person; violate intellectual-property, privacy, court, professional, source-provider, or contractual duties; or misrepresent output as verified authority.",
+        body: "Do not submit information you are not authorized to use or disclose; facilitate unlawful conduct; provide unsupervised consumer legal advice; impersonate another person; violate intellectual-property, privacy, court, professional, source-provider, or contractual duties; or misrepresent output as verified authority.",
       },
       {
         title: "Report concerns",
@@ -403,8 +410,8 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "ROSS has executable engineering gates, recorded independent reviews, named ownership, approved public domains and contacts, completed live-environment exercises, verified launch vendors, and effective notices.",
     status:
-      "Ready for immutable-candidate generation and release-train evidence. Public deployment has not yet been performed, and the synthetic/non-confidential boundary remains binding.",
-    governance: ownerApproved("Release owner — AR; product owner — Abhi Ranade"),
+      "The public beta is online. Each update must pass the release checks, and ADR-013 governs connected-provider responsibility.",
+    governance: currentPolicyApproved("Release owner — AR; product owner — Abhi Ranade"),
     sections: [
       {
         title: "What the code enforces",
@@ -415,8 +422,8 @@ export const publicPages: Record<string, PublicPage> = {
         body: "The reviews, operational exercises, vendor disclosure, effective notices, source observation, and owner decisions are recorded. The remaining release sequence is to commit the evidence closure, run the complete release-train gate, retain its 90-day evidence, and deploy only after explicit public promotion approval.",
       },
       {
-        title: "Current safe boundary",
-        body: "The website remains no-index until publication approval. Any preview or authenticated public-beta use remains limited to synthetic or affirmatively non-confidential material. No confidential or privileged client-material launch is authorized.",
+        title: "Current safety rule",
+        body: "ROSS sends relevant information to selected services so they can perform requested functions. Confidential or privileged use is at the user's own risk. Users must choose providers and settings that meet their professional obligations.",
       },
       {
         title: "Promotion and rollback",
@@ -430,7 +437,7 @@ export const publicPages: Record<string, PublicPage> = {
     summary:
       "Effective 2026-07-18. The owner selected Supabase Free in Canada Central for authentication, database, Storage S3, and account email; Fly.io in Toronto; user-directed OpenAI API keys; OpenAI ChatGPT Sites; GitHub; and provider-native operational services. ROSS does not intentionally add product analytics at launch.",
     status:
-      "The inventory is effective for the synthetic/non-confidential public controlled beta. User-directed providers and some website, email, source, support, and security processing may occur outside Canada under provider terms.",
+      "The inventory applies to the public beta. User-directed providers and some website, email, source, support, and security processing may occur outside Canada under provider terms.",
     governance: independentlyReviewed(
       "Legal operator — Abhi Ranade; privacy evidence retained by AR",
       "Independent privacy expert; evidence retained by AR",

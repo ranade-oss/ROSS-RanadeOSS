@@ -2,7 +2,7 @@
 
 ## Boundary
 
-This draft supports an Ontario professional reviewing synthetic or non-confidential pleadings. It does not give consumer advice, amend a pleading, calculate a limitation period, or decide the merits.
+This draft supports an Ontario professional reviewing pleadings. If they contain confidential or privileged information, the user must choose connected providers and settings appropriate for that information. The draft does not give consumer advice, amend a pleading, calculate a limitation period, or decide the merits.
 
 ## Instructions
 
