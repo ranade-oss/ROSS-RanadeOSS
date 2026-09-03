@@ -43,6 +43,7 @@ test("the workflow topology keeps one owner for each automation boundary", () =>
 test("consolidated handlers preserve their bounded permissions and triggers", () => {
   const baseline = read(".github/workflows/baseline.yml");
   const handler = read(".github/workflows/handle-baseline-result.yml");
+  const manifestRefresh = read(".github/workflows/refresh-release-manifest.yml");
   const agent = read(".github/workflows/agent-pr-reconciler.yml");
   const mike = read(".github/workflows/coordinate-upstream-mike.yml");
   const lowRisk = read(".github/workflows/sync-upstream-mike.yml");
@@ -57,6 +58,14 @@ test("consolidated handlers preserve their bounded permissions and triggers", ()
   assert.match(agent, /actions: write/);
   assert.match(agent, /scripts\/github\/exact-head-pr-gates\.cjs/);
   assert.match(handler, /scripts\/github\/exact-head-pr-gates\.cjs/);
+  assert.match(
+    manifestRefresh,
+    /workflow_run:[\s\S]*workflows: \["Handle Baseline result"\][\s\S]*types: \[completed\]/,
+  );
+  assert.match(
+    manifestRefresh,
+    /github\.event\.workflow_run\.conclusion == 'success'/,
+  );
   assert.match(agent, /github\.rest\.actions\.createWorkflowDispatch/);
   assert.match(agent, /github\.rest\.pulls\.merge/);
   assert.match(mike, /docs\/upstream-sync-request\.json/);
