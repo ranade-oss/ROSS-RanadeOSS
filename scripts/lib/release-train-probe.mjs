@@ -130,7 +130,7 @@ const expectStatus = async (response, expected, label) => {
       headers: {
         Origin: publicWeb,
         "Content-Type": "application/octet-stream",
-        "X-ROSS-Data-Boundary": "synthetic-or-non-confidential",
+        "X-ROSS-Data-Boundary": "provider-responsibility-acknowledged",
       },
       body: new Uint8Array(),
     },
@@ -162,4 +162,3 @@ const expectStatus = async (response, expected, label) => {
   process.exit(1);
 });
 `;
-

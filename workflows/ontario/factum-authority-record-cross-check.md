@@ -2,7 +2,7 @@
 
 ## Boundary
 
-This draft checks a synthetic or non-confidential factum. It does not approve filing, invent a record reference, or claim that ordinary search is a citator.
+This draft checks a factum. If it contains confidential or privileged information, the user must choose connected providers and settings appropriate for that information. The draft does not approve filing, invent a record reference, or claim that ordinary search is a citator.
 
 ## Instructions
 

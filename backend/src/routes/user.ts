@@ -699,11 +699,11 @@ userRouter.post("/data-boundary/acknowledge", requireAuth, async (req, res) => {
       : "";
   if (
     version !== runtime.dataBoundaryVersion ||
-    acknowledgement !== "synthetic-or-non-confidential"
+    acknowledgement !== "provider-responsibility-acknowledged"
   )
     return void res.status(400).json({
       detail:
-        "The current controlled-beta boundary must be acknowledged exactly.",
+        "The current connected-provider responsibility notice must be acknowledged exactly.",
       boundaryVersion: runtime.dataBoundaryVersion,
     });
 

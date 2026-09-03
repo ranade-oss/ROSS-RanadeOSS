@@ -3,7 +3,7 @@
 - Status: Proposed
 - Date: 2026-07-15
 - Owners: Privacy owner TBD; technical owner TBD
-- Review trigger: Adding a model/provider, changing provider terms, or expanding beyond synthetic/non-confidential beta data
+- Review trigger: Adding a model/provider, changing provider terms, or changing the connected-provider responsibility policy
 
 ## Context
 
@@ -22,8 +22,8 @@ by product and account configuration.
 
 Use option 2 as the hosted-mode default. Preserve inherited provider support for
 self-hosted deployments, but require an explicit approved configuration for
-ROSS-hosted use. During the current beta, only synthetic or non-confidential
-materials may be submitted regardless of provider terms.
+ROSS-hosted use. ADR-013 governs the information users may submit and requires
+clear disclosure of provider-specific handling and user responsibility.
 
 ## Consequences
 

@@ -21,10 +21,12 @@ export function evaluateFinalCompletion(
   ];
   const byId = new Map((plan.workstreams ?? []).map((item) => [item.id, item]));
 
-  if (plan.target?.dataBoundary !== "synthetic-or-non-confidential-only")
-    blockers.push("Final controlled-beta plan expands the approved data boundary.");
-  if (plan.target?.confidentialUseApproved !== false)
-    blockers.push("Confidential use requires a successor data-boundary review.");
+  if (plan.target?.dataBoundary !== "connected-provider-responsibility")
+    blockers.push("Final controlled-beta plan does not use the approved connected-provider responsibility boundary.");
+  if (plan.target?.confidentialUseApproved !== true)
+    blockers.push("Final controlled-beta plan does not record the operator's confidential-use risk decision.");
+  if (!text(plan.target?.confidentialUseApprovalEvidence))
+    blockers.push("Confidential-use approval evidence is missing.");
   if (plan.target?.publicIndexingApproved !== false)
     blockers.push("Public indexing is not approved by this deliverable.");
   if (plan.providerStrategy?.canliiWebsiteAutomationAllowed !== false)

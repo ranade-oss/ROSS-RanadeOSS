@@ -204,7 +204,8 @@ export function loadRuntimeConfig(): RuntimeConfig {
         allowedOrigins,
         hostedMode: currentHostedMode,
         dataBoundaryVersion:
-            process.env.ROSS_DATA_BOUNDARY_VERSION?.trim() || "2026-07-16",
+            process.env.ROSS_DATA_BOUNDARY_VERSION?.trim() ||
+            "2026-09-03-provider-responsibility",
         hostedModelProviders: hostedModelProviders(currentHostedMode),
         releaseId:
             process.env.ROSS_RUNTIME_RELEASE_ID?.trim() ||

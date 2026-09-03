@@ -1,6 +1,6 @@
 # ADR-002 — Beta data boundary
 
-- Status: Accepted
+- Status: Superseded by ADR-013 on 2026-09-03
 - Date: 2026-07-15
 - Owners: Product owner TBD; privacy owner TBD
 - Review trigger: Any proposal to accept confidential, privileged, proprietary, regulated, or real client material

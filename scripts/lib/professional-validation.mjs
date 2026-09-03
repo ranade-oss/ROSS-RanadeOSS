@@ -156,8 +156,12 @@ export function evaluateProfessionalValidation(
 
   if (record.legalSourceDecision?.canliiScrapingAllowed !== false)
     blockers.push("CanLII scraping must remain prohibited.");
-  if (record.confidentialDataBoundary?.confidentialUseApproved !== false && !production)
-    blockers.push("Development validation cannot silently approve confidential use.");
+  if (record.confidentialDataBoundary?.status !== "connected-provider-responsibility")
+    blockers.push("Professional validation does not use the approved connected-provider responsibility boundary.");
+  if (record.confidentialDataBoundary?.confidentialUseApproved !== true)
+    blockers.push("Professional validation does not record the operator's confidential-use risk decision.");
+  if (!text(record.confidentialDataBoundary?.approvalEvidence))
+    blockers.push("Confidential-use approval evidence is missing.");
   if (!Array.isArray(record.scope?.practiceAreas) || record.scope.practiceAreas.length === 0)
     blockers.push("At least one proposed Ontario practice area is required.");
   for (const area of record.scope?.practiceAreas ?? []) {

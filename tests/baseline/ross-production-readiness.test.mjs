@@ -94,6 +94,6 @@ test("production operations are documented without expanding the beta data bound
     "SECURITY.md",
   ])
     assert.ok(read(path).length > 300, path);
-  assert.match(read("docs/operations/launch-checklist.md"), /synthetic\/non-confidential/);
+  assert.match(read("docs/operations/launch-checklist.md"), /ADR-013/);
   assert.match(read("docs/operations/legal-source-operations.md"), /never authorizes scraping/i);
 });

@@ -49,7 +49,7 @@ schemas, migrations, Supabase/RLS, data boundaries, deployment,
 infrastructure, dependencies, lockfiles, governance, release controls, and
 production operational changes remain protected. Ontario-first source
 coverage, reviewed official sources, attribution, the limited/non-comprehensive
-coverage statement, and the synthetic/non-confidential beta boundary are not
+coverage statement, and the connected-provider responsibility boundary are not
 upstream synchronization targets.
 
 ## Queue operation

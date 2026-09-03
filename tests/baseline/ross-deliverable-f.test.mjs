@@ -20,7 +20,8 @@ test("Deliverable F consolidates every remaining completion workstream", () => {
     "Ontario civil litigation and appeals",
     "Ontario Small Claims Court",
   ]);
-  assert.equal(plan.target.confidentialUseApproved, false);
+  assert.equal(plan.target.confidentialUseApproved, true);
+  assert.equal(plan.target.dataBoundary, "connected-provider-responsibility");
   assert.equal(plan.target.publicIndexingApproved, false);
 });
 
@@ -47,6 +48,6 @@ test("release train carries final evidence and keeps promotion explicit", () => 
 test("owner action sheet ends with the fail-closed gate and limited launch", () => {
   const sheet = read("docs/final/owner-action-sheet.md");
   assert.match(sheet, /npm run final:check/);
-  assert.match(sheet, /synthetic or\s+(?:affirmatively\s+)?non-confidential/);
+  assert.match(sheet, /confidential or privileged use is at the\s+user's own risk/i);
   assert.match(sheet, /no further planned software package after G/i);
 });

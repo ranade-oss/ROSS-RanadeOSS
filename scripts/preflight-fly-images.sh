@@ -38,10 +38,10 @@ docker build \
   --build-arg NEXT_PUBLIC_ROSS_APP_URL=https://app.example.invalid \
   --build-arg NEXT_PUBLIC_ROSS_WEBSITE_URL=https://website.example.invalid \
   --build-arg NEXT_PUBLIC_ROSS_HOSTED_MODE=controlled-beta \
-  --build-arg NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=2026-07-17-public-beta \
+  --build-arg NEXT_PUBLIC_ROSS_DATA_BOUNDARY_VERSION=2026-09-03-provider-responsibility \
   --build-arg NEXT_PUBLIC_ROSS_SIGNUPS_ENABLED=true \
-  --build-arg NEXT_PUBLIC_ROSS_TERMS_VERSION=2026-07-17-public-beta \
-  --build-arg NEXT_PUBLIC_ROSS_PRIVACY_VERSION=2026-07-17-public-beta \
+  --build-arg NEXT_PUBLIC_ROSS_TERMS_VERSION=2026-09-03-provider-responsibility \
+  --build-arg NEXT_PUBLIC_ROSS_PRIVACY_VERSION=2026-09-03-provider-responsibility \
   --build-arg ROSS_BUILD_RELEASE_ID=ross-public-beta-20260726-rc999 \
   .
 

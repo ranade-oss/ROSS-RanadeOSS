@@ -6,7 +6,7 @@ export const PUBLIC_BRAND_CONFIG = {
     "expandedName": "Ranade OSS",
     "tagline": "Ontario-first legal work, built in the open.",
     "description": "A public-registration legal AI workspace in development for Ontario lawyers and paralegals.",
-    "betaLabel": "Public beta — verified account required; synthetic or non-confidential materials only",
+    "betaLabel": "Public beta — verified account required; connected-provider terms and settings apply",
     "legalOperator": "Abhi Ranade",
     "productOwner": "Abhi Ranade",
     "technicalOwner": "AR",
@@ -26,7 +26,7 @@ export const PUBLIC_BRAND_CONFIG = {
   "policy": {
     "defaultJurisdiction": "CA-ON",
     "productionDataResidencyTarget": "Canada",
-    "previewData": "synthetic-only",
+    "previewData": "provider-responsibility",
     "coverageStatus": "limited-source-reviewed",
     "courtListenerPreserved": true,
     "canliiScrapingAllowed": false,

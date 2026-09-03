@@ -17,7 +17,12 @@ test("Ontario professional validation records the reviewed limited-source launch
     ["ontario-civil-litigation", "ontario-small-claims"],
   );
   assert.equal(record.legalSourceDecision.canliiScrapingAllowed, false);
-  assert.equal(record.confidentialDataBoundary.confidentialUseApproved, false);
+  assert.equal(record.confidentialDataBoundary.status, "connected-provider-responsibility");
+  assert.equal(record.confidentialDataBoundary.confidentialUseApproved, true);
+  assert.equal(
+    record.confidentialDataBoundary.approvalEvidence,
+    "docs/architecture/ADR-013-connected-provider-responsibility.md",
+  );
 });
 
 test("professional validation preserves the provider gate and records review evidence", () => {

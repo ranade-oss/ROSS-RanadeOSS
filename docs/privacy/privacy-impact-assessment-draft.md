@@ -1,6 +1,6 @@
 # ROSS privacy impact assessment — public controlled beta
 
-Status: independent privacy expert approved the stated controlled-beta boundary
+Status: superseded for current policy by the 2026-09-03 provider-responsibility addendum; retained as historical review evidence
 
 Assessment date: 2026-07-18
 Decision: retain the synthetic/non-confidential controlled-beta boundary

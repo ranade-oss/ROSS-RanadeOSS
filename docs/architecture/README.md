@@ -8,7 +8,7 @@ production claim until their open items are resolved.
 | ADR | Decision | Status |
 |---|---|---|
 | [ADR-001](ADR-001-product-scope.md) | Product scope and intended users | Accepted |
-| [ADR-002](ADR-002-beta-data-boundary.md) | Beta data boundary | Accepted |
+| [ADR-002](ADR-002-beta-data-boundary.md) | Former beta data boundary | Superseded |
 | [ADR-003](ADR-003-application-topology.md) | Website and application topology | Proposed |
 | [ADR-004](ADR-004-hosting-and-residency.md) | Hosting and data residency | Proposed |
 | [ADR-005](ADR-005-auth-and-tenancy.md) | Authentication and tenancy | Proposed |
@@ -19,6 +19,7 @@ production claim until their open items are resolved.
 | [ADR-010](ADR-010-agpl-and-attribution.md) | AGPL and upstream attribution | Accepted |
 | [ADR-011](ADR-011-accessibility-and-language.md) | Accessibility and language expansion | Proposed |
 | [ADR-012](ADR-012-release-and-source-governance.md) | Release and source governance | Proposed |
+| [ADR-013](ADR-013-connected-provider-responsibility.md) | Connected-provider responsibility and confidential use | Accepted |
 
 ## Status meanings
 

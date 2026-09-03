@@ -41,8 +41,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "excludedUses": [
       "Consumer legal advice",
       "Autonomous pleading amendment",
-      "Limitation-period calculation",
-      "Use with confidential material during the controlled beta"
+      "Limitation-period calculation"
     ],
     "requiredInputs": [
       "Claim and defence",
@@ -80,7 +79,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
   {
     "slug": "documentary-discovery-review",
     "title": "Ontario Documentary Discovery Review",
-    "description": "Review a synthetic document set for relevance, issues, chronology, duplicates, and potential privilege flags without making privilege determinations.",
+    "description": "Review a document set for relevance, issues, chronology, duplicates, and potential privilege flags without making privilege determinations.",
     "practice": "Civil Litigation",
     "jurisdictions": [
       "Canada / Ontario"
@@ -94,11 +93,10 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "excludedUses": [
       "Final privilege determination",
       "Autonomous production decision",
-      "Destruction or alteration of originals",
-      "Use with confidential material during the controlled beta"
+      "Destruction or alteration of originals"
     ],
     "requiredInputs": [
-      "Synthetic document set",
+      "Document set",
       "Pleadings or issue list",
       "Represented party",
       "Court file and region",
@@ -148,8 +146,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "excludedUses": [
       "Assessing witness credibility",
       "Inventing personal knowledge",
-      "Final admissibility opinion",
-      "Use with confidential material during the controlled beta"
+      "Final admissibility opinion"
     ],
     "requiredInputs": [
       "Draft affidavit",
@@ -206,8 +203,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "excludedUses": [
       "Automated noting-up conclusion",
       "Inventing record references",
-      "Final filing approval",
-      "Use with confidential material during the controlled beta"
+      "Final filing approval"
     ],
     "requiredInputs": [
       "Draft factum",
@@ -263,8 +259,7 @@ export const ONTARIO_WORKFLOW_CATALOGUE: OntarioWorkflowCatalogueEntry[] = [
     "excludedUses": [
       "Consumer-facing legal advice",
       "Automatic form filing",
-      "Limitation-period calculation",
-      "Use with confidential material during the controlled beta"
+      "Limitation-period calculation"
     ],
     "requiredInputs": [
       "Claim, defence, or intake narrative",

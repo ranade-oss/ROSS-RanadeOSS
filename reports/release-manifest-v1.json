@@ -3,7 +3,7 @@
   "releaseId": "ross-public-beta-20260717-rc1",
   "generatedAt": "2026-07-26T10:39:57.000Z",
   "algorithm": "sha256",
-  "artifactCount": 131,
+  "artifactCount": 137,
   "artifacts": [
     {
       "path": ".github/actionlint.yaml",
@@ -22,8 +22,8 @@
     },
     {
       "path": ".github/workflows/deploy-private-ross.yml",
-      "sha256": "594dc268fe98181c3728a0f2cd29d201ab0ee096b307f1bbb440b75bc3d837fd",
-      "sizeBytes": 11599
+      "sha256": "c0bb63831e1c4c4e2f2b77b913b19bc1e104ae16216f62391ccc7befa546111e",
+      "sizeBytes": 11611
     },
     {
       "path": ".github/workflows/refresh-release-manifest.yml",
@@ -37,8 +37,8 @@
     },
     {
       "path": ".github/workflows/verify-and-deploy-public-beta.yml",
-      "sha256": "51fc89251f8cdc76c2cc29aa96ed80ac23a1a1e195cd42c71eeeb71e97aa0392",
-      "sizeBytes": 10803
+      "sha256": "1b3fdc35928fb2c3ae8eefa3fecd4f24940fe429221fe3bf790c53972fca10ab",
+      "sizeBytes": 10815
     },
     {
       "path": ".github/workflows/verify-ontario-sources.yml",
@@ -77,8 +77,8 @@
     },
     {
       "path": "backend/src/config/runtime.ts",
-      "sha256": "d87156e4a40b139d8f322a7a68ace0913957dddd7dda568df40ee3fe554ef024",
-      "sizeBytes": 7262
+      "sha256": "a74af9d02ba751521962898b6deba83b819d1665bf483fdb4afa9d9f0a7b8ca0",
+      "sizeBytes": 7298
     },
     {
       "path": "backend/src/fileWorker.ts",
@@ -142,13 +142,13 @@
     },
     {
       "path": "backend/src/middleware/dataBoundary.test.ts",
-      "sha256": "b3b90c02c303b2c2ce67d2553b96bfc8da785f1f4f5b9c7110b5517415dac3f5",
-      "sizeBytes": 4414
+      "sha256": "27d85d57646c71604b99442a878937d19b67f5e4934e85971b709b0c07044064",
+      "sizeBytes": 4460
     },
     {
       "path": "backend/src/middleware/dataBoundary.ts",
-      "sha256": "e273e51e6c928f4ed22b902095032232260002884fe49397608e0998e601b76a",
-      "sizeBytes": 1680
+      "sha256": "83272ecb5c8c913d609522f60cd2bef4debb7ce3b211819b165ac30dada58879",
+      "sizeBytes": 1747
     },
     {
       "path": "backend/src/routes/documents.ts",
@@ -172,8 +172,8 @@
     },
     {
       "path": "backend/src/routes/user.ts",
-      "sha256": "b83e5625e93d828a657d05f506b32cc6379ac95e9563448805df79aa504b59be",
-      "sizeBytes": 42010
+      "sha256": "4beb0968f5bda66b416604b168841dbf9c9dc0ef143ee21bce1510ed6a6c20d7",
+      "sizeBytes": 42033
     },
     {
       "path": "config/legal-source-operations.v1.json",
@@ -182,8 +182,8 @@
     },
     {
       "path": "config/final-completion.v1.json",
-      "sha256": "f5f6c34845d1ca3a8e57d185bde3207107d1d9b5e6bf475fb4d0afa05ccec8e9",
-      "sizeBytes": 3379
+      "sha256": "4261d571dc4231cd7b79730b8c9c239ee1b813f3a6b0a8104bb9b78489ffa931",
+      "sizeBytes": 3481
     },
     {
       "path": "config/launch-readiness.v1.json",
@@ -197,8 +197,8 @@
     },
     {
       "path": "config/professional-validation.v1.json",
-      "sha256": "756e3218585180c2150393a074273ec7363a12c96e623f9f6cbe36870f0d87a3",
-      "sizeBytes": 6386
+      "sha256": "e37b6a2893fbf93da3a93ca08f47ad4ae42f08b02ed21e2894c122e80b9fbefb",
+      "sizeBytes": 6444
     },
     {
       "path": "config/public-source-coverage.json",
@@ -212,13 +212,13 @@
     },
     {
       "path": "config/ross-brand.json",
-      "sha256": "181368057a18f6805b5be5f7625ddfe9a05c15995d24400df2fa3a777ed98ad3",
-      "sizeBytes": 2026
+      "sha256": "50f0cdaa0820b40d2951bd52eb69d29ff10db283fb19e4541d2acf887896339e",
+      "sizeBytes": 2034
     },
     {
       "path": "config/ross-brand.schema.json",
-      "sha256": "5b92b16134eb80c112267fbe718862ff10fac3e4dd744bb279c43f355dbe1244",
-      "sizeBytes": 4141
+      "sha256": "6ff6abbab068e0af88cc319127d1d776653e431b0276f226163d012f87a7d8ca",
+      "sizeBytes": 4150
     },
     {
       "path": "deploy/fly/api.toml",
@@ -242,8 +242,8 @@
     },
     {
       "path": "deploy/fly/frontend.Dockerfile",
-      "sha256": "8466f97666c44339d7e38638c4147f84420694f93c861b1f73675dc4e40c77e1",
-      "sizeBytes": 2200
+      "sha256": "5a2fa35086b58ad6993e0dc47616288254375b73046d14788288c5cda26ac12f",
+      "sizeBytes": 2248
     },
     {
       "path": "deploy/fly/frontend.toml",
@@ -306,14 +306,24 @@
       "sizeBytes": 1722
     },
     {
+      "path": "docs/architecture/ADR-013-connected-provider-responsibility.md",
+      "sha256": "fcbdb4417f06163e11e34eeadd92a910e3cdb7be159d6547d07cac25ac50d473",
+      "sizeBytes": 3643
+    },
+    {
       "path": "docs/privacy/data-inventory.json",
-      "sha256": "616d9b61f683f0dae75d8bc8cb1e09a8949bc3c60128eb675fe68263e006a02e",
-      "sizeBytes": 3272
+      "sha256": "20766d5f891c62b22f241f905e7299593225b0ee124f67bcfc41016870fe528a",
+      "sizeBytes": 3354
+    },
+    {
+      "path": "docs/privacy/provider-responsibility-addendum-2026-09-03.md",
+      "sha256": "0033b0bb32735b08046966ac09b3e149ff23658d5d36a37451d3fd7b5c45f2cd",
+      "sizeBytes": 2175
     },
     {
       "path": "docs/privacy/privacy-impact-assessment-draft.md",
-      "sha256": "ebf10ae780e577978f58614edd7c356edec238025bb8cd699b66411f9ca67086",
-      "sizeBytes": 4973
+      "sha256": "869320cb239301f7a9244d11d0497d624b80d04586775e7924fa229017e659f1",
+      "sizeBytes": 5022
     },
     {
       "path": "docs/privacy/retention-schedule.json",
@@ -327,8 +337,8 @@
     },
     {
       "path": "docs/evaluation/capability-limitations-v1.md",
-      "sha256": "8d4a42d88e734dbdaa64107c01e0fd53531a068d43c8e01d7dd9661a423c9716",
-      "sizeBytes": 3159
+      "sha256": "b8d1717c84f8fd204a039514a934b12051b0f7b24705cfff9e711804cb8173da",
+      "sizeBytes": 3238
     },
     {
       "path": "docs/deployment/release-train-v1.md",
@@ -354,6 +364,11 @@
       "path": "frontend/src/app/components/projects/ProjectDocumentsView.tsx",
       "sha256": "abfe65146aa653a8952f9bffa43d8ba73773f3e1e4e0bdd560a1782d9aa443c9",
       "sizeBytes": 160868
+    },
+    {
+      "path": "frontend/src/app/components/shared/DataBoundaryGate.tsx",
+      "sha256": "a8744d852d7b4d3e292a26824a6dcbd682a2b566f9978cae7b1bdb23d9ee3d2d",
+      "sizeBytes": 4874
     },
     {
       "path": "frontend/src/app/components/shared/RowActions.tsx",
@@ -427,8 +442,13 @@
     },
     {
       "path": "frontend/src/app/lib/mikeApi.ts",
-      "sha256": "20892752034962dd9e2c9380ce05241e7d893c15460fb347744c43dbdf089a35",
-      "sizeBytes": 39239
+      "sha256": "ef16a47e033d32147c20fdea52a7782bfa64c9c1ab310284cd10587e0ef16ebb",
+      "sizeBytes": 39246
+    },
+    {
+      "path": "frontend/src/app/lib/dataBoundary.ts",
+      "sha256": "da60ff4abdc14da8c33fc8aae01bf07267cfc516654648debf1965ae57ec7e9f",
+      "sizeBytes": 1194
     },
     {
       "path": "frontend/src/app/lib/runtimeConfig.server.ts",
@@ -447,8 +467,8 @@
     },
     {
       "path": "frontend/src/app/signup/page.tsx",
-      "sha256": "09b62470572de8e9b6d9210de20b477dc018bafe5f7f02987f51152ee4b688d4",
-      "sizeBytes": 18551
+      "sha256": "fdf8c0135f347fe953b733a98c26afd395606cf29b33e335cb888a61eebeb972",
+      "sizeBytes": 18674
     },
     {
       "path": "frontend/next.config.ts",
@@ -472,8 +492,8 @@
     },
     {
       "path": "reports/final-completion-dossier.md",
-      "sha256": "0a7d0d3285e4f0d95e32311b75b0427f08728523573f4ccc1bd245d7eebbe553",
-      "sizeBytes": 2096
+      "sha256": "173b5d2b56fec46df866d47511b024422333cffce5c6ff4e18300f559b0083e7",
+      "sizeBytes": 2144
     },
     {
       "path": "reports/ontario-evaluation-v1.json",
@@ -497,8 +517,8 @@
     },
     {
       "path": "scripts/lib/release-train-probe.mjs",
-      "sha256": "a9a238424999ea97a1f2fbd1d9b04ee8fe044da053403e6c2d46f94e0ce1f4a0",
-      "sizeBytes": 5182
+      "sha256": "0cc34deb89a2cbc5858c1dfa49f42b5eb58ba83fb9ba8ff549d6d7b908950935",
+      "sizeBytes": 5188
     },
     {
       "path": "scripts/lib/staging-debug.mjs",
@@ -507,8 +527,8 @@
     },
     {
       "path": "scripts/build-release-train-images.sh",
-      "sha256": "777328e5428fa2c580854a957d1c64c46eb82164636e077ccb87e7d5c716bd02",
-      "sizeBytes": 5794
+      "sha256": "bb39af02a55e9cd792ef355673560edbdca5761d9a495a037e7de685c9053a1b",
+      "sizeBytes": 5830
     },
     {
       "path": "scripts/fly-deploy-with-retry.sh",
@@ -517,8 +537,8 @@
     },
     {
       "path": "scripts/fly-release-train.mjs",
-      "sha256": "6d1fddf4e7dfe6530d5aa1b99bcced4ec8628f7a0d7333ec3f48c2122a8ebfdb",
-      "sizeBytes": 29398
+      "sha256": "d06de2259197b40a2f5312efe85d660da3e168b6ad17dd2bdd656d816560cc5f",
+      "sizeBytes": 29410
     },
     {
       "path": "scripts/observe-legal-sources.mjs",
@@ -527,8 +547,8 @@
     },
     {
       "path": "scripts/preflight-fly-images.sh",
-      "sha256": "09d1a5c7c2f9b46f651d088acfd00f8a74720030927b588ff1e3c493e20abc44",
-      "sizeBytes": 1703
+      "sha256": "11474ddfb6c0200c9eeec7c95b0c342b9451bb66412d96360d24f7504a72cf46",
+      "sizeBytes": 1739
     },
     {
       "path": "scripts/release-train-image-ref.mjs",
@@ -562,8 +582,8 @@
     },
     {
       "path": "scripts/lib/professional-validation.mjs",
-      "sha256": "6ad2cc343bcd8c7463c43a0182fbcc75f034d2ed1fb7c59d2a5baa2a61cdd3d8",
-      "sizeBytes": 12265
+      "sha256": "dc217c270d4b4cdb4278685dfe431663043dc7ef58819ad67b316c7887f86e34",
+      "sizeBytes": 12607
     },
     {
       "path": "scripts/lib/release-identifier.mjs",
@@ -572,8 +592,8 @@
     },
     {
       "path": "scripts/lib/final-completion.mjs",
-      "sha256": "8f1cd40e89bc9c7551a2e464da29e452052eaa040cbaa3d2c9dece6621d5fef0",
-      "sizeBytes": 3312
+      "sha256": "0c6d171aa4312e7aa95fd6fe26fb3b17bbcdb24f19cc2c8748ab89faa45f94c1",
+      "sizeBytes": 3502
     },
     {
       "path": "scripts/check-final-completion.mjs",
@@ -602,13 +622,13 @@
     },
     {
       "path": "tests/baseline/ross-production-readiness.test.mjs",
-      "sha256": "4053d258002b166f92677675aeba9b637f4ecfa60c20d9c1f9b252144513193f",
-      "sizeBytes": 3874
+      "sha256": "d6d0f8a23df9e86f609d02273bc9fc7aa13df631cb9d1d705dfb06005283ef47",
+      "sizeBytes": 3854
     },
     {
       "path": "tests/baseline/ross-release-train.test.mjs",
-      "sha256": "0ae5ed9ad3f9b737f7dac6bd2e38b1730d1f4c80b93e9d6be231cb0a17c81a2b",
-      "sizeBytes": 30862
+      "sha256": "e30318281107fd8ce644b3fdb1299023f130a2d22e67d2918828a9926287861b",
+      "sizeBytes": 30883
     },
     {
       "path": "tests/baseline/ross-staging-debug.test.mjs",
@@ -631,14 +651,24 @@
       "sizeBytes": 2950
     },
     {
+      "path": "website/app/page.tsx",
+      "sha256": "ab60abd6ecbe672480f2dbc6b35687f5a6af6883685cb2d3078e5465c44322dc",
+      "sizeBytes": 9517
+    },
+    {
       "path": "website/app/page-content.ts",
-      "sha256": "70bc298aa61d186216a3288d1a242f830551b71f1c15ed44ff9a6abf1b0735b7",
-      "sizeBytes": 31822
+      "sha256": "ccb15e0b2eb89608ab5f74d0c6a2685cd3e28ecdd39f85740edd04c630988d23",
+      "sizeBytes": 32301
+    },
+    {
+      "path": "website/app/robots.ts",
+      "sha256": "61cfdc9391fad3421e455c7c2aad7ffaf9f6df2c8a97d287fd8ad3242e948014",
+      "sizeBytes": 259
     },
     {
       "path": "website/app/generated-brand-config.ts",
-      "sha256": "765617aac3428beef2172cdcc57cb393d0bb5c05c456436cc5e8c1c5fa035c0e",
-      "sizeBytes": 1620
+      "sha256": "90a187dfa0cc9bb28758440824405b9f2472b76f753c6ee9c9b3e55d187eb9c2",
+      "sizeBytes": 1628
     },
     {
       "path": "website/vendor/image-size/index.d.ts",
@@ -657,8 +687,8 @@
     },
     {
       "path": "workflows/ontario/catalogue.json",
-      "sha256": "6316832b71b5f7a0ae723c315b0f7ed1decba19b346f2a675201177ea6180728",
-      "sizeBytes": 10965
+      "sha256": "d01d090afb3f13b75edcb67c04f1ea21911adb8efabc81ca053a72e9c6272392",
+      "sizeBytes": 10610
     }
   ]
 }

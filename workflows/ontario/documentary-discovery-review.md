@@ -2,7 +2,7 @@
 
 ## Boundary
 
-This draft organizes a synthetic or non-confidential document set. It does not make a final relevance, privilege, production, redaction, or destruction decision.
+This draft organizes a document set. If it contains confidential or privileged information, the user must choose connected providers and settings appropriate for that information. The draft does not make a final relevance, privilege, production, redaction, or destruction decision.
 
 ## Instructions
 

@@ -31,10 +31,11 @@ approved until the named evidence actually exists.
    promotion. Any blocker ends the promotion attempt. Retain its 90-day evidence
    artifact and approval record.
 9. **Limited launch.** Open verified self-registration without anonymous use.
-   Keep the hosted beta restricted to synthetic or affirmatively
-   non-confidential material. Public search indexing and confidential or
-   privileged files remain outside this approval. Self-hosted operators retain
-   responsibility for their own approved data boundary.
+   Apply ADR-013: explain the connected-provider data flow, require the current
+   acknowledgement, and state that confidential or privileged use is at the
+   user's own risk. Do not claim that any provider is suitable for a particular
+   confidential-data class. Public search indexing remains a separate website
+   decision. Self-hosted operators retain responsibility for their own policy.
 
 Deliverable G implements the approved public-registration expansion. There is
 no further planned software package after G unless a reviewer requires code

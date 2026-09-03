@@ -59,7 +59,7 @@ const candidate = {
 const flyOrg = required("FLY_ORG");
 const releaseId = required("ROSS_RELEASE_ID");
 const policyVersion =
-    process.env.POLICY_VERSION?.trim() || "2026-07-17-public-beta";
+    process.env.POLICY_VERSION?.trim() || "2026-09-03-provider-responsibility";
 const commandTimeoutMs = Number(
     process.env.ROSS_RELEASE_COMMAND_TIMEOUT_MS ?? "300000",
 );

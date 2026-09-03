@@ -36,7 +36,9 @@ or the production data boundary.
   owner, rollback owner, and stop conditions.
 - [ ] Public indexing remains disabled unless the public-content, legal, privacy,
   accessibility, and product owners explicitly approve it.
-- [ ] Run a limited synthetic/non-confidential cohort first. Expansion to real
-  confidential or privileged material requires a successor data-boundary ADR.
+- [ ] Confirm ADR-013 is reflected in onboarding, terms, privacy, provider
+  disclosures, runtime policy version, and release probes. Use synthetic data
+  for launch verification; confidential or privileged use remains the user's
+  provider-selection and professional-responsibility decision.
 
 Any unchecked, expired, contradictory, or candidate-mismatched item is a blocker.

@@ -27,16 +27,16 @@ async function render(path) {
   return { response, html: await response.text() };
 }
 
-test("landing page renders the accurate beta and source boundary", async () => {
+test("landing page renders the connected-provider responsibility boundary", async () => {
   const { response, html } = await render("/");
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   assert.match(html, developmentPreviewMeta);
   assert.match(html, /Ontario-first legal work/);
-  assert.match(html, /synthetic or non-confidential materials only/i);
+  assert.match(html, /Confidential or privileged use is at your own risk/i);
   assert.match(
     html,
-    /live availability and comprehensive Ontario coverage are not verified/i,
+    /Comprehensive Ontario coverage is not guaranteed/i,
   );
   assert.match(html, /href="\/coverage"/);
   assert.match(
@@ -77,7 +77,7 @@ test("required public routes render without authentication", async () => {
     assert.match(html, /Skip to main content/, route);
     assert.match(normalized, /Operator: Abhi Ranade/, route);
     assert.match(html, /Modified from/, route);
-    assert.match(normalized, /Next review<\/dt><dd>2026-08-16/, route);
+    assert.match(normalized, /Next review<\/dt><dd>2026-(?:08-16|10-03)/, route);
   }
 });
 
@@ -121,20 +121,20 @@ test("the product demonstration is fictional, captioned, and text-equivalent", a
   assert.match(html, /Treatment unavailable/);
 });
 
-test("legal notices are effective with dated owner and independent governance", async () => {
+test("legal notices show the current operator-approved policy", async () => {
   for (const route of ["/terms", "/acceptable-use"]) {
     const { response, html } = await render(route);
     assert.equal(response.status, 200, route);
     assert.match(html, /owner-approved/, route);
-    assert.match(html, /Effective<\/dt><dd>2026-07-18/, route);
+    assert.match(html, /Effective<\/dt><dd>2026-09-03/, route);
     assert.match(html, /Abhi Ranade/, route);
     assert.doesNotMatch(html, /title>[^<]*placeholder/i, route);
   }
   const privacy = await render("/privacy");
   assert.equal(privacy.response.status, 200);
-  assert.match(privacy.html, /independent-reviewed/);
-  assert.match(privacy.html, /Independent privacy expert/);
-  assert.match(privacy.html, /Effective<\/dt><dd>2026-07-18/);
+  assert.match(privacy.html, /owner-approved/);
+  assert.match(privacy.html, /Independent review of this changed policy is pending/i);
+  assert.match(privacy.html, /Effective<\/dt><dd>2026-09-03/);
 });
 
 test("the first dated update and governed metadata render", async () => {
@@ -148,20 +148,21 @@ test("the first dated update and governed metadata render", async () => {
   assert.match(update.html, /effective notices, and operational exercises are recorded/);
 });
 
-test("production readiness records completed gates while indexing still fails closed before promotion", async () => {
+test("production readiness records the current provider responsibility policy", async () => {
   const readiness = await render("/readiness");
   assert.equal(readiness.response.status, 200);
   assert.match(readiness.html, /completed live-environment exercises/i);
-  assert.match(readiness.html, /Ready for immutable-candidate generation/i);
+  assert.match(readiness.html, /The public beta is online/i);
   assert.match(
     readiness.html,
-    /No confidential or privileged client-material launch/i,
+    /Confidential or privileged use is at the user's own risk/i,
   );
   const update = await render("/updates/release-controls");
   assert.equal(update.response.status, 200);
   assert.match(update.html, /operational and launch gates completed/i);
   const robots = await render("/robots.txt");
-  assert.match(robots.html, /Disallow: \/$/m);
+  assert.match(robots.html, /Allow: \/$/m);
+  assert.doesNotMatch(robots.html, /Disallow:/i);
 });
 
 test("unknown routes return the custom not-found page", async () => {

@@ -2,7 +2,7 @@
 
 ## Boundary
 
-This draft organizes a synthetic or non-confidential Ontario Small Claims matter for a professional. It does not provide consumer advice, calculate a limitation period, choose a cause of action, or file a form.
+This draft organizes an Ontario Small Claims matter for a professional. If it contains confidential or privileged information, the user must choose connected providers and settings appropriate for that information. The draft does not provide consumer advice, calculate a limitation period, choose a cause of action, or file a form.
 
 ## Instructions
 

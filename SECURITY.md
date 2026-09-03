@@ -1,8 +1,11 @@
 # ROSS security policy
 
-ROSS is under active development and is not approved for confidential,
-privileged, regulated, proprietary, or real client material in an
-operator-hosted environment.
+ROSS is under active development. It sends relevant information to the model
+and connected services selected by the user so those services can perform the
+requested functions. Confidential or privileged use is at the user's own risk.
+Users are responsible for having authority to use the information and for
+choosing provider accounts, terms, retention, training, human-review, security,
+and disclosure settings that meet their professional obligations.
 
 ## Reporting a vulnerability
 

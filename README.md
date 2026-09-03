@@ -8,7 +8,7 @@ ROSS (Ranade OSS) is an independently governed, Ontario-focused legal AI workspa
 >
 > **Public-beta application:** [Launch ROSS](https://ross-ranadeoss-public.fly.dev)
 >
-> A verified account is required. Use synthetic or affirmatively non-confidential materials only. The hosted beta is not approved for unrestricted confidential or production legal work.
+> A verified account is required. ROSS sends relevant information to the model and connected services you choose so they can perform the functions you request. Confidential or privileged use is at your own risk; choose providers and settings that meet your professional obligations.
 
 [Documentation](docs/) · [Architecture](docs/architecture/README.md) · [Release runbook](docs/operations/release-runbook.md) · [Report a security issue](https://github.com/ranade-oss/ROSS-RanadeOSS/security/advisories/new)
 
@@ -32,9 +32,9 @@ ROSS is under active development. Self-hosted local development is available, an
 | Area | Current status |
 | --- | --- |
 | Public beta | Available with verified registration |
-| Permitted hosted-beta material | Synthetic or affirmatively non-confidential material only |
+| Hosted-beta information policy | User-selected provider responsibility; confidential or privileged use is at the user's own risk |
 | Ontario legal-source coverage | Limited and reviewed, not comprehensive |
-| Confidential production use | Not approved |
+| Confidential or privileged use | User must have authority and choose suitable providers and settings |
 | Production release | Blocked until governed approvals and checks pass |
 | Government or court affiliation | None |
 

@@ -52,7 +52,7 @@ jobs:
       WORKER_APP: ${{ inputs.file_worker_app_name }}
       FLY_ORG: ${{ inputs.fly_organization }}
       PUBLIC_WEBSITE_URL: https://ross.soundmarklaw.com
-      POLICY_VERSION: 2026-07-17-public-beta
+      POLICY_VERSION: 2026-09-03-provider-responsibility
     steps:
       - uses: actions/checkout@v7
 

@@ -1,6 +1,6 @@
 {
-  "version": "1.2.0-controlled-beta-approved",
-  "asOfDate": "2026-07-18",
+  "version": "1.3.0-provider-responsibility",
+  "asOfDate": "2026-09-03",
   "releaseId": "ross-public-beta-20260717-rc1",
   "status": "completed-approved-for-controlled-beta",
   "target": {
@@ -17,8 +17,9 @@
     "sourceReleaseMode": "limited-source-controlled-beta",
     "coverageExpansionDeferred": true,
     "coverageDeferralEvidence": "docs/release-evidence/limited-source-beta-decision-2026-07-18.md",
-    "dataBoundary": "synthetic-or-non-confidential-only",
-    "confidentialUseApproved": false,
+    "dataBoundary": "connected-provider-responsibility",
+    "confidentialUseApproved": true,
+    "confidentialUseApprovalEvidence": "docs/architecture/ADR-013-connected-provider-responsibility.md",
     "publicIndexingApproved": false
   },
   "providerStrategy": {

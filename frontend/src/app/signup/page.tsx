@@ -24,9 +24,9 @@ const authToggleActiveClassName =
 const authToggleInactiveClassName =
     "inline-flex h-6 items-center rounded-full border border-transparent px-3 text-gray-500 transition-colors hover:bg-white/38 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2";
 const termsVersion =
-    process.env.NEXT_PUBLIC_ROSS_TERMS_VERSION ?? "2026-07-17-public-beta";
+    process.env.NEXT_PUBLIC_ROSS_TERMS_VERSION ?? "2026-09-03-provider-responsibility";
 const privacyVersion =
-    process.env.NEXT_PUBLIC_ROSS_PRIVACY_VERSION ?? "2026-07-17-public-beta";
+    process.env.NEXT_PUBLIC_ROSS_PRIVACY_VERSION ?? "2026-09-03-provider-responsibility";
 
 export default function SignupPage() {
     const signupsEnabled = areSignupsEnabled();
@@ -94,7 +94,7 @@ export default function SignupPage() {
                         ross_terms_accepted: true,
                         ross_privacy_version: privacyVersion,
                         ross_privacy_acknowledged: true,
-                        ross_data_boundary: "synthetic-or-non-confidential",
+                        ross_data_boundary: "provider-responsibility-acknowledged",
                     },
                 },
             });
@@ -343,10 +343,11 @@ export default function SignupPage() {
                                 className="mt-1 h-4 w-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
                             />
                             <span>
-                                I will use the hosted beta only with synthetic
-                                or affirmatively non-confidential material. I
-                                will not upload privileged or confidential
-                                client files.
+                                I understand that ROSS sends relevant information
+                                to the model and connected services I choose. I
+                                am responsible for choosing providers and
+                                settings appropriate for my information and
+                                professional obligations.
                             </span>
                         </label>
 
