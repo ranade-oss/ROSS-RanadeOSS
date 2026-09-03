@@ -709,19 +709,55 @@ userRouter.post("/data-boundary/acknowledge", requireAuth, async (req, res) => {
 
   const userId = String(res.locals.userId ?? "");
   const db = createServerSupabase();
-  const ensureError = await ensureProfileRow(db, userId);
-  if (ensureError)
-    return void res.status(500).json({ detail: ensureError.message });
   const acknowledgedAt = new Date().toISOString();
-  const { error } = await db
-    .from("user_profiles")
-    .update({
-      beta_data_boundary_version: version,
-      beta_data_boundary_acknowledged_at: acknowledgedAt,
-      updated_at: acknowledgedAt,
-    })
-    .eq("user_id", userId);
-  if (error) return void res.status(500).json({ detail: error.message });
+
+  // Supabase Auth is the authoritative acknowledgement record because it is
+  // present in every supported deployment. Profile and audit-table mirrors
+  // remain useful, but must not lock a user out when an incremental database
+  // migration has not yet been applied.
+  const { data: authUser, error: authUserError } =
+    await db.auth.admin.getUserById(userId);
+  if (authUserError || !authUser.user)
+    return void res.status(500).json({
+      detail:
+        authUserError?.message ??
+        "The signed-in user could not be loaded to record acknowledgement.",
+    });
+  const { error: authRecordError } = await db.auth.admin.updateUserById(
+    userId,
+    {
+      app_metadata: {
+        ...(authUser.user.app_metadata ?? {}),
+        ross_data_boundary_version: version,
+        ross_data_boundary_acknowledged_at: acknowledgedAt,
+      },
+    },
+  );
+  if (authRecordError)
+    return void res.status(500).json({ detail: authRecordError.message });
+
+  const ensureError = await ensureProfileRow(db, userId);
+  if (ensureError) {
+    console.warn("[user/data-boundary] profile mirror unavailable", {
+      code: ensureError.code,
+      detail: ensureError.message,
+    });
+  } else {
+    const { error: profileError } = await db
+      .from("user_profiles")
+      .update({
+        beta_data_boundary_version: version,
+        beta_data_boundary_acknowledged_at: acknowledgedAt,
+        updated_at: acknowledgedAt,
+      })
+      .eq("user_id", userId);
+    if (profileError)
+      console.warn("[user/data-boundary] profile mirror unavailable", {
+        code: profileError.code,
+        detail: profileError.message,
+      });
+  }
+
   try {
     await recordSecurityAuditEvent({
       db,
@@ -735,10 +771,11 @@ userRouter.post("/data-boundary/acknowledge", requireAuth, async (req, res) => {
         result: "accepted",
       },
     });
-  } catch {
-    return void res.status(500).json({
-      detail: "The acknowledgement could not be audited. Try again.",
-    });
+  } catch (auditError) {
+    console.warn(
+      "[user/data-boundary] security-audit mirror unavailable",
+      auditError instanceof Error ? auditError.message : "unknown error",
+    );
   }
   res.json({ ok: true, boundaryVersion: version, acknowledgedAt });
 });
