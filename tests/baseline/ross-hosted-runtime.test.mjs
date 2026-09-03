@@ -23,6 +23,19 @@ test("controlled-beta direct mutations carry the data-boundary acknowledgement",
   assert.match(projectStream, /dataBoundaryHeaders\(\)/);
 });
 
+
+test("controlled-beta acknowledgement survives optional schema drift and rejected sessions", () => {
+  const userRoute = read("backend/src/routes/user.ts");
+  assert.match(userRoute, /db\.auth\.admin\.updateUserById/);
+  assert.match(userRoute, /ross_data_boundary_version/);
+  assert.match(userRoute, /profile mirror unavailable/);
+  assert.match(userRoute, /security-audit mirror unavailable/);
+
+  const api = read("frontend/src/app/lib/mikeApi.ts");
+  assert.match(api, /response\.status === 401/);
+  assert.match(api, /getAuthHeader\(true\)/);
+});
+
 test("hosted model policy is enforced by the backend and consumed by the UI", () => {
   assert.match(
     read("backend/src/lib/llm/runtimeModels.ts"),
