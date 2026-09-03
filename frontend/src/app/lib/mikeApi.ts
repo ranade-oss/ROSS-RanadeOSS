@@ -65,7 +65,9 @@ export function isMfaRequiredError(error: unknown) {
   );
 }
 
-async function getAuthHeader(): Promise<Record<string, string>> {
+async function getAuthHeader(
+  forceRefresh = false,
+): Promise<Record<string, string>> {
   let {
     data: { session },
   } = await supabase.auth.getSession();
@@ -75,8 +77,9 @@ async function getAuthHeader(): Promise<Record<string, string>> {
   // an invalid token during the controlled-beta acknowledgement or any other
   // authenticated request.
   if (
-    session?.expires_at &&
-    session.expires_at <= Math.floor(Date.now() / 1000) + 30
+    forceRefresh ||
+    (session?.expires_at &&
+      session.expires_at <= Math.floor(Date.now() / 1000) + 30)
   ) {
     const refreshed = await supabase.auth.refreshSession();
     session = refreshed.data.session ?? null;
@@ -87,18 +90,27 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 }
 
 async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
-  const authHeaders = await getAuthHeader();
+  let authHeaders = await getAuthHeader();
   const { headers: initHeaders, ...restInit } = init ?? {};
-  const response = await fetch(`${API_BASE}${path}`, {
-    cache: "no-store",
-    ...restInit,
-    headers: {
-      Accept: "application/json",
-      ...authHeaders,
-      ...dataBoundaryHeaders(),
-      ...(initHeaders as Record<string, string> | undefined),
-    },
-  });
+  const send = () =>
+    fetch(`${API_BASE}${path}`, {
+      cache: "no-store",
+      ...restInit,
+      headers: {
+        Accept: "application/json",
+        ...authHeaders,
+        ...dataBoundaryHeaders(),
+        ...(initHeaders as Record<string, string> | undefined),
+      },
+    });
+  let response = await send();
+
+  // A token can be rejected before its browser-side expiry (for example after
+  // auth-key rotation). Refresh and retry an authenticated request once.
+  if (response.status === 401) {
+    authHeaders = await getAuthHeader(true);
+    if (authHeaders.Authorization) response = await send();
+  }
 
   if (!response.ok) {
     throw await toApiError(response, path);
