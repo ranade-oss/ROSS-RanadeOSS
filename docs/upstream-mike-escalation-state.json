@@ -417,26 +417,27 @@
       "outcome": "needs-test-harness",
       "status": "retryable",
       "risk": "medium",
-      "capability": "ask-input-submit-integrity",
+      "capability": "Bound ask-input answers consistently across request, prompt, and persistence paths, and restore optimistically hidden questions when submission fails.",
       "series_id": "model-routing-350",
       "dependencies": [
         "Mike PR #350",
         "Mike PR #353"
       ],
       "prerequisites": [
-        "Request-boundary tests for both ROSS chat routes",
-        "Frontend tests covering rejected and resolved-null submissions",
-        "Synthetic/non-confidential prompt replay evaluation"
+        "Request-boundary tests for both ROSS chat routes covering trimmed boundary and oversized choice answers",
+        "AskInputPopup tests for the 1,000-character Other-answer limit",
+        "ChatView tests covering rejected, resolved-null, and successful submissions",
+        "Synthetic non-confidential prompt/replay consistency evaluation"
       ],
-      "reason": "ROSS has matching seams in response normalization, AskInputPopup, ChatView, and useAssistantChat, but currently truncates oversized answers silently and permanently hides submitted inputs even when handleChat resolves null. Focused tests are required before aligning caps and recovery behavior.",
-      "architecture_brief": null,
+      "reason": "ROSS has matching seams in contextBuilders response normalization, both chat routes, AskInputPopup, ChatView, and useAssistantChat. It currently silently truncates choice answers and permanently hides submitted inputs when handleChat resolves null; focused tests are missing, so adaptation is not yet reliable.",
+      "architecture_brief": "Add shared backend choice limits and validation before prompt construction while retaining defensive normalization for historical data; mirror the choice limit in AskInputPopup and restore ChatView’s hidden-input key on rejected or null-result submissions.",
       "implementation_plan": [],
-      "next_review_at": "2026-09-04T00:37:44.885Z",
+      "next_review_at": "2026-09-11T18:34:37.215Z",
       "policy": "v2",
-      "attempts": 1,
+      "attempts": 2,
       "first_processed_at": "2026-08-28T00:37:44.885Z",
-      "processed_at": "2026-08-28T00:37:44.885Z",
-      "v2_attempted_at": "2026-08-28T00:37:44.885Z",
+      "processed_at": "2026-09-04T18:34:37.215Z",
+      "v2_attempted_at": "2026-09-04T18:34:37.215Z",
       "history": [
         {
           "outcome": "needs-test-harness",
@@ -444,6 +445,13 @@
           "risk": "medium",
           "reason": "ROSS has matching seams in response normalization, AskInputPopup, ChatView, and useAssistantChat, but currently truncates oversized answers silently and permanently hides submitted inputs even when handleChat resolves null. Focused tests are required before aligning caps and recovery behavior.",
           "processed_at": "2026-08-28T00:37:44.885Z"
+        },
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "ROSS has matching seams in contextBuilders response normalization, both chat routes, AskInputPopup, ChatView, and useAssistantChat. It currently silently truncates choice answers and permanently hides submitted inputs when handleChat resolves null; focused tests are missing, so adaptation is not yet reliable.",
+          "processed_at": "2026-09-04T18:34:37.215Z"
         }
       ]
     },
