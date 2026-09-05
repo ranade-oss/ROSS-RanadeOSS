@@ -547,22 +547,72 @@
           "processed_at": "2026-08-31T21:07:33.127Z"
         }
       ]
+    },
+    {
+      "number": 368,
+      "title": "Migrate backend LLM providers to Vercel AI SDK",
+      "url": "https://github.com/Open-Legal-Products/mike/pull/368",
+      "merged_at": "2026-08-21T19:21:19.000Z",
+      "merge_commit_sha": "a94ff4c33d0005af434c917f0227f34622b4b930",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Unify backend LLM streaming, completion, tool calling, and provider construction through the Vercel AI SDK.",
+      "series_id": null,
+      "dependencies": [
+        "Vercel AI SDK core and provider packages",
+        "Current ROSS provider/model registry",
+        "ROSS credential resolution and hosted-provider allowlist",
+        "Existing chat SSE, tool-event, citation, and document-edit contracts"
+      ],
+      "prerequisites": [
+        "Approve the dependency and provider-key boundary change",
+        "Build a provider-contract test harness covering Claude, Gemini, OpenAI, xAI, and Moonshot"
+      ],
+      "reason": "ROSS has a clear seam at backend/src/lib/llm/index.ts, types.ts, tools.ts, and provider adapters, but upstream replaces dependencies and credential-backed provider behavior while targeting a different provider set. Current tests do not establish provider-wide parity for streaming, aborts, tool-loop limits, final synthesis, citations, edit events, usage, and errors.",
+      "architecture_brief": "Retain ROSS routes and StreamChatResult/AssistantEvent contracts. If approved, place an AI-SDK-backed adapter behind backend/src/lib/llm/index.ts while preserving enforceHostedProvider, per-user key resolution, runtime model discovery, SSE behavior, citation extraction, document-edit events, abort propagation, and safe logging. Do not import upstream frontend changes or provider architecture wholesale.",
+      "implementation_plan": [
+        "Specify golden provider contracts for text deltas, tool calls/results, maximum tool rounds, final synthesis, aborts, errors, citations, edits, and usage metadata.",
+        "Run those contracts against current adapters and AI-SDK prototypes using mocked transports; add opt-in live smoke tests for each approved provider without recording keys or payloads.",
+        "Review SDK/provider packages, transitive dependencies, licensing, advisories, key handling, endpoint selection, telemetry defaults, and lockfile changes.",
+        "Map every current ROSS provider and model-discovery path, including xAI and Moonshot, to explicit provider constructors while preserving the hosted-provider allowlist.",
+        "Implement the adapter incrementally behind the existing LLM facade and require parity evidence before removing any native provider adapter."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-09-03T18:53:44.585Z",
+      "processed_at": "2026-09-03T18:53:44.585Z",
+      "v2_attempted_at": "2026-09-03T18:53:44.585Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS has a clear seam at backend/src/lib/llm/index.ts, types.ts, tools.ts, and provider adapters, but upstream replaces dependencies and credential-backed provider behavior while targeting a different provider set. Current tests do not establish provider-wide parity for streaming, aborts, tool-loop limits, final synthesis, citations, edit events, usage, and errors.",
+          "processed_at": "2026-09-03T18:53:44.585Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 5,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 5
+      "retryable": 5,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 5,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
