@@ -465,31 +465,31 @@
       "outcome": "needs-test-harness",
       "status": "retryable",
       "risk": "medium",
-      "capability": "Resolve assistant document links to concrete, non-deleted versions before creating tabs; preserve consistent tab identity and surface lookup/unavailable-version failures.",
+      "capability": "Resolve document links to concrete versions, preserve consistent tab identity across citations and edit/download cards, and surface lookup failures without substituting current content for unavailable historical versions.",
       "series_id": "assistant-versioned-panel-tabs",
       "dependencies": [
-        "Per-version assistant panel tab identity",
-        "A shared panel-document version resolver across citation, edit, and document entry points"
+        "Version-aware panel tab identity and a shared resolver across document-opening entry points.",
+        "Likely follows the panel capability associated with Mike #350; existing tracking also groups #353 and #354, but the bundle does not establish them as hard dependencies."
       ],
       "prerequisites": [
-        "Add Vitest and React component-test configuration for the frontend",
-        "Establish focused tests for version resolution, soft-deleted versions, failure warnings, and cross-entry-point tab identity"
+        "A focused executable ROSS harness for version resolution and ChatView tab interactions; frontend/package.json currently has no component-test runner or test script.",
+        "Fixtures covering current, explicit, numbered, missing and soft-deleted versions, legacy edit annotations, lookup failures and successful retries.",
+        "Assertions that displayed bytes match the selected version, identical versions share a tab, distinct versions remain separate, and case/authority tabs retain their behavior."
       ],
-      "reason": "ROSS already exposes version IDs/numbers, deleted_at, and listDocumentVersions, so the resolver fits its API seam. However, ChatView currently keys and deduplicates tabs by document ID, has no shared resolver, and the frontend has no test script, Vitest dependency, or relevant tests. Adapting this safely requires the missing harness and preceding per-version tab-identity capability.",
-      "architecture_brief": "Implement at ChatView’s openCitation, openEditor, and openDocument boundary, backed by a small resolver using listDocumentVersions. Generate tab IDs from document ID plus resolved version ID, reject deleted or missing historical versions, and show an existing warning popup without creating a misleading fallback tab.",
+      "reason": "At ROSS main 14a8e93, ChatView deduplicates by documentId and has no shared version resolver. listDocumentVersions already exposes current_version_id and deleted_at, and viewers accept versionId. Adaptation is feasible, but focused behavioral coverage is absent. The final upstream commit supersedes earlier fallback behavior with explicit failures and no fallback tab.",
+      "architecture_brief": "Introduce a small resolver using frontend/src/app/lib/mikeApi.ts at ChatView's openCitation, openEditor and openDocument boundaries. Use the existing AssistantSidePanel tab union with document-plus-version identity and existing warning UI. Preserve version-specific viewer requests and ROSS case/authority tabs.",
       "implementation_plan": [
-        "Introduce the focused frontend test harness and capture current document-ID tab behavior.",
-        "Add version-aware tab identity while preserving case and authority tab behavior.",
-        "Add a resolver that accepts explicit versions, resolves current or numbered versions, excludes deleted rows, and returns typed failure reasons.",
-        "Route every document-opening entry point through the resolver and display retry/unavailable warnings.",
-        "Verify duplicate-tab prevention, historical-version fidelity, soft-delete handling, lookup retry, and existing panel behavior."
+        "Establish focused resolver and panel-interaction tests before adaptation; review any dependency changes separately.",
+        "Implement typed resolution results that distinguish unavailable versions from failed lookups and exclude deleted resolution candidates.",
+        "Resolve legacy links consistently, key document tabs by resolved version, and show actionable failures without creating fallback tabs.",
+        "Verify retry deduplication, historical-content fidelity, concurrent opens, viewer errors for explicit unavailable IDs, and edit-resolution/cache behavior."
       ],
-      "next_review_at": "2026-09-05T00:08:42.298Z",
+      "next_review_at": "2026-09-12T17:41:14.227Z",
       "policy": "v2",
-      "attempts": 1,
+      "attempts": 2,
       "first_processed_at": "2026-08-29T00:08:42.298Z",
-      "processed_at": "2026-08-29T00:08:42.298Z",
-      "v2_attempted_at": "2026-08-29T00:08:42.298Z",
+      "processed_at": "2026-09-05T17:41:14.227Z",
+      "v2_attempted_at": "2026-09-05T17:41:14.227Z",
       "history": [
         {
           "outcome": "needs-test-harness",
@@ -497,6 +497,13 @@
           "risk": "medium",
           "reason": "ROSS already exposes version IDs/numbers, deleted_at, and listDocumentVersions, so the resolver fits its API seam. However, ChatView currently keys and deduplicates tabs by document ID, has no shared resolver, and the frontend has no test script, Vitest dependency, or relevant tests. Adapting this safely requires the missing harness and preceding per-version tab-identity capability.",
           "processed_at": "2026-08-29T00:08:42.298Z"
+        },
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "At ROSS main 14a8e93, ChatView deduplicates by documentId and has no shared version resolver. listDocumentVersions already exposes current_version_id and deleted_at, and viewers accept versionId. Adaptation is feasible, but focused behavioral coverage is absent. The final upstream commit supersedes earlier fallback behavior with explicit failures and no fallback tab.",
+          "processed_at": "2026-09-05T17:41:14.227Z"
         }
       ]
     },
