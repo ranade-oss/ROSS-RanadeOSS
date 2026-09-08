@@ -517,34 +517,32 @@
       "outcome": "needs-test-harness",
       "status": "retryable",
       "risk": "medium",
-      "capability": "Formalized shadcn/Tailwind design system with reusable UI primitives and accessibility conventions",
-      "series_id": "design-system-foundation",
+      "capability": "Consistent, accessible shared UI primitives and reusable empty states on the existing shadcn/Tailwind foundation.",
+      "series_id": "design-system-accessibility",
       "dependencies": [
-        "frontend/components.json shadcn configuration",
-        "frontend/src/app/globals.css Tailwind tokens",
-        "frontend/src/app/components/ui",
-        "frontend/src/app/components/shared/TablePrimitive.tsx",
-        "frontend/src/app/components/modals/Modal.tsx"
+        "Existing ROSS React, Tailwind, Radix and TablePrimitive components.",
+        "Upstream PR #228 is a likely test-harness antecedent; direct adoption is not required.",
+        "Upstream issue #322 describes the capability; issue #323 tracks the separate component catalog, not a required dependency."
       ],
       "prerequisites": [
-        "Add a focused React component accessibility test harness",
-        "Add representative visual regression coverage for shared primitives and empty states",
-        "Inventory duplicate ROSS-native controls against current component seams"
+        "A ROSS rendered-component harness covering accessible names, label association, clipboard status, button submission behavior, and selection semantics.",
+        "Browser checks for keyboard activation, visible focus and contrast, plus empty-state and modal interaction regressions.",
+        "Separate review of any dependency or lockfile changes required to establish the harness."
       ],
-      "reason": "ROSS has the same shadcn/Tailwind foundation, but upstream targets missing or divergent shared-ui seams and spans 42 files. Existing ROSS has no component-test script or testing dependencies, so build/lint alone cannot reliably validate interaction, ARIA, or visual behavior.",
-      "architecture_brief": "Implement incrementally in ROSS at frontend/src/app/components/ui, composing existing app-level seams such as TableEmptyState and Modal. Preserve ROSS branding and feature components; introduce only primitives proven to replace repeated markup.",
+      "reason": "Patch evidence now resolves the scanner's earlier missing-patch blocker. ROSS still lacks explicit focus rings in SearchBar, PillButton and ModalTextInput; ModalFieldLabel drops forwarded props on p/span variants, and ProjectsOverview duplicates empty-state markup. frontend/package.json has no component-test harness; existing accessibility tests inspect source text and E2E tests only check service responses. Upstream test results do not validate ROSS.",
+      "architecture_brief": "Adapt within frontend/src/app/components/ui and components/modals, using shared/TablePrimitive.tsx for empty-state wrappers and existing FileDirectory/ProjectPickerModal callers for selection semantics. Preserve ROSS's CiteButton citationText API. ROSS lacks upstream shared/ui, DocTable and Word add-in surfaces, so those architectural layers are unnecessary.",
       "implementation_plan": [
-        "Establish focused tests for keyboard focus, accessible names, button types, and state semantics",
-        "Capture representative visual baselines for modal controls, selection indicators, and empty states",
-        "Inventory repeated ROSS markup and select one bounded primitive migration",
-        "Run component tests, lint, build, and targeted end-to-end flows before reconsidering adaptation"
+        "Establish focused regression fixtures against current ROSS components and demonstrate the existing accessibility failures.",
+        "Adapt focus indicators, accessible names, status announcements and forwarded label props in existing ROSS primitives.",
+        "Extract empty-state and icon-button primitives only where current ROSS callers share behavior; verify keyboard and selection semantics before consolidating selection indicators.",
+        "Validate rendered behavior, browser focus/contrast, type checking and affected feature flows; document ROSS's actual tokens and component conventions."
       ],
-      "next_review_at": "2026-09-07T21:07:33.127Z",
+      "next_review_at": "2026-09-15T18:59:36.873Z",
       "policy": "v2",
-      "attempts": 1,
+      "attempts": 2,
       "first_processed_at": "2026-08-31T21:07:33.127Z",
-      "processed_at": "2026-08-31T21:07:33.127Z",
-      "v2_attempted_at": "2026-08-31T21:07:33.127Z",
+      "processed_at": "2026-09-08T18:59:36.873Z",
+      "v2_attempted_at": "2026-09-08T18:59:36.873Z",
       "history": [
         {
           "outcome": "needs-test-harness",
@@ -552,6 +550,13 @@
           "risk": "medium",
           "reason": "ROSS has the same shadcn/Tailwind foundation, but upstream targets missing or divergent shared-ui seams and spans 42 files. Existing ROSS has no component-test script or testing dependencies, so build/lint alone cannot reliably validate interaction, ARIA, or visual behavior.",
           "processed_at": "2026-08-31T21:07:33.127Z"
+        },
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "Patch evidence now resolves the scanner's earlier missing-patch blocker. ROSS still lacks explicit focus rings in SearchBar, PillButton and ModalTextInput; ModalFieldLabel drops forwarded props on p/span variants, and ProjectsOverview duplicates empty-state markup. frontend/package.json has no component-test harness; existing accessibility tests inspect source text and E2E tests only check service responses. Upstream test results do not validate ROSS.",
+          "processed_at": "2026-09-08T18:59:36.873Z"
         }
       ]
     }
