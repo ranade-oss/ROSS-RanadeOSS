@@ -559,22 +559,71 @@
           "processed_at": "2026-09-08T18:59:36.873Z"
         }
       ]
+    },
+    {
+      "number": 337,
+      "title": "fix(docx): avoid numbering generated letter paragraphs",
+      "url": "https://github.com/open-legal-products/mike/pull/337",
+      "merged_at": "2026-08-22T16:58:40.000Z",
+      "merge_commit_sha": "8362692a615d65bb880fcb21ed90661c94aaddf6",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Generate unnumbered letters and prose by default, with explicitly requested section numbering and preserved bullets and literal prefixes.",
+      "series_id": null,
+      "dependencies": [
+        "Likely DOCX correctness series; upstream mentions PR #328 for numeric text handling. Its necessity is unverified and it should be assessed separately.",
+        "Existing ROSS docx and jszip libraries; no new dependency is needed."
+      ],
+      "prerequisites": [
+        "Approve the optional numberSections tool-schema field and default behavior; schemas are explicitly classified as high risk in this review.",
+        "Add a ROSS-native DOCX XML regression harness using the existing node:test runner; upstream tests require Vitest, which backend/package.json does not declare.",
+        "Resolve whether explicit numbered body lists should receive Word numbering: the upstream patch permits this despite its heading-only description."
+      ],
+      "reason": "At main a7c0e4b, documentOps.ts unconditionally configures legal numbering and infers numbering for ordinary body paragraphs; prompts.ts reinforces that behavior. The capability is applicable, but the complete opt-in implementation changes toolSchemas.ts. Existing tests do not exercise generated DOCX numbering, and upstream bullet assertions do not prove that each bullet paragraph references a bullet definition.",
+      "architecture_brief": "Implement through the existing generate_docx tool schema, dispatcher, generateDocx renderer, and prompt guidance. Require literal true at both dispatcher and renderer. Preserve ROSS package validation and existing persistence, storage, and download boundaries.",
+      "implementation_plan": [
+        "Approve the tool contract and define behavior for plain prose, explicit numbered lists, bullets, and template-requested numbering.",
+        "Create an isolated renderer or mocked-I/O harness using node:test and existing JSZip; demonstrate the current demand-letter numbering defect.",
+        "Implement opt-in numbering at current ROSS seams, preserve literal prefixes when numbering is disabled, and retain unnumbered preambles and signatures.",
+        "Inspect generated XML for omitted, false, true, null, and malformed options; verify ordinary prose remains unnumbered and resolve each bullet paragraph's numId to its bullet definition.",
+        "Verify heading levels, tables, landscape orientation, title suppression, signature page breaks, and numeric-text behavior; run backend type checking and relevant regression suites without changing dependencies or controls."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-09-08T19:03:26.927Z",
+      "processed_at": "2026-09-08T19:03:26.927Z",
+      "v2_attempted_at": "2026-09-08T19:03:26.927Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "At main a7c0e4b, documentOps.ts unconditionally configures legal numbering and infers numbering for ordinary body paragraphs; prompts.ts reinforces that behavior. The capability is applicable, but the complete opt-in implementation changes toolSchemas.ts. Existing tests do not exercise generated DOCX numbering, and upstream bullet assertions do not prove that each bullet paragraph references a bullet definition.",
+          "processed_at": "2026-09-08T19:03:26.927Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 5,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 5
+      "retryable": 5,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 5,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
