@@ -559,22 +559,74 @@
           "processed_at": "2026-09-08T18:59:36.873Z"
         }
       ]
+    },
+    {
+      "number": 367,
+      "title": "Review fixes for #365: gate exemptions, lossless autosave, migration fallback, add-in OAuth hardening",
+      "url": "https://github.com/open-legal-products/mike/pull/367",
+      "merged_at": "2026-08-22T16:52:32.000Z",
+      "merge_commit_sha": "090a60d7e54d59e294dd7a75c9aba3eb021afcba",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Preserve account edits and saved preferences across asynchronous updates and schema versions, keep credential recovery reachable, and securely hand off OAuth sessions.",
+      "series_id": "mike-365-review-fixes",
+      "dependencies": [
+        "Mike PR #365 onboarding and personalisation work, identified by the bundle as the parent series; its full scope remains unverified.",
+        "Upstream onboarding and password-capability migrations referenced as 20260821_01 and 20260821_02.",
+        "Upstream Word add-in OAuth dialog and task-pane session infrastructure, absent from ROSS."
+      ],
+      "prerequisites": [
+        "Review PR #365 and its migrations to establish the complete dependency graph and intended onboarding semantics.",
+        "Decide which onboarding, personalisation, and add-in capabilities ROSS intends to support.",
+        "Add focused asynchronous account-edit tests and database fallback fixtures for ROSS; upstream component and route test infrastructure is not present.",
+        "Approve authentication and schema compatibility behavior before implementation."
+      ],
+      "reason": "ROSS account/page.tsx hydrates both inputs on every profile refresh, while UserProfileContext replaces profile values after saves: the sibling-edit loss mechanism remains relevant despite explicit save buttons. ROSS already has profile/model fallback reads, but uses Ontario-specific preferences and lacks Mike's onboarding columns, personalisation page, and Word add-in. Authentication, token handling, and migration fallback make this candidate high-risk; missing upstream architecture does not make its capability unusable.",
+      "architecture_brief": "Implement edit preservation through frontend/src/app/(pages)/account/page.tsx and UserProfileContext.tsx. Evaluate schema fallback through backend/src/routes/user.ts and backend/src/lib/userSettings.ts while preserving ROSS jurisdiction/source preferences and user scoping. Review recovery routing alongside MfaLoginGate and backend authentication enforcement; onboarding exemptions must not become MFA exemptions. Any Word add-in requires a separately approved client and token-storage boundary.",
+      "implementation_plan": [
+        "Confirm the PR #365 dependency graph and review the final cumulative #367 behavior: later commits remove focused-input guards, session-revoking signOut, and originless message fallback.",
+        "Reproduce sibling-edit loss with a deferred save response; cover initial profile loading, cleared values, concurrent saves, failed saves, and account switches. Implement independent hydration with explicit dirty-state ownership as needed.",
+        "Inventory supported ROSS schema versions and test full, partially migrated, and legacy reads. Assert Ontario/source preferences, explicit false values, and user scoping survive; unrelated database errors must not silently become successful default profiles.",
+        "Define recovery and onboarding routing with security review, then test password recovery and MFA end to end without weakening backend assurance requirements.",
+        "If personalisation or an add-in is approved, add targeted debounce/unmount tests and real OAuth-dialog coverage for origin/request validation, storage cleanup, handoff failure, and refresh-token survival.",
+        "Implement only approved ROSS-native changes, run focused regressions and repository-required checks, and obtain security review before adoption."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-09-07T19:24:22.470Z",
+      "processed_at": "2026-09-07T19:24:22.470Z",
+      "v2_attempted_at": "2026-09-07T19:24:22.470Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS account/page.tsx hydrates both inputs on every profile refresh, while UserProfileContext replaces profile values after saves: the sibling-edit loss mechanism remains relevant despite explicit save buttons. ROSS already has profile/model fallback reads, but uses Ontario-specific preferences and lacks Mike's onboarding columns, personalisation page, and Word add-in. Authentication, token handling, and migration fallback make this candidate high-risk; missing upstream architecture does not make its capability unusable.",
+          "processed_at": "2026-09-07T19:24:22.470Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 5,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 5
+      "retryable": 5,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 5,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
