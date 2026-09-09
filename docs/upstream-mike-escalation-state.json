@@ -559,22 +559,73 @@
           "processed_at": "2026-09-08T18:59:36.873Z"
         }
       ]
+    },
+    {
+      "number": 372,
+      "title": "Sanitize user-facing backend and frontend errors",
+      "url": "https://github.com/open-legal-products/mike/pull/372",
+      "merged_at": "2026-08-22T16:44:29.000Z",
+      "merge_commit_sha": "e37aba03c719208eb059b8dd968973ec8d4dc7d6",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Prevent internal, database, provider, and authentication errors from reaching HTTP responses, assistant streams, persisted events, and frontend messages while retaining safe diagnostic correlation.",
+      "series_id": null,
+      "dependencies": [
+        "The supplied PR contains three commits: error sanitization, frontend regression coverage, and an unrelated Supabase E2E workflow change.",
+        "No external prerequisite PR is established by the bundle. Implementation depends on coordinated HTTP, streaming, persistence, and frontend error contracts.",
+        "ROSS uses backend/src/index.ts and node:test; upstream app.ts and Vitest/Supertest integration assumptions require native adaptation."
+      ],
+      "prerequisites": [
+        "Approve public error codes, intentionally displayable messages, request-ID handling, and diagnostic logging policy.",
+        "Inventory all error producers and consumers, including ROSS-specific legal-source routes, auth/MFA, uploads, and historical assistant events.",
+        "Provide focused HTTP, SSE, persistence, and frontend regression coverage using synthetic sensitive-error fixtures."
+      ],
+      "reason": "ROSS safeError.ts redacts recognizable secrets but retains internal messages. middleware/auth.ts returns raw lookup errors, routes/projects.ts exposes database messages, chat/streaming.ts retains error text in events, and frontend mikeApi.ts surfaces response details and raw bodies. The capability is useful and not equivalent; touching authentication and the disclosure boundary mandates a high-risk decision.",
+      "architecture_brief": "Implement a ROSS-native public-error contract at backend/src/index.ts and route response helpers, with separate redacted diagnostics in safeError.ts. Sanitize typed assistant events before transmission and persistence, and apply defensive formatting in mikeApi.ts, useAssistantChat.ts, and auth UI. Preserve existing MFA, verified-email, CORS, and hosted-data-boundary behavior. Do not trust upstream safe_to_display flags or arbitrary 4xx details without establishing their provenance.",
+      "implementation_plan": [
+        "Define approved public messages and stable codes, including preserved MFA and verified-email signals; specify server-generated correlation IDs and safe logging fields.",
+        "Add response helpers and a final Express error handler at the existing index.ts seam. Explicitly handle async rejection forwarding, parser errors, non-JSON failures, and responses whose headers were already sent.",
+        "Replace raw route and auth error disclosure without changing access decisions. Cover ROSS-specific routes and retain existing CORS and data-boundary ordering.",
+        "Sanitize assistant and tool errors before SSE serialization and persistence; protect historical-event rendering and retain abort, partial-response, and actionable validation behavior.",
+        "Centralize frontend error formatting for JSON, malformed bodies, uploads, downloads, and auth flows. Preserve status/code-based refresh and MFA handling.",
+        "Validate synthetic database, provider-key, stack, and auth failures across responses, browser messages, stored events, and logs. Test request correlation, malformed/oversized JSON, stream failures, and unchanged authorization outcomes; run existing security/chat checks and builds. Exclude the upstream workflow change and introduce no dependency or lockfile changes."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-09-06T17:43:57.471Z",
+      "processed_at": "2026-09-06T17:43:57.471Z",
+      "v2_attempted_at": "2026-09-06T17:43:57.471Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS safeError.ts redacts recognizable secrets but retains internal messages. middleware/auth.ts returns raw lookup errors, routes/projects.ts exposes database messages, chat/streaming.ts retains error text in events, and frontend mikeApi.ts surfaces response details and raw bodies. The capability is useful and not equivalent; touching authentication and the disclosure boundary mandates a high-risk decision.",
+          "processed_at": "2026-09-06T17:43:57.471Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 5,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 5
+      "retryable": 5,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 5,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
