@@ -559,22 +559,73 @@
           "processed_at": "2026-09-08T18:59:36.873Z"
         }
       ]
+    },
+    {
+      "number": 373,
+      "title": "Support folder uploads and multi-row document actions",
+      "url": "https://github.com/open-legal-products/mike/pull/373",
+      "merged_at": "2026-08-22T17:08:04.000Z",
+      "merge_commit_sha": "e7c69fc3f5a8eb9235c752bf7fd8ece1b1782911",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Upload directory trees with bounded concurrency and confirmed, non-destructive conflict renaming; extend document selection with range selection and multi-document dragging.",
+      "series_id": null,
+      "dependencies": [
+        "The bundle contains ten ordered commits, including fixes removing replacement, bounding concurrency, preserving existing folders, and repairing schema syntax.",
+        "Upstream assumes shared DocTable and LibraryWorkspace components and library routes absent from ROSS; prerequisite upstream PR numbers are not established.",
+        "Folder resolution depends on project hierarchy storage, scoped upload destinations, and transactional conflict handling."
+      ],
+      "prerequisites": [
+        "Approve project-first scope and decide whether personal-library support warrants a separate capability.",
+        "Review Supabase function permissions, project access enforcement, migration and rollback design, and concurrent folder mutation behavior.",
+        "Provide executable database and route integration coverage plus browser directory-upload and selection tests; upstream Vitest tests are not directly supported by current package scripts."
+      ],
+      "reason": "ROSS already supports nested folders and selected-document download, removal, and deletion in ProjectDocumentsView.tsx, but its drop upload handles flat files and dragging moves one document. The remaining capability fits existing seams; architecture divergence does not make it incompatible. Full implementation touches schema, service-role RPC permissions, and project data boundaries, requiring a high-risk decision.",
+      "architecture_brief": "Extend ProjectDocumentsView.tsx, shared/FileDirectory.tsx, and lib/mikeApi.ts with directory collection, bounded upload orchestration, and selection helpers. Add scoped path resolution beside existing folder routes in backend/src/routes/projects.ts, retaining requireAuth, checkProjectAccess, destination-folder validation, and the existing quarantined upload pipeline. Use reviewed transactional hierarchy resolution rather than importing upstream's library architecture. Preserve the final upstream rename-or-cancel behavior.",
+      "implementation_plan": [
+        "Document the project-first contract: path normalization and limits, rename-or-cancel conflicts, nested reuse, cancellation, and partial-failure recovery.",
+        "Design and review project-scoped transactional resolution, including permissions and races with existing folder create, rename, move, and delete routes.",
+        "Implement destination-aware uploads through existing validation and quarantine controls; add bounded orchestration and accurate progress reporting.",
+        "Extend existing selection and dragging behavior while retaining per-document authorization and reporting partial failures.",
+        "Validate real database isolation, concurrent naming, malformed paths, foreign-project folder IDs, RPC permission denial, migration rollback, and sanitized errors.",
+        "Run browser coverage for directory picker/drop fallback, nested uploads, conflict cancellation, retry behavior, range selection, multi-row moves, and scan-pipeline preservation before reconsidering adaptation."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-09-09T18:52:26.690Z",
+      "processed_at": "2026-09-09T18:52:26.690Z",
+      "v2_attempted_at": "2026-09-09T18:52:26.690Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS already supports nested folders and selected-document download, removal, and deletion in ProjectDocumentsView.tsx, but its drop upload handles flat files and dragging moves one document. The remaining capability fits existing seams; architecture divergence does not make it incompatible. Full implementation touches schema, service-role RPC permissions, and project data boundaries, requiring a high-risk decision.",
+          "processed_at": "2026-09-09T18:52:26.690Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 5,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 5
+      "retryable": 5,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 5,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
