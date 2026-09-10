@@ -559,22 +559,73 @@
           "processed_at": "2026-09-08T18:59:36.873Z"
         }
       ]
+    },
+    {
+      "number": 374,
+      "title": "feat(tabular): add stoppable and isolated review generation",
+      "url": "https://github.com/open-legal-products/mike/pull/374",
+      "merged_at": "2026-08-22T17:22:29.000Z",
+      "merge_commit_sha": "5ed80dd537e1ca67a9d9339d8b863fe8571f759e",
+      "decision": "investigate",
+      "outcome": "needs-decision",
+      "status": "needs-decision",
+      "risk": "high",
+      "capability": "Stop tabular generation while preserving completed cells, bound concurrent work, reject stale or simultaneous runs, and isolate cell mutations from generation.",
+      "series_id": "mike-pr-374",
+      "dependencies": [
+        "The supplied four-patch series adds cancellation, generation leases and stale-version checks, Stop semantics, then cell-mutation isolation.",
+        "Upstream assumes row_id-based review rows and document/folder grouping; ROSS uses document_id-based cells. No prerequisite PR numbers are established by the bundle.",
+        "ROSS already exposes AbortSignal support through its LLM streaming adapters."
+      ],
+      "prerequisites": [
+        "Approve the database lease, write-fencing, privileged RPC permissions, and migration design.",
+        "Define Stop acknowledgement, expired-lease recovery, and review-version semantics for concurrent collaborators.",
+        "Add a focused ROSS route and real PostgreSQL concurrency harness; the upstream tabular integration-test path is absent locally."
+      ],
+      "reason": "ROSS generation currently uses unbounded Promise.all without cancellation or generation ownership; clear and regenerate routes mutate cells independently. The capability is useful, but upstream introduces schema changes and SECURITY DEFINER Supabase RPCs, requiring a high-risk decision. Its row-model mismatch calls for native adaptation, not rejection.",
+      "architecture_brief": "Implement coordination in backend/src/routes/tabular.ts around generate, clear-cells, and regenerate-cell, preserving ROSS document_id cells and existing review/document access checks. Use database-backed ownership with atomic version validation and fencing against expired or replaced workers. Connect cancellation through queryTabularAllColumns and existing LLM adapters. Add Stop and conflict-refresh behavior in TabularReviewView.tsx and mikeApi.ts while preserving dataBoundaryHeaders. Review schema and service-role-only RPC permissions explicitly.",
+      "implementation_plan": [
+        "Specify ownership, versioning, Stop completion, and crash-recovery invariants; inventory every cell and review mutation, including chat tools, that could race with generation.",
+        "Design a ROSS-native migration and atomic coordination operations with explicit RPC grants, access enforcement, and fencing of writes and cleanup after lease loss.",
+        "Acquire ownership before reading generation inputs; use bounded workers, propagate cancellation, retain completed cells, and return unfinished work to pending only under valid ownership.",
+        "Integrate frontend abort signals, expected review versions, running-state guards, and authoritative refresh after stopping or conflicts.",
+        "Validate with real database races: simultaneous starts, stale snapshots, clear/regenerate conflicts, lease expiry and takeover, delayed writes, heartbeat failure, disconnect, and crash recovery. Verify unauthorized access and RPC denial.",
+        "Test provider cancellation and UI Stop behavior, then run existing backend, frontend, and security checks before proposing an adaptation patch."
+      ],
+      "next_review_at": null,
+      "policy": "v2",
+      "attempts": 1,
+      "first_processed_at": "2026-09-10T18:42:09.316Z",
+      "processed_at": "2026-09-10T18:42:09.316Z",
+      "v2_attempted_at": "2026-09-10T18:42:09.316Z",
+      "history": [
+        {
+          "outcome": "needs-decision",
+          "status": "needs-decision",
+          "risk": "high",
+          "reason": "ROSS generation currently uses unbounded Promise.all without cancellation or generation ownership; clear and regenerate routes mutate cells independently. The capability is useful, but upstream introduces schema changes and SECURITY DEFINER Supabase RPCs, requiring a high-risk decision. Its row-model mismatch calls for native adaptation, not rejection.",
+          "processed_at": "2026-09-10T18:42:09.316Z"
+        }
+      ]
     }
   ],
   "policy": "v2",
   "metrics": {
     "by_outcome": {
       "deferred": 55,
-      "needs-test-harness": 5
+      "needs-test-harness": 5,
+      "needs-decision": 1
     },
     "by_status": {
       "terminal": 55,
-      "retryable": 5
+      "retryable": 5,
+      "needs-decision": 1
     },
     "by_risk": {
       "defer": 54,
       "medium": 5,
-      "none": 1
+      "none": 1,
+      "high": 1
     }
   }
 }
