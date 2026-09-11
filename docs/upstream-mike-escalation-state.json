@@ -417,27 +417,31 @@
       "outcome": "needs-test-harness",
       "status": "retryable",
       "risk": "medium",
-      "capability": "Bound ask-input answers consistently across request, prompt, and persistence paths, and restore optimistically hidden questions when submission fails.",
-      "series_id": "model-routing-350",
+      "capability": "Keep choice-answer limits consistent across input, request validation and replay, and preserve answers for retry after failed submission.",
+      "series_id": "ask-inputs",
       "dependencies": [
-        "Mike PR #350",
-        "Mike PR #353"
+        "Existing ask_inputs event, popup and response continuation flow.",
+        "Upstream's later text-answer and request-validation work; the bundle references PR #350 but does not establish it as a required dependency. ROSS currently supports choice and documents only."
       ],
       "prerequisites": [
-        "Request-boundary tests for both ROSS chat routes covering trimmed boundary and oversized choice answers",
-        "AskInputPopup tests for the 1,000-character Other-answer limit",
-        "ChatView tests covering rejected, resolved-null, and successful submissions",
-        "Synthetic non-confidential prompt/replay consistency evaluation"
+        "A focused integration harness exercising the real AskInputPopup, ChatView and useAssistantChat together with controlled transport failures; frontend/package.json currently has no component-test runner.",
+        "Boundary tests through both standalone and project chat routes covering trimmed choice answers at 1,000 and 1,001 characters and agreement between submitted content and replay.",
+        "Evidence that recovery preserves typed answers and document selections, removes only failed optimistic state, and handles cancellation, chat switching and failure after server acceptance without duplicate submission."
       ],
-      "reason": "ROSS has matching seams in contextBuilders response normalization, both chat routes, AskInputPopup, ChatView, and useAssistantChat. It currently silently truncates choice answers and permanently hides submitted inputs when handleChat resolves null; focused tests are missing, so adaptation is not yet reliable.",
-      "architecture_brief": "Add shared backend choice limits and validation before prompt construction while retaining defensive normalization for historical data; mirror the choice limit in AskInputPopup and restore ChatView’s hidden-input key on rejected or null-result submissions.",
-      "implementation_plan": [],
-      "next_review_at": "2026-09-11T18:34:37.215Z",
+      "reason": "At ROSS HEAD a7c0e4b, contextBuilders.ts trims and silently truncates choice answers to 1,000 characters, while AskInputPopup's Other field is uncapped. Both chat routes call that parser directly; upstream's requestValidation.ts seam is absent. ChatView hides and unmounts the popup on submit, losing local draft state. useAssistantChat also appends an optimistic ask_inputs_response, which makes ChatView's active-input lookup return null even if the hidden key is removed. Upstream tests mock both the popup and chat handler, so they cannot establish actual answer recovery in ROSS. This is a test-evidence gap, not architectural incompatibility.",
+      "architecture_brief": "Adapt within the existing choice-answer contract: validate at both ROSS chat entry points, retain defensive replay normalization, and coordinate draft retention and failed optimistic-event recovery across AskInputPopup, ChatView and useAssistantChat. Establish submission success explicitly rather than assuming a chat ID proves acceptance.",
+      "implementation_plan": [
+        "Build the focused harness and reproduce oversized-answer truncation and draft loss using the real stateful components and hook.",
+        "Introduce consistent choice limits and request rejection before side effects in both chat routes, without adding text-answer support.",
+        "Preserve drafts across submission and reconcile failed optimistic response events using chat-scoped submission identity.",
+        "Verify rejection, swallowed transport errors, successful continuation, cancellation, chat switching and ambiguous server acceptance before returning an adaptation patch."
+      ],
+      "next_review_at": "2026-09-18T18:45:49.336Z",
       "policy": "v2",
-      "attempts": 2,
+      "attempts": 3,
       "first_processed_at": "2026-08-28T00:37:44.885Z",
-      "processed_at": "2026-09-04T18:34:37.215Z",
-      "v2_attempted_at": "2026-09-04T18:34:37.215Z",
+      "processed_at": "2026-09-11T18:45:49.336Z",
+      "v2_attempted_at": "2026-09-11T18:45:49.336Z",
       "history": [
         {
           "outcome": "needs-test-harness",
@@ -452,6 +456,13 @@
           "risk": "medium",
           "reason": "ROSS has matching seams in contextBuilders response normalization, both chat routes, AskInputPopup, ChatView, and useAssistantChat. It currently silently truncates choice answers and permanently hides submitted inputs when handleChat resolves null; focused tests are missing, so adaptation is not yet reliable.",
           "processed_at": "2026-09-04T18:34:37.215Z"
+        },
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "At ROSS HEAD a7c0e4b, contextBuilders.ts trims and silently truncates choice answers to 1,000 characters, while AskInputPopup's Other field is uncapped. Both chat routes call that parser directly; upstream's requestValidation.ts seam is absent. ChatView hides and unmounts the popup on submit, losing local draft state. useAssistantChat also appends an optimistic ask_inputs_response, which makes ChatView's active-input lookup return null even if the hidden key is removed. Upstream tests mock both the popup and chat handler, so they cannot establish actual answer recovery in ROSS. This is a test-evidence gap, not architectural incompatibility.",
+          "processed_at": "2026-09-11T18:45:49.336Z"
         }
       ]
     },
