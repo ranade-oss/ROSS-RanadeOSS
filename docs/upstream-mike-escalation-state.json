@@ -465,31 +465,32 @@
       "outcome": "needs-test-harness",
       "status": "retryable",
       "risk": "medium",
-      "capability": "Resolve document links to concrete versions, preserve consistent tab identity across citations and edit/download cards, and surface lookup failures without substituting current content for unavailable historical versions.",
-      "series_id": "assistant-versioned-panel-tabs",
+      "capability": "Resolve document links to explicit versions consistently across citations, download cards, and legacy edit cards; show retryable lookup warnings and reject unavailable historical versions without substituting current content.",
+      "series_id": "document-panel-updates",
       "dependencies": [
-        "Version-aware panel tab identity and a shared resolver across document-opening entry points.",
-        "Likely follows the panel capability associated with Mike #350; existing tracking also groups #353 and #354, but the bundle does not establish them as hard dependencies."
+        "Likely follows upstream document-panel unification and version-keyed tabs; prerequisite PR numbers are not supplied.",
+        "ROSS already provides listDocumentVersions, version metadata, and version-aware viewers.",
+        "ROSS needs version-aware tab identity and upsert behavior; its current implementation deliberately merges tabs by document ID."
       ],
       "prerequisites": [
-        "A focused executable ROSS harness for version resolution and ChatView tab interactions; frontend/package.json currently has no component-test runner or test script.",
-        "Fixtures covering current, explicit, numbered, missing and soft-deleted versions, legacy edit annotations, lookup failures and successful retries.",
-        "Assertions that displayed bytes match the selected version, identical versions share a tab, distinct versions remain separate, and case/authority tabs retain their behavior."
+        "A focused resolver and rendered ChatView interaction harness; frontend/package.json has no component test runner, and existing tests do not cover version-panel behavior.",
+        "Fixtures covering current, historical, deleted, unavailable, explicitly pinned, and legacy null-version links, plus lookup failures and retries.",
+        "Behavioral verification of tab identity, viewer version arguments, asynchronous click ordering, close/reopen behavior, and edit-status/cache updates."
       ],
-      "reason": "At ROSS main 14a8e93, ChatView deduplicates by documentId and has no shared version resolver. listDocumentVersions already exposes current_version_id and deleted_at, and viewers accept versionId. Adaptation is feasible, but focused behavioral coverage is absent. The final upstream commit supersedes earlier fallback behavior with explicit failures and no fallback tab.",
-      "architecture_brief": "Introduce a small resolver using frontend/src/app/lib/mikeApi.ts at ChatView's openCitation, openEditor and openDocument boundaries. Use the existing AssistantSidePanel tab union with document-plus-version identity and existing warning UI. Preserve version-specific viewer requests and ROSS case/authority tabs.",
+      "reason": "The final upstream commit replaces earlier fallback behavior with explicit failures and warnings. ROSS lacks the upstream resolver and PanelDocument abstraction, but has viable native seams. ChatView currently keys and merges file tabs by document ID, so copying the resolver alone would not deliver version isolation. Missing behavioral coverage prevents a reliable bounded adaptation; architectural divergence does not make the capability incompatible.",
+      "architecture_brief": "Implement a resolver over ROSS's existing camelCase document/version fields using frontend/src/app/lib/mikeApi.ts. Route ChatView's citation, edit, and document entry points through it, then use document/version identity in AssistantSidePanelTab and upsertTab. Surface failures through WarningPopup and preserve separate case and authority paths. Keep existing server access, deletion, and clean-scan enforcement authoritative.",
       "implementation_plan": [
-        "Establish focused resolver and panel-interaction tests before adaptation; review any dependency changes separately.",
-        "Implement typed resolution results that distinguish unavailable versions from failed lookups and exclude deleted resolution candidates.",
-        "Resolve legacy links consistently, key document tabs by resolved version, and show actionable failures without creating fallback tabs.",
-        "Verify retry deduplication, historical-content fidelity, concurrent opens, viewer errors for explicit unavailable IDs, and edit-resolution/cache behavior."
+        "Build a focused harness exercising the real resolver and ChatView tab state with mocked version responses and viewers.",
+        "Resolve numbered links only to their requested live version, resolve unversioned links to current, and distinguish lookup failure from unavailable version without creating fallback tabs.",
+        "Verify that equivalent entry points share one tab, distinct versions remain separate, and failed lookup followed by retry creates exactly one correctly pinned tab.",
+        "Verify deleted and non-clean content remains inaccessible through existing server controls, and test edit updates, viewer arguments, and asynchronous lifecycle behavior before producing an adaptation patch."
       ],
-      "next_review_at": "2026-09-12T17:41:14.227Z",
+      "next_review_at": "2026-09-19T17:52:01.837Z",
       "policy": "v2",
-      "attempts": 2,
+      "attempts": 3,
       "first_processed_at": "2026-08-29T00:08:42.298Z",
-      "processed_at": "2026-09-05T17:41:14.227Z",
-      "v2_attempted_at": "2026-09-05T17:41:14.227Z",
+      "processed_at": "2026-09-12T17:52:01.837Z",
+      "v2_attempted_at": "2026-09-12T17:52:01.837Z",
       "history": [
         {
           "outcome": "needs-test-harness",
@@ -504,6 +505,13 @@
           "risk": "medium",
           "reason": "At ROSS main 14a8e93, ChatView deduplicates by documentId and has no shared version resolver. listDocumentVersions already exposes current_version_id and deleted_at, and viewers accept versionId. Adaptation is feasible, but focused behavioral coverage is absent. The final upstream commit supersedes earlier fallback behavior with explicit failures and no fallback tab.",
           "processed_at": "2026-09-05T17:41:14.227Z"
+        },
+        {
+          "outcome": "needs-test-harness",
+          "status": "retryable",
+          "risk": "medium",
+          "reason": "The final upstream commit replaces earlier fallback behavior with explicit failures and warnings. ROSS lacks the upstream resolver and PanelDocument abstraction, but has viable native seams. ChatView currently keys and merges file tabs by document ID, so copying the resolver alone would not deliver version isolation. Missing behavioral coverage prevents a reliable bounded adaptation; architectural divergence does not make the capability incompatible.",
+          "processed_at": "2026-09-12T17:52:01.837Z"
         }
       ]
     },
